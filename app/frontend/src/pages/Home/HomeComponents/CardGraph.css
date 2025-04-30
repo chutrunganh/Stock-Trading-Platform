@@ -1,0 +1,22 @@
+.CardGraph {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    background-color: #F4F6FF;
+    border: 1px solid #000000;
+    border-radius: 10px;
+    align-content: center;
+    width: 70rem;
+    height: 20rem;
+  
+    position: relative; /* Changed to relative positioning */
+    margin: 2rem auto; /* Center the card graph with margin */
+  }
+  .CardGraph img{
+    width: 32%;
+    margin-right: 5px;
+    margin-left: 5px;
+  }
+  

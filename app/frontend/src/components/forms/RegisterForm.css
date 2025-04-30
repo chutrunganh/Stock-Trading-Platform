@@ -1,0 +1,129 @@
+/* app/frontend/src/components/RegisterForm.css */
+.register-form {
+    background-color: #121314; /* Màu nền đen */
+    color: #f0b90b; /* Màu chữ vàng */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Thêm bóng */
+    border: none; /* Xóa viền trắng */
+    opacity: 0; /* Bắt đầu với độ mờ 0 */
+    transform: translateY(-20px); /* Bắt đầu từ vị trí cao hơn */
+    animation: fadeIn 0.5s forwards; /* Thêm animation */
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1; /* Kết thúc với độ mờ 1 */
+        transform: translateY(0); /* Kết thúc ở vị trí ban đầu */
+    }
+}
+
+.register-form h2 {
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: none; /* Xóa viền trắng */
+    border-radius: 4px;
+    background-color: #202127; /* Màu nền input */
+    color: #f0b90b; /* Màu chữ input */
+}
+
+.submit-button {
+    background-color: #f0b90b; /* Nút màu vàng */
+    color: #121314; /* Chữ màu đen */
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: bold;
+}
+
+.submit-button:hover {
+    background-color: #ffd700; /* Màu vàng sáng hơn khi hover */
+}
+
+.close-button {
+    background-color: transparent; /* Nền trong suốt */
+    color: #f0b90b; /* Màu chữ vàng */
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.success-message {
+    color: #2e7d32;
+    font-size: 14px;
+    margin-top: 10px;
+    text-align: center;
+    padding: 10px;
+    background-color: rgba(46, 125, 50, 0.1);
+    border-radius: 4px;
+}
+
+.error-message {
+    color: red;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.password-input {
+    position: relative;
+}
+
+.password-input input {
+    width: 100%;
+    padding-right: 40px; /* Chừa khoảng trống cho biểu tượng mắt */
+}
+
+.toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #f0b90b; /* Màu vàng */
+    font-size: 18px;
+}
+
+.redirect-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.redirect-container p {
+    margin-top: 8px;
+    font-size: 0.9em;
+    color: #e6c748;
+}
+
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(240, 185, 11, 0.2);
+    border-top-color: #f0b90b;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

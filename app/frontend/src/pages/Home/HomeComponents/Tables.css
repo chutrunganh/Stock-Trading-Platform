@@ -1,0 +1,6 @@
+
+.Tables img {
+    display: block;
+    margin: 2rem auto; /* Center the image horizontally and add vertical spacing */
+    max-width: 100%; /* Ensure responsiveness */
+  }

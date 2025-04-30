@@ -1,0 +1,26 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Đảm bảo modal nằm trên các thành phần khác */
+}
+
+.modal-content {
+    background: #121314; /* Màu nền đen cho modal */
+    padding: 20px;
+    border-radius: 8px;
+    width: 100%; /* Chiếm toàn bộ chiều rộng */
+    max-width: 400px; /* Giới hạn chiều rộng tối đa */
+    box-shadow: none; /* Xóa bóng */
+}
+
+/* Xóa hoặc ẩn nút close-button */
+.close-button {
+    display: none; /* Ẩn nút "X" */
+}
