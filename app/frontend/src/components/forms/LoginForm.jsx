@@ -144,6 +144,13 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
       setIsLoading(false);
       return;
     }
+    // Password regex validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,72}$/;
+    if (!passwordRegex.test(password)) {
+      setError('Password must include uppercase, lowercase, numbers, symbols, and be 8-72 characters long.');
+      setIsLoading(false);
+      return;
+    }
 
     try {
       // Send login credentials to get OTP
