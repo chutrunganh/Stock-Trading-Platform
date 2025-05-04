@@ -6,8 +6,10 @@ functions will be responsible for those tasks.
 import dotenv from 'dotenv';
 dotenv.config({ path: '../../.env' }); // Adjust based on relative depth
 import { createUserService, getAllUsersService, getUserByIdService, updateUserService, deleteUserService} from '../services/userCRUDService.js';
-import { loginUserService } from '../services/userAuthService.js';
 import passport from 'passport';
+import { sendOtpService,verifyOtpService } from '../services/otpService.js'; // Import the OTP service
+import { forgotPasswordService } from '../services/forgotPasswordService.js';
+import { loginUserService, verifyLoginOtpService,resetPasswordService } from '../services/userAuthService.js';
 
 // Standardized response format
 const handleResponse = (res, status, message, data = null) => {
@@ -84,30 +86,46 @@ export const deleteUser = async (req, res, next) => {
     }
 }
 
+// Login user and send OTP
 export const loginUser = async (req, res, next) => {
     const { identifier, password } = req.body;
     try {
-        const result = await loginUserService(identifier, password); // Call to service function in userAuthService.js
-        
-        // Put the JWT token in a cookie to return to the client
-        // The cookie will be sent back to the client in the response headers
-        res.cookie('jwt', result.token, {
-            httpOnly: true, // Prevents JavaScript from reading the cookie (XSS protection)
-            secure: process.env.NODE_ENV === 'production', // Cookie can only be sent over HTTPS in production, in development it can be sent over HTTP
-            maxAge: 24 * 60 * 60 * 1000, // 24 hours
-            sameSite: 'strict' // Prevents the cookie from being sent in cross-site requests
-        });
-        
-    
-        handleResponse(res, 200, 'Login successful', { user: result.user, token: result.token });
-    
+      const result = await loginUserService(identifier, password);
+      handleResponse(res, 200, 'OTP sent to your email. Please verify to log in.', result);
+    } catch (error) {
+      next(error);
     }
-    catch (error) {
-        next(error); // Pass error to the error handler middleware
+  };
+  
+  // Verify OTP and log in
+  export const verifyLoginOtp = async (req, res, next) => {
+  const { email, identifier, otp } = req.body;
+  const userIdentifier = email || identifier; // Use either email or identifier
+  console.log('Received identifier:', userIdentifier);
+  console.log('Received OTP:', otp);
+
+  try {
+    if (!userIdentifier || !otp) {
+      return res.status(400).json({ message: 'Email/Username and OTP are required' });
     }
-}
 
+    const result = await verifyLoginOtpService(userIdentifier, otp);
+    console.log('OTP verification result:', result);
 
+    // Set the JWT token in a cookie
+    res.cookie('jwt', result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: 'strict',
+    });
+
+    handleResponse(res, 200, 'Login successful', { user: result.user, token: result.token });
+  } catch (error) {
+    console.error('Error during OTP verification:', error);
+    next(error);
+  }
+};
 // Initiate Google OAuth authentication, no need to call to any services since this is handled by Passport.js built in function
 export const googleAuth = (req, res, next) => {
     passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
@@ -143,4 +161,59 @@ export const googleAuthCallback = (req, res, next) => {
             res.redirect(errorUrl);
         }
     })(req, res, next);
+};
+
+export const resetPassword = async (req, res, next) => {
+    const { email, otp, newPassword } = req.body;
+  
+    try {
+      if (!email || !otp || !newPassword) {
+        throw new Error('Email, OTP, and new password are required');
+      }
+  
+      // Call the service to reset the password
+      const result = await resetPasswordService(email, otp, newPassword);
+      res.status(200).json(result);
+    } catch (error) {
+      console.error('Error in resetPassword controller:', error.message);
+      res.status(500).json({ message: error.message });
+    }
+  };
+
+  export const sendOtp = async (req, res, next) => {
+    const { email } = req.body;
+  
+    try {
+      if (!email) {
+        throw new Error('Email is required');
+      }
+  
+      const result = await sendOtpService(email);
+      res.status(200).json(result);
+    } catch (error) {
+      console.error('Error in sendOtp controller:', error.message);
+      res.status(400).json({ message: error.message });
+    }
+};
+export const verifyOtp = async (req, res, next) => {
+  const { email, otp } = req.body;
+
+  try {
+    const result = await verifyOtpService(email, otp);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const forgotPasswordSendOtp = async (req, res, next) => {
+  const { email } = req.body;
+
+  try {
+    const result = await forgotPasswordService(email);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error in forgotPasswordSendOtp:', error.message);
+    res.status(400).json({ message: error.message });
+  }
 };

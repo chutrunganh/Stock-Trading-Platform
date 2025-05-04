@@ -37,6 +37,9 @@ import { googleAuth, googleAuthCallback } from './controllers/userControllers.js
 // ===== Initialize Express App ======
 const app = express();
 const port = process.env.BE_PORT || 3000;
+app.get('/error-test', (req, res) => {
+  throw new Error('This is a test error');
+});
 
 // --- Middleware Configuration ---
 app.use(express.json()); // Parse JSON request bodies
@@ -67,10 +70,20 @@ app.use('/api', userRoutes);
 app.use('/api', orderRoutes);
 app.use('/api/stocks', stockRoutes);
 
+app.use((req, res, next) => {
+  res.status(404).json({
+      status: 404,
+      code: 'NOT_FOUND',
+      message: 'The requested resource was not found.',
+  });
+});
+if (process.env.NODE_ENV === 'production') {
+  app.disable('x-powered-by');
+}
 // --- Error Handling Middleware ---
 // This should be the last middleware in the stack
 // It will catch any errors that occur in the routes or other middlewares
-app.use(errorHandling);
+
 
 // --- Initialize All Database Tables ---
 const initializeDatabase = async () => {  try {

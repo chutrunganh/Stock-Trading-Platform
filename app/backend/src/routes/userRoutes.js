@@ -4,12 +4,10 @@
  */
 
 import express from 'express';
-import { registerUser, getAllUsers, getUserById, updateUser, deleteUser, loginUser, googleAuth, googleAuthCallback } from '../controllers/userControllers.js';
+import { registerUser, getAllUsers, getUserById, updateUser, deleteUser, loginUser, googleAuth, googleAuthCallback ,resetPassword,sendOtp,verifyOtp,forgotPasswordSendOtp,verifyLoginOtp } from '../controllers/userControllers.js';
 import { validateUser, validateUserUpdate, validateLogin } from '../middlewares/userValidationMiddleware.js';
 import authorizeRole from '../middlewares/roleBasedAccessControlMiddleware.js';
 import authMiddleware from '../middlewares/authenticationMiddleware.js';
-
-
 const router = express.Router();
 
 // Routes realted to user operations arranged in privileged order
@@ -20,7 +18,12 @@ router.get("/", (req, res) => {}); // Placeholder for homepage route
 // Traditional login and registration routes
 router.post("/register", validateUser, registerUser); // Register a new user
 router.post("/login", validateLogin, loginUser);  // User login
-
+router.post('/send-otp', sendOtp);
+router.post('/verify-otp', verifyOtp);
+router.post('/reset-password', resetPassword);
+router.post('/forgot-password/send-otp', forgotPasswordSendOtp);
+router.post('/login', loginUser);
+router.post('/login/verify-otp', verifyLoginOtp);
 // Google OAuth routes
 // when user click on "Login with Google" button in frontend, they will be forward to  uor backend endpoint /api/auth/google
 // Our backend then redirect user to Google authentication page
@@ -49,7 +52,7 @@ router.get("/profile", authMiddleware, (req, res) => {
 
 
 router.post("/logout", authMiddleware, (req, res) => {}); // Placeholder for user logout route
-
+// Password reset route
 
 // 3. Protected routes (authentication required) + Authorization (admin role required)
 router.get("/admin/dashboard", authMiddleware, authorizeRole('admin'), (req, res) => {}); // Placeholder for admin dashboard route

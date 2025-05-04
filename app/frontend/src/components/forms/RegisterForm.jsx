@@ -22,15 +22,23 @@ function RegisterForm({ onClose }) {
 
   const validateForm = () => {
     let isValid = true;
-    
+  
     // Password validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,72}$/;
+  
     if (password.length < 8) {
       setPasswordError('Password must be at least 8 characters');
+      isValid = false;
+    } else if (password.length > 72) {
+      setPasswordError('Password must be shorter than 72 characters');
+      isValid = false;
+    } else if (!passwordRegex.test(password)) {
+      setPasswordError('Password must include uppercase, lowercase, numbers, and symbols');
       isValid = false;
     } else {
       setPasswordError('');
     }
-    
+  
     // Confirm password validation
     if (password !== confirmPassword) {
       setConfirmPasswordError('Passwords do not match');
@@ -38,7 +46,7 @@ function RegisterForm({ onClose }) {
     } else {
       setConfirmPasswordError('');
     }
-    
+  
     return isValid;
   };
 

@@ -56,3 +56,58 @@ export const getUserProfile = async () => {
     throw error;
   }
 };
+// Function to send OTP
+export const sendOtp = async (email) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/send-otp`, { email });
+    return response.data;
+  } catch (error) {
+    console.error('Error during sending OTP:', error);
+    throw error.response?.data || { message: 'Failed to send OTP' };
+  }
+};
+
+// Function to verify OTP
+export const verifyOtp = async (email, otp) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/verify-otp`, { email, otp });
+    return response.data;
+  } catch (error) {
+    console.error('Error during OTP verification:', error);
+    throw error.response?.data || { message: 'Failed to verify OTP' };
+  }
+};
+
+// Function to reset password
+export const resetPassword = async (email, otp, newPassword) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/reset-password`, { email, otp, newPassword });
+    return response.data;
+  } catch (error) {
+    console.error('Error during password reset:', error.response || error);
+    throw error.response?.data || { message: 'Failed to reset password' };
+  }
+};
+export const forgotPasswordSendOtp = async (email) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/forgot-password/send-otp`, { email });
+    return response.data;
+  } catch (error) {
+    console.error('Error during sending OTP for forgot password:', error.response || error);
+    throw error.response?.data || { message: 'Failed to send OTP' };
+  }
+};
+export const sendLoginOtp = async (data) => {
+  const response = await axios.post(`${API_BASE_URL}/login`, data);
+  return response.data;
+};
+
+export const verifyLoginOtp = async (data) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/login/verify-otp`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error during OTP verification:', error.response || error);
+    throw error.response?.data || { message: 'Failed to verify OTP' };
+  }
+};

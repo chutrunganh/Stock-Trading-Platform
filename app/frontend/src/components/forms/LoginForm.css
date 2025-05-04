@@ -48,10 +48,37 @@
     cursor: pointer;
     width: 100%;
     font-weight: bold;
+    margin-bottom: 10px;
 }
 
 .submit-button:hover {
     background-color: #ffd700; /* Màu vàng sáng hơn khi hover */
+}
+
+.back-button {
+    background-color: #202127;
+    color: #f0b90b;
+    border: 1px solid #f0b90b;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+    width: 100%;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.back-button:hover {
+    background-color: #2a2b32;
+}
+
+.otp-message {
+    background-color: #202127;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+  font-size: 14px;
+    text-align: center;
+    border-left: 3px solid #f0b90b;
 }
 
 .google-login-button {
@@ -63,7 +90,7 @@
   border: 1px solid #dadce0;
   border-radius: 4px;
   cursor: pointer;
-  display: flex;
+    display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Roboto', sans-serif;
@@ -87,6 +114,16 @@
   display: inline-block;
 }
 
+.error-message {
+    color: #e74c3c;
+    background-color: rgba(231, 76, 60, 0.1);
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    text-align: center;
+}
+
 .form-footer {
     display: flex;
     justify-content: space-between; /* Tách rời hai liên kết */
@@ -100,4 +137,15 @@
 
 .form-footer a:hover {
     text-decoration: underline;
+}
+.cooldown-message {
+    background-color: #2c2d33; /* Darker background */
+    color: #ffcc00; /* Bright yellow text */
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    text-align: center;
+    border-left: 3px solid #ffcc00;
+    font-weight: bold;
 }

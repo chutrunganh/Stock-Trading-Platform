@@ -21,7 +21,7 @@ import Tutorial from './pages/Tutorial';
 import LoginForm from './components/forms/LoginForm';
 import RegisterForm from './components/forms/RegisterForm';
 import ForgotPasswordForm from './components/forms/ForgotPasswordForm';
-
+import NotFoundPage from './pages/NotFoundPage';
 // Auth Context
 import { useAuth } from './context/AuthContext';
 
@@ -127,6 +127,7 @@ function App() {
                         } 
                     />
                     <Route path="/tutorial" element={<Tutorial />} />
+                    <Route path="*" element={<NotFoundPage />} />
                 </Routes>
             </main>
             

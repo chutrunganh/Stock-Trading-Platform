@@ -26,5 +26,29 @@ log.info(`PgAdmin is running on port: ${process.env.PGADMIN_PORT}`);
 if (process.env.NODE_ENV === 'development') {
   log.warn('Recreateing all tables in development mode. This will drop all existing data!');
 }
+const initOtpTable = async () => {
+  try {
+    const query = `
+      CREATE TABLE IF NOT EXISTS otp_store (
+        email VARCHAR(255) PRIMARY KEY,
+        otp VARCHAR(6) NOT NULL,
+        otp_expiration BIGINT NOT NULL
+      );
+    `;
+    await pool.query(query);
+    log.info('otp_store table initialized successfully');
+  } catch (error) {
+    log.error('Error initializing otp_store table:', error.message);
+    throw new Error('Failed to initialize otp_store table');
+  }
+};
 
+// Initialize the database
+(async () => {
+  try {
+    await initOtpTable();
+  } catch (error) {
+    log.error('Database initialization failed:', error.message);
+  }
+})();
 export default pool;
