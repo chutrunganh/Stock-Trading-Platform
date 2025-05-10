@@ -141,7 +141,7 @@ const initializeDatabase = async () => {  try {
 const initializeAdminUser = async () => {
     try {
         const adminEmail = process.env.ADMIN_EMAIL || 'admin@stockmarket.com';
-        const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+        const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123';
         const adminUsername = process.env.ADMIN_USERNAME || 'admin';
         
         // Hash the admin password using SALT_ROUNDS from constants

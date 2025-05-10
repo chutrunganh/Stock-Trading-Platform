@@ -34,11 +34,9 @@ export const loginUserService = async (identifier, password) => {
     const hashedPassword = user ? user.password : fakeHashedPassword; // Use the actual hashed password if user exists, otherwise use a dummy hash
 
     // ALWAYS perform input password hash and comparison
-    const isPasswordValid = await bcrypt.compare(password, hashedPassword); 
-
-    // If user does not exist or password is incorrect, return the same error message
+    const isPasswordValid = await bcrypt.compare(password, hashedPassword);     // If user does not exist or password is incorrect, return a user-friendly error message
     if (!user || !isPasswordValid) {
-      throw new Error('Invalid credentials');
+      throw new Error('The username/email or password you entered is incorrect');
     }
 
     // If user authenticated successfully, generate JWT token

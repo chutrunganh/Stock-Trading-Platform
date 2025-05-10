@@ -131,38 +131,22 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
 
   // OTP verification removed
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {    e.preventDefault();
     setError('');
-    setIsLoading(true);
-
-    // Check if we're in cooldown period
-    if (cooldownTimer > 0) {
-      setError(`Too many failed attempts. Please try again in ${cooldownTimer} seconds.`);
-      setIsLoading(false);
-      return;
-    }
-
-    if (!identifier || !password) {
+    setIsLoading(true);    if (!identifier || !password) {
       setError('Please enter both username/email and password');
       setIsLoading(false);
       return;
     }
-    // Password regex validation
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,72}$/;
-    if (!passwordRegex.test(password)) {
-      setError('Password must include uppercase, lowercase, numbers, symbols, and be 6-72 characters long.');
-      setIsLoading(false);
-    
+
     // Check if the turnstile verification is completed
     if (!turnstileToken) {
       setError('Please complete the CAPTCHA verification first');
+      setIsLoading(false);
       return;
     }
     
-    setIsLoading(true);
-
-    try {
+    setIsLoading(true);    try {
       console.log('Attempting login with credentials...');
       const response = await login({ identifier, password, turnstileToken });
       console.log('Login response:', response);
@@ -172,11 +156,16 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
         console.log('Login successful');
         onLogin(response); // Complete login
       } else {
-        throw new Error('Invalid response from server');
+        throw new Error('The username/email or password you entered is incorrect');
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.message || 'Login failed. Please check your credentials.');
+      // Show user-friendly error messages
+      if (err.message.includes('Internal Server Error')) {
+        setError('Your username/email or password is incorrect. Please try again.');
+      } else {
+        setError(err.message || 'Server error. Please try again later.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -207,7 +196,6 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
     }
   };
 
-  // OTP form removed
   
   return (
     <form className="login-form" onSubmit={handleSubmit}>

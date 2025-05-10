@@ -157,3 +157,20 @@
     border: 1px solid #ff4d4f;
     background-color: rgba(255, 77, 79, 0.05);
 }
+
+.password-requirements {
+  margin-top: 8px;
+  font-size: 0.9em;
+}
+
+.requirement {
+  color: #666;
+  margin: 4px 0;
+  transition: color 0.3s ease;
+}
+
+.requirement-met {
+  color: #2ecc71;
+  margin: 4px 0;
+  transition: color 0.3s ease;
+}

@@ -19,23 +19,59 @@ function RegisterForm({ onClose }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);  const [passwordRequirements, setPasswordRequirements] = useState({
+    length: false,
+    maxLength: true,
+    hasUpper: false,
+    hasLower: false,
+    hasNumber: false,
+    hasSymbol: false,
+    noUsername: true
+  });  const updatePasswordRequirements = (password) => {
+    // Check if password contains username or parts of username (case insensitive)
+    let containsUsername = false;
+    if (username && username.length >= 3) {
+      const lowerPassword = password.toLowerCase();
+      const lowerUsername = username.toLowerCase();
+      
+      // Check for substrings of username with minimum length of 3
+      for (let i = 0; i < lowerUsername.length - 2; i++) {
+        for (let j = i + 3; j <= lowerUsername.length; j++) {
+          const part = lowerUsername.slice(i, j);
+          if (lowerPassword.includes(part)) {
+            containsUsername = true;
+            break;
+          }
+        }
+        if (containsUsername) break;
+      }
+    }
+    
+    setPasswordRequirements({
+      length: password.length >= 6,
+      maxLength: password.length <= 72,
+      hasUpper: /[A-Z]/.test(password),
+      hasLower: /[a-z]/.test(password),
+      hasNumber: /\d/.test(password),
+      hasSymbol: /[@$!%*?&]/.test(password),
+      noUsername: !containsUsername
+    });
+  };
+
+  // Please note that this password policy needs to be check by BOTH frontend and backend
+  // Only validate the password on the frontend may be bypassed by intercepting the request (with tools like Postman, Burp, etc.)
+  // Only validate the password on the backend does not affect security concerns, but will waste server time to give a response to the client
 
   const validateForm = () => {
     let isValid = true;
-    
-    // Password validation
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,72}$/;
-  
-    if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
-    if (password.length < 8) {
-      setPasswordError('Password must be at least 8 characters');
-      isValid = false;
-    } else {
+       // Password validation using requirements state
+    if (Object.values(passwordRequirements).every(req => req)) {
       setPasswordError('');
+    } else {
+      setPasswordError('Please meet all password requirements');
+      isValid = false;
     }
-    
+
     // Confirm password validation
     if (password !== confirmPassword) {
       setConfirmPasswordError('Passwords do not match');
@@ -47,7 +83,9 @@ function RegisterForm({ onClose }) {
     return isValid;
   };
 
-  const { register } = useAuth();  const handleSubmit = async (e) => {
+  const { register } = useAuth();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
@@ -98,8 +136,14 @@ function RegisterForm({ onClose }) {
         <input
           type="text"
           id="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          value={username}          onChange={(e) => {
+            const newUsername = e.target.value;
+            setUsername(newUsername);
+            // Update password requirements when username changes
+            if (password) {
+              updatePasswordRequirements(password);
+            }
+          }}
           required
           placeholder="Choose a username"
           disabled={isSubmitting}
@@ -126,7 +170,10 @@ function RegisterForm({ onClose }) {
             type={showPassword ? 'text' : 'password'}
             id="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              updatePasswordRequirements(e.target.value);
+            }}
             required
             placeholder="Create a password"
             disabled={isSubmitting}
@@ -142,6 +189,27 @@ function RegisterForm({ onClose }) {
           </button>
         </div>
         {passwordError && <p className="error-message">{passwordError}</p>}
+        <div className="password-requirements">
+          <p className={passwordRequirements.length ? 'requirement-met' : 'requirement'}>
+            &#x2022; At least 6 characters
+          </p>
+          <p className={passwordRequirements.maxLength ? 'requirement-met' : 'requirement'}>
+            &#x2022; No more than 72 characters
+          </p>
+          <p className={passwordRequirements.hasUpper ? 'requirement-met' : 'requirement'}>
+            &#x2022; At least one uppercase letter
+          </p>
+          <p className={passwordRequirements.hasLower ? 'requirement-met' : 'requirement'}>
+            &#x2022; At least one lowercase letter
+          </p>
+          <p className={passwordRequirements.hasNumber ? 'requirement-met' : 'requirement'}>
+            &#x2022; At least one number
+          </p>          <p className={passwordRequirements.hasSymbol ? 'requirement-met' : 'requirement'}>
+            &#x2022; At least one symbol (@$!%*?&)
+          </p>          <p className={passwordRequirements.noUsername ? 'requirement-met' : 'requirement'}>
+            &#x2022; Cannot contain any part of your username (3 or more characters)
+          </p>
+        </div>
       </div>
       
       <div className="form-group">
