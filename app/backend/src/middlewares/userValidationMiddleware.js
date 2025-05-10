@@ -19,11 +19,12 @@ const validateUser = (req, res, next) => {
   next();
 };
 
-// Middleware to validate login input - accepts identifier (email or username), password and turnstileToken
+// Middleware to validate login input - accepts identifier (email or username), password, turnstileToken, and optional otp
 const loginSchema = Joi.object({
   identifier: Joi.string().required(),
   password: Joi.string().required(),
-  turnstileToken: Joi.string().required()
+  turnstileToken: Joi.string().required(),
+  otp: Joi.string().optional()
 });
 
 const validateLogin = (req, res, next) => {

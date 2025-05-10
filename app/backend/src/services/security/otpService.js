@@ -30,7 +30,7 @@ export const sendOtpService = async (email) => {
 
     const normalizedEmail = email.trim().toLowerCase();
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiration = Date.now() + 10 * 60 * 1000; // 10 minutes from now
+    const otpExpiration = Date.now() + 1 * 60 * 1000; // 1 minutes from now
 
     // Save OTP to the database (in-memory)
     await OTP.save(normalizedEmail, otp, otpExpiration);
@@ -42,8 +42,26 @@ export const sendOtpService = async (email) => {
     const mailOptions = {
       from: '"Soict Stock" <no-reply@soictstock.com>',
       to: email,
-      subject: 'Your Password Reset OTP',
-      text: `Your OTP is ${otp}. It will expire in 10 minutes.`,
+      subject: 'Soict Stock - Two-Factor Authentication (OTP) Verification',
+      text: `Dear user,\n\nYour One-Time Password (OTP) for secure login to Soict Stock is: ${otp}\n\nThis OTP is valid for 1 minute.\n\nIf you did not request this, please ignore this email.\n\nThank you,\nSoict Stock Security Team`,
+      html: `
+        <div style="font-family: Arial, sans-serif; background: #f9f9f9; padding: 24px; border-radius: 8px; max-width: 480px; margin: auto; color: #222;">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <h2 style="color: #f0b90b; margin: 0;">Soict Stock</h2>
+          </div>
+          <h3 style="color: #222;">Two-Factor Authentication (OTP) Verification</h3>
+          <p>Dear user,</p>
+          <p>To complete your secure login to <b>Soict Stock</b>, please use the following One-Time Password (OTP):</p>
+          <div style="font-size: 2rem; font-weight: bold; letter-spacing: 4px; color: #f0b90b; background: #222; padding: 12px 0; border-radius: 6px; text-align: center; margin: 16px 0;">${otp}</div>
+          <p style="margin: 0 0 8px 0;">This OTP is valid for <b>1 minute</b>.</p>
+          <p style="color: #888; font-size: 13px; margin: 0 0 16px 0;">If you did not request this OTP, please ignore this email or contact our support team immediately.</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+          <div style="font-size: 13px; color: #888; text-align: center;">
+            Thank you for choosing Soict Stock.<br />
+            <span style="color: #f0b90b;">Soict Stock Security Team</span>
+          </div>
+        </div>
+      `
     };
 
     const info = await transporter.sendMail(mailOptions);

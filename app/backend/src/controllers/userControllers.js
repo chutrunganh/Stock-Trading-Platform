@@ -11,10 +11,10 @@
 import dotenv from 'dotenv';
 dotenv.config({ path: '../../.env' }); // Adjust based on relative depth
 import { createUserService, getUserByIdService, updateUserService, getUserByUsernameService } from '../services/userCRUDService.js';
-import { loginUserService } from '../services/userAuthService.js';
+import { loginUserService } from '../services/security/userAuthService.js';
 import passport from 'passport';
 import { verifyTurnstileToken } from '../services/security/turnstileService.js';
-import { verifyLoginOtpService } from '../services/userAuthService.js';
+import { verifyLoginOtpService } from '../services/security/userAuthService.js';
 import { sendOtpService } from '../services/security/otpService.js';
 
 // Standardized response format
@@ -92,8 +92,18 @@ export const deleteUser = async (req, res, next) => {
     }
 }
 
+// Helper to set JWT cookie with secure properties
+function setJwtCookie(res, token) {
+  res.cookie('jwt', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: 'strict',
+  });
+}
+
 export const loginUser = async (req, res, next) => {
-    const { identifier, password, turnstileToken } = req.body;
+    const { identifier, password, turnstileToken, otp } = req.body;
     try {
         // Verify Turnstile token before authenticating
         const remoteip = req.ip || req.connection?.remoteAddress;
@@ -105,59 +115,46 @@ export const loginUser = async (req, res, next) => {
                 error: turnstileResult["error-codes"] || turnstileResult.error || 'Unknown error',
             });
         }
-        // Proceed with login if captcha is valid
-        const result = await loginUserService(identifier, password); // Only check credentials
-        // Send OTP to user's email
-        let email = identifier;
-        if (!identifier.includes('@')) {
-            // If identifier is not an email, look up by username
-            const user = await getUserByUsernameService(identifier);
-            if (!user || !user.email) {
-                return handleResponse(res, 404, 'User not found');
+        if (otp) {
+            // Step 2: Verify both password and OTP, then log in and set cookie
+            const result = await verifyLoginOtpService(identifier, otp, password); // Update service to check password too
+            setJwtCookie(res, result.token);
+            handleResponse(res, 200, 'Login successful', { user: result.user, token: result.token });
+        } else {
+            // Step 1: Check credentials and send OTP
+            const result = await loginUserService(identifier, password); // Only check credentials
+            // Send OTP to user's email
+            let email = identifier;
+            if (!identifier.includes('@')) {
+                // If identifier is not an email, look up by username
+                const user = await getUserByUsernameService(identifier);
+                if (!user || !user.email) {
+                    return handleResponse(res, 404, 'User not found');
+                }
+                email = user.email;
             }
-            email = user.email;
+            const otpResult = await sendOtpService(email);
+            handleResponse(res, 200, 'OTP sent', {
+                step: 'otp',
+                previewUrl: otpResult.previewUrl
+            });
         }
-        const otpResult = await sendOtpService(email);
-        // Return only OTP step info, not JWT or user info
-        handleResponse(res, 200, 'OTP sent', {
-            step: 'otp',
-            previewUrl: otpResult.previewUrl
-        });
     }
     catch (error) {
-        next(error); // Pass error to the error handler middleware
+        // Graceful error handling for incorrect credentials
+        if (error.message === 'The username/email or password you entered is incorrect') {
+            return res.status(401).json({
+                status: 401,
+                message: 'Incorrect username/email or password. Please try again.'
+            });
+        }
+        // Other errors
+        return res.status(500).json({
+            status: 500,
+            message: 'Server error. Please try again later.'
+        });
     }
 }
-
-// Verify OTP and log in (2FA step)
-export const verifyLoginOtp = async (req, res, next) => {
-  const { email, identifier, otp } = req.body;
-  const userIdentifier = email || identifier; // Use either email or identifier
-  console.log('Received identifier:', userIdentifier);
-  console.log('Received OTP:', otp);
-
-  try {
-    if (!userIdentifier || !otp) {
-      return handleResponse(res, 400, 'Email/Username and OTP are required');
-    }
-
-    const result = await verifyLoginOtpService(userIdentifier, otp);
-    console.log('OTP verification result:', result);
-
-    // Set the JWT token in a cookie
-    res.cookie('jwt', result.token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: 'strict',
-    });
-
-    handleResponse(res, 200, 'Login successful', { user: result.user, token: result.token });
-  } catch (error) {
-    console.error('Error during OTP verification:', error);
-    next(error);
-  }
-};
 
 // Initiate Google OAuth authentication, no need to call to any services since this is handled by Passport.js built in function
 export const googleAuth = (req, res, next) => {
@@ -179,12 +176,7 @@ export const googleAuthCallback = (req, res, next) => {
         
         try {
             // Put the JWT token in a cookie
-            res.cookie('jwt', user.token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                maxAge: 24 * 60 * 60 * 1000, // 24 hours
-                sameSite: 'strict'
-            });
+            setJwtCookie(res, user.token);
             
             // Redirect back to frontend with success
             const successUrl = `${process.env.FE_URL}?login=success&token=${user.token}`;

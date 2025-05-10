@@ -169,7 +169,7 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
     setError('');
     setIsLoading(true);
     try {
-      const result = await verifyLoginOtp({ identifier, otp });
+      const result = await loginUser({ identifier, password, turnstileToken, otp });
       // Complete login
       onLogin(result.data);
     } catch (err) {
