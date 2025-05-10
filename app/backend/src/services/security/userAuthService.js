@@ -6,6 +6,9 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { verifyOtpService } from './otpService.js';
 import OTP from '../../models/otpModel.js';
+import { createDefaultHoldingsForPortfolioService } from '../holdingCRUDService.js';
+import { createPortfolioForUserService } from '../portfolioCRUDService.js';
+import { validatePassword } from '../../utils/passwordUtil.js';
 dotenv.config({ path: '../../.env' }); // Adjust based on relative depth
 
 /**
@@ -26,45 +29,18 @@ export const loginUserService = async (identifier, password) => {
        WHERE u.email = $1 OR u.username = $1`,
       [identifier]
     );
-
     let user = result.rows[0];
-
     // Generate a fake hash
     const fakeHashedPassword = '$2b$10$abcdefghijklmnopqrstuv';  // A dummy bcrypt hash
-    
     // Determine the hashed password to use for comparison
     const hashedPassword = user ? user.password : fakeHashedPassword; // Use the actual hashed password if user exists, otherwise use a dummy hash
-
     // ALWAYS perform input password hash and comparison
     const isPasswordValid = await bcrypt.compare(password, hashedPassword);     // If user does not exist or password is incorrect, return a user-friendly error message
     if (!user || !isPasswordValid) {
       throw new Error('The username/email or password you entered is incorrect');
     }
-
-    // If user authenticated successfully, generate JWT token
-    const userForToken = {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      portfolio_id: user.portfolio_id
-    };
-
-    // Create JWT token with user info, login timestamp, and secret key from environment variables
-    const token = jwt.sign(
-      {
-        ...userForToken,
-        login_at: Date.now()
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
-    );
-
-    // Return user info and token
-    return {
-      user: User.getSafeUser(user),
-      token
-    };
+    // If user authenticated successfully, generate JWT token and safe user
+    return generateUserTokenAndSafeUser(user, user.portfolio_id);
   } catch (error) {
     throw error;
   }
@@ -86,14 +62,116 @@ export const loginUserService = async (identifier, password) => {
  * 
  */
 
-
-
-
-
-/** 
- * For user register function, just use the userCreateService, findOrCreateGoogleUserService function in userCRUDService.js
- */
 /**
+ * Creates a new user in the database.
+ * @param {Object} userData - The user object as defined in the models/userModel.js file.
+ * @returns {Object} - The created user object without sensitive password data.
+ */
+export const createUserService = async (userData) => {
+  const { username, email, password } = userData;
+  try {
+    // Validate password policy
+    const { valid, errors } = validatePassword(password, username);
+    if (!valid) {
+      throw new Error(errors.join(' '));
+    }
+    // Hash the password before storing it
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    // Begin transaction to ensure both user and portfolio are created together
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      // Database operation - always set role to 'user' for API-created accounts
+      const userResult = await client.query(
+        'INSERT INTO users (username, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id, username, email, role, created_at',
+        [username, email, hashedPassword, 'user']
+      );
+      const userId = userResult.rows[0].id;
+      // Create a default portfolio for the new user and get its ID
+      const portfolioId = await createPortfolioForUserService(userId, client);
+      // Now create default holdings with the actual portfolio ID
+      await createDefaultHoldingsForPortfolioService(portfolioId, client);
+      await client.query('COMMIT');
+      return User.getSafeUser(userResult.rows[0]);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    // More detailed error logging
+    console.error('Full error details:', error);
+    throw new Error(`Error creating user: ${error.message}`);
+  }
+};
+
+/**
+ * This function finds an existing user by Google ID or creates a new one if it doesn't exist.
+ * It also links an existing user account with the same email to the Google account.
+ * @param {Object} userData - Data received from Google OAuth containing google_id, email, username
+ * @returns {Object} - The user object and JWT token
+ */
+export const findOrCreateGoogleUserService = async (userData) => {
+  const { google_id, email, username } = userData;
+  try {
+    // Begin transaction
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      // First check if user exists with this Google ID
+      let result = await client.query(
+        'SELECT id, username, email, role, google_id, created_at, portfolio_id FROM users LEFT JOIN portfolios ON users.id = portfolios.user_id WHERE google_id = $1',
+        [google_id]
+      );
+      let user = result.rows[0];
+      // If no user found with Google ID, check if user exists with the same email
+      if (!user) {
+        result = await client.query(
+          'SELECT id, username, email, role, google_id, created_at FROM users WHERE email = $1',
+          [email]
+        );
+        user = result.rows[0];
+        // If user exists with same email but no Google ID, link the accounts
+        if (user) {
+          result = await client.query(
+            'UPDATE users SET google_id = $1 WHERE id = $2 RETURNING id, username, email, role, google_id, created_at',
+            [google_id, user.id]
+          );
+          user = result.rows[0];
+        } 
+        // If no user exists at all, create a new one
+        else {
+          result = await client.query(
+            'INSERT INTO users (username, email, google_id, role) VALUES ($1, $2, $3, $4) RETURNING id, username, email, role, google_id, created_at',
+            [username, email, google_id, 'user']
+          );
+          user = result.rows[0];
+          // Create a portfolio for the new user with initial balance
+          const portfolioId = await createPortfolioForUserService(user.id, client);
+          // Create default holdings for the new portfolio
+          await createDefaultHoldingsForPortfolioService(portfolioId, client);
+          // Attach portfolio_id for token
+          user.portfolio_id = portfolioId;
+        }
+      }
+      // Commit transaction
+      await client.query('COMMIT');
+      // Generate JWT token and safe user
+      return generateUserTokenAndSafeUser(user, user.portfolio_id);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    throw new Error(`Error during Google authentication: ${error.message}`);
+  }
+};
+
+/**
+ *
  * Reset the user's password after verifying the OTP.
  * @param {string} email - The user's email address.
  * @param {string} otp - The OTP submitted by the user.
@@ -102,48 +180,57 @@ export const loginUserService = async (identifier, password) => {
  */
 export const resetPasswordService = async (email, otp, newPassword) => {
   const normalizedEmail = email.trim().toLowerCase();
-
-  // Password regex for validation
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,72}$/;
-
   try {
-    // Validate the new password against the regex
-    if (!passwordRegex.test(newPassword)) {
-      throw new Error(
-        'Password must include uppercase, lowercase, numbers, symbols, and be 6-72 characters long.'
-      );
+    // Fetch username for this email
+    const userResult = await pool.query('SELECT username FROM users WHERE email = $1', [normalizedEmail]);
+    const user = userResult.rows[0];
+    if (!user) {
+      throw new Error('User not found');
     }
-
+    // Validate the new password using the same policy as registration
+    const { valid, errors } = validatePassword(newPassword, user.username);
+    if (!valid) {
+      throw new Error(errors.join(' '));
+    }
     // Verify OTP first
     await verifyOtpService(email, otp);
-
     // Hash the new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-
     // Update the password in the database
     const result = await pool.query(
       'UPDATE users SET password = $1 WHERE email = $2',
       [hashedPassword, normalizedEmail]
     );
-
     if (result.rowCount === 0) {
       throw new Error('Failed to update password');
     }
-
     // Delete the OTP after successful password reset
     await OTP.deleteByEmail(normalizedEmail);
-
     return { message: 'Password reset successfully' };
   } catch (error) {
     console.error('Error in resetPasswordService:', error.message);
     throw new Error(error.message || 'Failed to reset password');
   }
 };
+
 export const verifyLoginOtpService = async (identifier, otp, password) => {
   // First, check password
   await loginUserService(identifier, password); // Throws if invalid
+
+  // Always resolve identifier to email
+  let email = identifier;
+  if (!identifier.includes('@')) {
+    // Look up by username
+    const userResult = await pool.query('SELECT email FROM users WHERE username = $1', [identifier]);
+    const user = userResult.rows[0];
+    if (!user || !user.email) {
+      throw new Error('User not found');
+    }
+    email = user.email;
+  }
+
   // Then, check OTP
-  const isValidOtp = await verifyOtpService(identifier, otp);
+  const isValidOtp = await verifyOtpService(email, otp);
   if (!isValidOtp) {
     throw new Error('Invalid OTP');
   }
@@ -151,7 +238,7 @@ export const verifyLoginOtpService = async (identifier, otp, password) => {
     // Fetch the user by email
     const userResult = await pool.query(
       'SELECT id, username, email, role FROM users WHERE email = $1',
-      [identifier]
+      [email]
     );
     const user = userResult.rows[0];
     if (!user) {
@@ -173,10 +260,33 @@ export const verifyLoginOtpService = async (identifier, otp, password) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
     );
     // Delete the OTP after successful verification
-    await OTP.deleteByEmail(identifier);
+    await OTP.deleteByEmail(email);
     return { user: User.getSafeUser(user), token };
   } catch (error) {
     console.error('Error in verifyLoginOtpService:', error.message);
     throw error;
   }
 };
+
+// Helper to generate JWT and safe user object
+function generateUserTokenAndSafeUser(user, portfolio_id_override) {
+  const userForToken = {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+    portfolio_id: portfolio_id_override ?? user.portfolio_id
+  };
+  const token = jwt.sign(
+    {
+      ...userForToken,
+      login_at: Date.now()
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
+  );
+  return {
+    user: User.getSafeUser(user),
+    token
+  };
+}

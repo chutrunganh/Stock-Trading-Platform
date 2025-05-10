@@ -6,6 +6,11 @@ function OtpForm({ onSubmit, identifier, previewUrl, isLoading, error, onResend 
   const [timer, setTimer] = useState(60); // 1 minute countdown
   const [expired, setExpired] = useState(false);
 
+  // Monitor previewUrl changes
+  useEffect(() => {
+    console.log('OtpForm: previewUrl changed:', previewUrl);
+  }, [previewUrl]);
+
   useEffect(() => {
     if (timer > 0 && !expired) {
       const interval = setInterval(() => setTimer(t => t - 1), 1000);
@@ -23,10 +28,14 @@ function OtpForm({ onSubmit, identifier, previewUrl, isLoading, error, onResend 
   };
 
   const handleResend = () => {
+    console.log('OtpForm: handleResend triggered, current previewUrl:', previewUrl);
     setTimer(60);
     setExpired(false);
     setOtp('');
-    if (onResend) onResend();
+    if (onResend) {
+      console.log('OtpForm: Calling onResend function');
+      onResend();
+    }
   };
 
   return (

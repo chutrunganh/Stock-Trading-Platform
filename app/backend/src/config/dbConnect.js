@@ -10,12 +10,12 @@ dotenv.config({ path: '../../.env' }); // Adjust based on relative depth
 import log from '../utils/loggerUtil.js';
 
 // DEBUG: Print database environment variables
-console.log('Database connection parameters:');
-console.log('DB_USER:', process.env.DB_USER);
-console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
-console.log('DB_HOST:', process.env.DB_HOST);
-console.log('DB_PORT:', process.env.DB_PORT);
-console.log('DB_NAME:', process.env.DB_NAME);
+// console.log('Database connection parameters:');
+// console.log('DB_USER:', process.env.DB_USER);
+// console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
+// console.log('DB_HOST:', process.env.DB_HOST);
+// console.log('DB_PORT:', process.env.DB_PORT);
+// console.log('DB_NAME:', process.env.DB_NAME);
 
 // Database connection parameters
 const pool = new Pool({

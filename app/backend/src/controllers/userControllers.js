@@ -10,7 +10,8 @@
  */
 import dotenv from 'dotenv';
 dotenv.config({ path: '../../.env' }); // Adjust based on relative depth
-import { createUserService, getUserByIdService, updateUserService, getUserByUsernameService } from '../services/userCRUDService.js';
+import { getUserByIdService, updateUserService, getUserByUsernameService } from '../services/userCRUDService.js';
+import { createUserService } from '../services/security/userAuthService.js';
 import { loginUserService } from '../services/security/userAuthService.js';
 import passport from 'passport';
 import { verifyTurnstileToken } from '../services/security/turnstileService.js';
@@ -117,7 +118,16 @@ export const loginUser = async (req, res, next) => {
         }
         if (otp) {
             // Step 2: Verify both password and OTP, then log in and set cookie
-            const result = await verifyLoginOtpService(identifier, otp, password); // Update service to check password too
+            let email = identifier;
+            if (!identifier.includes('@')) {
+                // If identifier is not an email, look up by username
+                const user = await getUserByUsernameService(identifier);
+                if (!user || !user.email) {
+                    return handleResponse(res, 404, 'User not found');
+                }
+                email = user.email;
+            }
+            const result = await verifyLoginOtpService(email, otp, password); // Use email, not identifier
             setJwtCookie(res, result.token);
             handleResponse(res, 200, 'Login successful', { user: result.user, token: result.token });
         } else {

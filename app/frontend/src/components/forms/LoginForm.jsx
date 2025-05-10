@@ -158,7 +158,7 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
         setError('Unexpected response from server.');
       }
     } catch (err) {
-      setError(err.message || 'Server error. Please try again later.');
+      setError(err.message || 'Invalid or expired OTP, or server error. Please try again later.');
     } finally {
       setIsLoading(false);
     }
@@ -184,9 +184,19 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
     setError('');
     setIsLoading(true);
     try {
-      const otpResp = await sendLoginOtp(identifier);
-      setOtpPreviewUrl(otpResp.previewUrl || '');
+      const response = await sendLoginOtp(identifier);
+      console.log('Resend OTP response:', response); // Debug the response structure
+      
+      // Extract the previewUrl from the correct location in the response
+      // Backend structure: { status, message, data: { previewUrl } }
+      if (response && response.data && response.data.previewUrl) {
+        setOtpPreviewUrl(response.data.previewUrl);
+        console.log('Updated OTP Preview URL:', response.data.previewUrl);
+      } else {
+        console.warn('OTP response missing previewUrl:', response);
+      }
     } catch (err) {
+      console.error('Resend OTP error:', err);
       setError('Failed to resend OTP. Please try again.');
     } finally {
       setIsLoading(false);

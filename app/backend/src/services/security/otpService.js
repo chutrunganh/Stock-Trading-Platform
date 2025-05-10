@@ -1,3 +1,4 @@
+
 import nodemailer from 'nodemailer';
 import OTP from '../../models/otpModel.js';
 
