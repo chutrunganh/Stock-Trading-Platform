@@ -1,3 +1,10 @@
+/**
+ * @file loggerUtil.js
+ * @description This file configures the logger for the application using Winston. In other files, just need to import:
+ * import log from '../utils/loggerUtil.js';
+ * 
+ * Then use: log.debug(), log.info(), log.warn(), log.error() to log messages.
+ */
 import winston from 'winston';
 import path from 'path';
 import fs from 'fs';

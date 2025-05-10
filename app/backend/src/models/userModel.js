@@ -1,4 +1,7 @@
-// A User model that represents the user entity
+/**
+ * @file userModel.js
+ * @description Define the schema for the user table in the database.
+ */
 class User {
   constructor(userData) {
     this.id = userData.id;

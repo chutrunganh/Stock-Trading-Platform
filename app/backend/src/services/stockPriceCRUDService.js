@@ -18,55 +18,124 @@ export const createStockPriceService = async (stockpriceData) => {
     }
 };
 
+// Get latest stock price for a specific stock
+export const getLatestStockPriceByStockIdService = async (stockId) => {
+    try {
+        const query = 'SELECT close_price as reference_price, date as price_date FROM stockprices WHERE stock_id = $1 ORDER BY date DESC LIMIT 1';
+        const result = await pool.query(query, [stockId]);
 
-// //read
+        if (!result.rows[0]) {
+            throw new Error('This stock does not have any price history');
+        }
 
-// //get all stock prices - for admin
-// export const getAllStockPricesService = async () => {
-//     try{
-//         const result = await pool.query('SELECT * FROM stockprices');
-//         return result.rows;
-//     }
-//     catch (error){
-//         throw new Error('Error occurs when getting all stock prices:', error.message);
-//     }
-// };
+        return result.rows[0];
+    } catch (error) {
+        throw error;
+    }
+};
 
-// //get all stock price by stock_id - for stock presentation
+// Get all stocks with their latest prices
+export const getAllStocksWithLatestPricesService = async () => {
+    try {
+        const query = `
+            WITH latest_prices AS (
+                SELECT DISTINCT ON (stock_id) 
+                    stock_id,
+                    close_price as reference_price,
+                    date as price_date
+                FROM stockprices
+                ORDER BY stock_id, date DESC
+            )
+            SELECT s.stock_id, s.symbol, s.company_name, lp.reference_price, lp.price_date 
+            FROM stocks s 
+            LEFT JOIN latest_prices lp ON s.stock_id = lp.stock_id 
+            ORDER BY s.symbol`;
+        const result = await pool.query(query);
+        return result.rows;
+    } catch (error) {
+        throw error;
+    }
+};
 
-// export const getStockPricesByStockIdService = async (stock_id) => {
-//     try {
-//         const result = await pool.query(
-//             'SELECT * FROM stockprices WHERE stock_id = $1 ORDER BY date ASC', //sort by date
-//         [stock_id]);
-//         if (!result.rows[0]){ //no stock price found
-//             throw new Error('This stock does not have any price history');
-//         }
-//         return result.rows.map(row => StockPrices.getStockPrices(row)); //get all the rows needed
-//     }
-//     catch(error){
-//         throw error;
-//     }
-// };
+// Record session prices when market closes
+export const recordSessionPricesService = async (client = pool) => {
+    try {
+        // Start a transaction
+        await client.query('BEGIN');
 
-// //get the latest price of a stock given its stock_id - for transaction
+        // Get all stocks
+        const stocksResult = await client.query('SELECT stock_id FROM stocks');
+        const stocks = stocksResult.rows;
 
-// export const getLatestStockPriceByStockIdService = async (stock_id) => {
-//     try {
-//         const result = await pool.query(
-//             'SELECT * FROM stockprices WHERE stock_id = $1 ORDER BY date DESC LIMIT 1', //find another way to get the lastest price
-//         [stock_id]);
-//         if (!result.rows[0]){ //no stock price found
-//             throw new Error('This stock does not have any price history');
-//         }
-//         return StockPrices.getStockPrices(result.rows[0]);
-//     }
-//     catch(error){
-//         throw error;
-//     }
-// };
+        // Get the current date for the session
+        const currentDate = new Date();
 
-//no update and delete
+        for (const stock of stocks) {
+            // Get all matched trades for this stock in the current session
+            const tradesQuery = `
+                SELECT price, quantity, transaction_date
+                FROM transactions
+                WHERE stock_id = $1
+                AND DATE(transaction_date) = CURRENT_DATE
+                ORDER BY transaction_date ASC`;
+            
+            const tradesResult = await client.query(tradesQuery, [stock.stock_id]);
+            const trades = tradesResult.rows;
+
+            // Get the previous session's prices
+            const previousPriceQuery = `
+                SELECT close_price
+                FROM stockprices
+                WHERE stock_id = $1
+                ORDER BY date DESC
+                LIMIT 1`;
+            
+            const previousPriceResult = await client.query(previousPriceQuery, [stock.stock_id]);
+            const previousClosePrice = previousPriceResult.rows[0]?.close_price;
+
+            let openPrice, closePrice, highPrice, lowPrice, volume;
+
+            if (trades.length > 0) {
+                // Calculate prices from trades
+                openPrice = trades[0].price;
+                closePrice = trades[trades.length - 1].price;
+                highPrice = Math.max(...trades.map(t => t.price));
+                lowPrice = Math.min(...trades.map(t => t.price));
+                volume = trades.reduce((sum, t) => sum + t.quantity, 0);
+            } else {
+                // No trades, use previous session's close price
+                if (!previousClosePrice) {
+                    console.warn(`No previous price found for stock ${stock.stock_id}, skipping...`);
+                    continue;
+                }
+                openPrice = previousClosePrice;
+                closePrice = previousClosePrice;
+                highPrice = previousClosePrice;
+                lowPrice = previousClosePrice;
+                volume = 0;
+            }
+
+            // Insert the session prices
+            await client.query(
+                `INSERT INTO stockprices 
+                (stock_id, date, open_price, high_price, low_price, close_price, volume)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                [stock.stock_id, currentDate, openPrice, highPrice, lowPrice, closePrice, volume]
+            );
+        }
+
+        // Commit the transaction
+        await client.query('COMMIT');
+        console.log('Successfully recorded session prices for all stocks');
+    } catch (error) {
+        // Rollback in case of error
+        await client.query('ROLLBACK');
+        console.error('Error recording session prices:', error);
+        throw error;
+    }
+};
+
+//no delete needed
 //because the stock price has foreign constraints to stocks table
 //so if the stock is deleted, its stock price history will be deleted as well
-//also the stock price is fixed, it should not be updated
+

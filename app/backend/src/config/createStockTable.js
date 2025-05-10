@@ -1,3 +1,8 @@
+/**
+ * @file createStockTable.js
+ * @description This file contains the function to create the stock table in the database.
+ * For simplicity in the scope of this project, this table is predefined with a fix set of stocks and can not be changed.
+ */
 import pool from './dbConnect.js';
 import log from '../utils/loggerUtil.js';
 

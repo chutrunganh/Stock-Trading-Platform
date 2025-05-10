@@ -1,3 +1,4 @@
+
 import './Footer.css'
 
 function Footer() {
@@ -11,6 +12,8 @@ function Footer() {
           <a href="#">Privacy Policy</a>
           <span>|</span>
           <a href="#">Help Center</a>
+          <span>|</span>
+          <a href="#">About Us</a>
         </nav>
       </div>
     </footer>

@@ -1,0 +1,57 @@
+.announcement-banner {
+  width: 100%;
+  background: #18191a;
+  color: #f0b90b;
+  display: flex;
+  align-items: center;
+  height: 32px;
+  overflow: hidden;
+  border-bottom: 1px solid #232323;
+  font-family: 'Roboto Flex', sans-serif;
+  font-size: 1rem;
+  position: relative;
+  z-index: 10;
+}
+
+.announcement-icon {
+  margin: 0 12px 0 16px;
+  font-size: 1.2em;
+  color: #f0b90b;
+  flex-shrink: 0;
+}
+
+.announcement-text-wrapper {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  height: 100%;
+}
+
+.announcement-text {
+  display: inline-block;
+  white-space: nowrap;
+  padding-left: 100%;
+  animation: announcement-scroll 48s linear infinite;
+  font-weight: 300;
+  color: #fff;
+  text-shadow: 0 0 2px #f0b90b, 0 0 8px #232323;
+  font-size: 1.08rem;
+  letter-spacing: 0.5px;
+}
+
+.company-name {
+  color: #f0b90b;
+  font-weight: bold;
+  font-size: 1.15em;
+  margin-right: 0.5em;
+  letter-spacing: 1px;
+}
+
+@keyframes announcement-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+} 

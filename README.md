@@ -1,3 +1,10 @@
+> [!IMPORTANT]  
+> Check lại file .env trước khi chạy, phần các thông số liên quan đến database để tránh gặp lỗi kết nối. Chú ý DB_HOST phải là:
+> - localhost nếu chạy backend trên máy local (tức dùng postgres.exe hoặc docker-compose chỉ để chạy db). Lúc này cần chú ý thêm comment phần service backend và frontend trong docker-compose đi, chỉ để 2 service của db là postgres và pgadmin thôi. Mật khẩu db là admin nếu chạy bằng docker-compose. Ai chạy bằng postgres.exe thì tự thay đổi mật khẩu trong file .env cho phù hợp.
+> - postgres nếu chạy backend trong docker-compose. Khi này chỉ cần docker-compose up là mọi thứ tự chạy, không cần cd app/backend, cd app/frontend, yarn start nữa.
+
+ 
+
 # For frontend Dev
 
 See the API specifications in the this [docs](app/backend/testAPI.http) folder to understand how to use the API. Install REST Client extension in your VSCode to run this file.

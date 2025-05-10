@@ -5,11 +5,13 @@
  * When writing SQL queries, it's important to use $1, $2, etc. as placeholders for parameters to prevent SQL injection attacks.
 */
 import bcrypt from 'bcrypt';
-const SALT_ROUNDS = 10; // Cost factor for bcrypt
 import pool from '../config/dbConnect.js';
 import User from '../models/userModel.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { createDefaultHoldingsForPortfolioService } from './holdingCRUDService.js';
+import { createPortfolioForUserService } from './portfolioCRUDService.js';
+import {SALT_ROUNDS } from '../config/constants.js';
 dotenv.config({ path: '../../.env' }); // Adjust based on relative depth
 
 
@@ -52,18 +54,38 @@ export const createUserService = async (userData) => {
   try {
     // Hash the password before storing it
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    
+    // Begin transaction to ensure both user and portfolio are created together
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
 
-    // Debug log to see what data is being received
-    console.log('Creating user with data:', { username, email, password: '***' });
+      // Debug log to see what data is being received
+      console.log('Creating user with data:', { username, email, password: '***' });
     
-    // Database operation - always set role to 'user' for API-created accounts
-    // Admin accounts can only be created by direct database queries
-    const result = await pool.query(
-      'INSERT INTO users (username, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id, username, email, role, created_at',
-      [username, email, hashedPassword, 'user'] // Always set role to 'user', ignore any role value provided in request
-    );
-    
-    return User.getSafeUser(result.rows[0]);
+      // Database operation - always set role to 'user' for API-created accounts
+      // Admin accounts can only be created by direct database queries
+      const userResult = await client.query(
+        'INSERT INTO users (username, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id, username, email, role, created_at',
+        [username, email, hashedPassword, 'user'] // Always set role to 'user', ignore any role value provided in request
+      );
+        const userId = userResult.rows[0].id;
+      
+      // Create a default portfolio for the new user and get its ID
+      const portfolioId = await createPortfolioForUserService(userId, client);
+      
+      // Now create default holdings with the actual portfolio ID
+      await createDefaultHoldingsForPortfolioService(portfolioId, client);
+      
+      await client.query('COMMIT');
+      
+      return User.getSafeUser(userResult.rows[0]);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   } catch (error) {
     // More detailed error logging
     console.error('Full error details:', error);
@@ -71,17 +93,98 @@ export const createUserService = async (userData) => {
   }
 };
 
-
-// This function retrieves all users from the database
-export const getAllUsersService = async () => {
+/**
+ * This function finds an existing user by Google ID or creates a new one if it doesn't exist.
+ * It also links an existing user account with the same email to the Google account.
+ * 
+ * @param {Object} userData - Data received from Google OAuth containing google_id, email, username
+ * @returns {Object} - The user object and JWT token
+ */
+export const findOrCreateGoogleUserService = async (userData) => {
+  const { google_id, email, username } = userData;
+  
   try {
-    const result = await pool.query('SELECT id, username, email, role, created_at FROM users');
-    return result.rows;
+    // Begin transaction
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      
+      // First check if user exists with this Google ID
+      let result = await client.query(
+        'SELECT id, username, email, role, google_id, created_at FROM users WHERE google_id = $1',
+        [google_id]
+      );
+      
+      let user = result.rows[0];
+      let isNewUser = false;
+      
+      // If no user found with Google ID, check if user exists with the same email
+      if (!user) {
+        result = await client.query(
+          'SELECT id, username, email, role, google_id, created_at FROM users WHERE email = $1',
+          [email]
+        );
+        
+        user = result.rows[0];
+        
+        // If user exists with same email but no Google ID, link the accounts
+        if (user) {
+          result = await client.query(
+            'UPDATE users SET google_id = $1 WHERE id = $2 RETURNING id, username, email, role, google_id, created_at',
+            [google_id, user.id]
+          );
+          
+          user = result.rows[0];
+        } 
+        // If no user exists at all, create a new one
+        else {
+          result = await client.query(
+            'INSERT INTO users (username, email, google_id, role) VALUES ($1, $2, $3, $4) RETURNING id, username, email, role, google_id, created_at',
+            [username, email, google_id, 'user']
+          );
+            user = result.rows[0];
+          isNewUser = true;
+          
+          // Create a portfolio for the new user with initial balance
+          const portfolioId = await createPortfolioForUserService(user.id, client);
+          
+          // Create default holdings for the new portfolio
+          await createDefaultHoldingsForPortfolioService(portfolioId, client);
+        }
+      }
+      
+      // Commit transaction
+      await client.query('COMMIT');
+      
+      // Generate JWT token
+      const userForToken = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        portfolio_id: user.portfolio_id
+      };
+      
+      const token = jwt.sign(
+        userForToken,
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
+      );
+      
+      return {
+        user: User.getSafeUser(user),
+        token
+      };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   } catch (error) {
-    throw new Error(`Error getting users: ${error.message}`);
+    throw new Error(`Error during Google authentication: ${error.message}`);
   }
 };
-
 
 
 /**
@@ -177,28 +280,25 @@ export const updateUserService = async (id, userData) => {
   }
 };
 
-
 /**
- * * This function deletes a user from the database by their ID. It returns the deleted user object without sensitive data like password.
- * 
- * @param {*} id - the id of the user to be deleted
- * @returns - the deleted user object without sensitive data
- * 
+ * Get a user by email.
+ * @param {string} email
+ * @returns {Object|null} user object or null
  */
-export const deleteUserService = async (id) => {
+export const getUserByEmailService = async (email) => {
   try {
     const result = await pool.query(
-      'DELETE FROM users WHERE id = $1 RETURNING id, username, email, role, created_at',
-      [id]
+      `SELECT u.id, u.username, u.email, u.role, u.created_at, u.updated_at, u.google_id, p.portfolio_id
+       FROM users u
+       LEFT JOIN portfolios p ON u.id = p.user_id
+       WHERE u.email = $1`,
+      [email]
     );
-    
-    if (!result.rows[0]) {
-      throw new Error('User not found');
-    }
-    
-    return User.getSafeUser(result.rows[0]);
+    return result.rows[0] || null;
   } catch (error) {
     throw error;
   }
 };
+
+
 

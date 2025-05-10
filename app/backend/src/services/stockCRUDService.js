@@ -18,22 +18,6 @@ export const createStockService = async (stockData) => {
     }
 };
 
-// Update stock information
-
-
-// Read 
-
-// //get all stocks information - for presentation in main page
-
-// export const getAllStocksService = async () => {
-//     try {
-//         const result = await pool.query('SELECT * FROM stocks');
-//         return result.rows;
-//     }
-//     catch (error) {
-//         throw new Error('Error occurs when getting all stocks:', error.message);
-//     }
-// };
 
 // Get stock by symbol - for searching
 export const getStockBySymbolService = async (symbol) => {
@@ -43,7 +27,7 @@ export const getStockBySymbolService = async (symbol) => {
             [symbol]
         );
         
-        console.log('Query result:', result.rows); // Debug log
+        //console.log('Query result:', result.rows); // Debug log
         
         if (!result.rows[0]) { //no stock found
             throw new Error(`Stock with symbol ${symbol} does not exist`);
@@ -54,8 +38,23 @@ export const getStockBySymbolService = async (symbol) => {
             id: result.rows[0].id // Ensure id is properly mapped from stock_id
         };
         
-        console.log('Returning stock:', stock); // Debug log
+        //console.log('Returning stock:', stock); // Debug log
         return stock;
+    }
+    catch (error) {
+        throw error;
+    }
+};
+
+export const getAllStockService = async () => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM stocks'
+        );
+        if (!result.rows[0]) { //no stock found
+            throw new Error('No stocks found');
+        }
+        return result.rows.map(row => Stocks.getStocks(row));
     }
     catch (error) {
         throw error;

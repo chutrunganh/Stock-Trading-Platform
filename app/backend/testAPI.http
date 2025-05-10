@@ -10,7 +10,7 @@
 ### 1. Public endpoints (no authentication required)
 
 ### Test for user registration
-POST http://localhost:3000/api/register
+POST /api/register
 Content-Type: application/json
 
 {
@@ -22,7 +22,7 @@ Content-Type: application/json
 ### Test for user account login using seeded user account credentials
 # After send this request, you can see the JWT token inside the Cookie header in the response. Copy
 # that value (from jwt=... till you meet ;) and paste it into the global variable @user_jwt below
-POST http://localhost:3000/api/login
+POST /api/login
 Content-Type: application/json
 
 {
@@ -41,11 +41,11 @@ Content-Type: application/json
 # After send this request, you can see the JWT token inside the Cookie header in the response. Copy
 # that value (from jwt=... till you meet ;) and paste it into the global variable @admin_jwt below. This
 # is a global variable used in the requests below that require authentication with admin privileges.
-POST http://localhost:3000/api/login
+POST /api/login
 Content-Type: application/json
 
 {
-  "email": "admin@example.com",
+  "identifier": "admin",
   "password": "admin123"
 }
 
@@ -62,7 +62,7 @@ Content-Type: application/json
 # The only difference is how the user was initially verified (password check vs Google validation).
 # The authentication middleware doesn't know or care which login method was used - it only validates the token.
 #
-# To test this, open: http://localhost:3000/auth/google in your browser(NOT Postman or Rest Client)
+# To test this, open: /api/auth/google in your browser(NOT Postman or Rest Client)
 # This will redirect you to the Google login page.
 # After successful authentication, you'll get a JWT token in the browser response.
 # Copy the token and replace YOUR_JWT_TOKEN_HERE with it in the global variable @google_user_jwt below
@@ -71,25 +71,25 @@ Content-Type: application/json
 ### 2. Protected endpoints (authentication required)
 # Test for a protected endpoint that requires authentication. This endpoint returns the user information of the logged in user.
 # you can use either $user_jwt, $google_user_jwt or $admin_jwt to test this endpoint.
-GET http://localhost:3000/api/profile
+GET /api/profile
 Cookie: jwt={{@{{google_user_jwt}}}} 
 
 ### 3. Protected endpoints (authentication required) + admin role required
 
 ### Get all users 
-GET http://localhost:3000/api/admin/users
+GET /api/admin/users
 Cookie: jwt={{admin_jwt}}
 
 ### Alternative: Test with Authorization header instead of cookie
-GET http://localhost:3000/api/admin/users
+GET /api/admin/users
 Authorization: Bearer {{admin_jwt}}
 
 ### Get user by ID
-GET http://localhost:3000/api/admin/user/1
+GET /api/admin/user/1
 Cookie: jwt={{admin_jwt}}
 
 ### Update user by ID
-PUT http://localhost:3000/api/admin/user/1
+PUT /api/admin/user/1
 Content-Type: application/json
 Cookie: jwt={{admin_jwt}}
 
@@ -99,7 +99,7 @@ Cookie: jwt={{admin_jwt}}
 }
 
 ### Update user password
-PUT http://localhost:3000/api/admin/user/1
+PUT /api/admin/user/1
 Content-Type: application/json
 Cookie: jwt={{admin_jwt}}
 
@@ -108,11 +108,11 @@ Cookie: jwt={{admin_jwt}}
 }
 
 ### Delete user by ID
-DELETE http://localhost:3000/api/admin/user/1
+DELETE /api/admin/user/1
 Cookie: jwt={{admin_jwt}}
 
 ### Test for creating a new buy order
-POST http://localhost:3000/api/createOrder
+POST /api/createOrder
 Content-Type: application/json
 
 {
@@ -124,7 +124,7 @@ Content-Type: application/json
 }
 
 ### Test for creating a new sell order
-POST http://localhost:3000/api/createOrder
+POST /api/createOrder
 Content-Type: application/json
 
 {
@@ -136,7 +136,7 @@ Content-Type: application/json
 }
 
 ### Test a market order
-POST http://localhost:3000/api/createOrder
+POST /api/createOrder
 Content-Type: application/json
 
 {
@@ -147,10 +147,77 @@ Content-Type: application/json
   "orderType": "Market Buy"
 }
 
+### Start trading session
+POST /api/startTrading
+Content-Type: application/json
 
+### Stop trading session
+POST /api/stopTrading
+Content-Type: application/json
+
+### Test for creating a new buy order during trading session
+POST /api/createOrder
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "stockId": 101,
+  "quantity": 20,
+  "price": 50,
+  "orderType": "Limit Buy"
+}
+
+### Test for creating a new buy order outside trading session
+POST /api/createOrder
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "stockId": 101,
+  "quantity": 20,
+  "price": 50,
+  "orderType": "Limit Buy"
+}
+### Test for creating artificial orders
+POST /api/createArtiOrder
+Content-Type: application/json
+
+{
+  "stockId": 101,
+  "quantity": 10,
+  "price": 50,
+  "orderType": "Limit Buy"
+}
 ### Test for canceling an order
-DELETE http://localhost:3000/api/cancelOrder/1744103796519
+DELETE /api/cancelOrder/1744103796519
 
 
 
 
+
+### Get all stock prices for admin
+GET http://localhost:3000/api/admin/stockPrice
+Cookie: jwt={{admin_jwt}}
+
+### Get stock prices by stock id for user
+### This example will get all the stock prices of the stock with id 1
+### the user_jwt may be out-of-date, so be careful
+### another way is to login to get the newest jwt
+### this feature is for user anyway so only need to care if we are testing
+GET http://localhost:3000/api/stockPrice/1
+Authorization: Bearer {{user_jwt}}
+
+### Test for Sepay API
+GET https://my.sepay.vn/userapi/transactions/details/12462218
+Authorization: Bearer N3RTU0OUNCLNHVJBEX9CJMIW4OSM4MQ1KLHFYYVV56UBLH5WXODPPA2FSKGELZT9
+
+### Test for Sepay API
+GET https://my.sepay.vn/userapi/transactions/list?reference_number=FT25128764304800
+Authorization: Bearer N3RTU0OUNCLNHVJBEX9CJMIW4OSM4MQ1KLHFYYVV56UBLH5WXODPPA2FSKGELZT9
+
+### 4. OTP API tests
+
+### Send OTP to email
+// OTP endpoints removed
+
+ 

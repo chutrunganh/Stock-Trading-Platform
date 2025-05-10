@@ -1,0 +1,101 @@
+.trading-status {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1rem auto;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 1200px;
+}
+
+.trading-status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.trading-status h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.digital-clock {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #000000;
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  min-width: 100px;
+  text-align: center;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+  width: 100%;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.status-indicator.active .status-dot {
+  background-color: #4caf50;
+  box-shadow: 0 0 8px #4caf50;
+}
+
+.status-indicator.inactive .status-dot {
+  background-color: #f44336;
+  box-shadow: 0 0 8px #f44336;
+}
+
+.status-text {
+  font-weight: 500;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.status-message {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.welcome-message {
+  color: #2e7d32;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0;
+  padding: 0.5rem;
+  background-color: rgba(76, 175, 80, 0.1);
+  border-radius: 4px;
+}
+
+.closed-message {
+  color: #d32f2f;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0;
+  padding: 0.5rem;
+  background-color: rgba(244, 67, 54, 0.1);
+  border-radius: 4px;
+}
+
+.error-message {
+  color: #f44336;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  text-align: center;
+} 

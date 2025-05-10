@@ -1,3 +1,8 @@
+/**
+ * @file dbConnect.js
+ * @description This file reads the credentials and setting information from the .env file and creates a connection pool to the database.
+ * Other operations like creating a database must import this file to use the connection pool.
+ */
 import pkg from 'pg';
 const { Pool } = pkg;
 import dotenv from 'dotenv';
@@ -5,12 +10,12 @@ dotenv.config({ path: '../../.env' }); // Adjust based on relative depth
 import log from '../utils/loggerUtil.js';
 
 // DEBUG: Print database environment variables
-// console.log('Database connection parameters:');
-// console.log('DB_USER:', process.env.DB_USER);
-// console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
-// console.log('DB_HOST:', process.env.DB_HOST);
-// console.log('DB_PORT:', process.env.DB_PORT);
-// console.log('DB_NAME:', process.env.DB_NAME);
+console.log('Database connection parameters:');
+console.log('DB_USER:', process.env.DB_USER);
+console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
+console.log('DB_HOST:', process.env.DB_HOST);
+console.log('DB_PORT:', process.env.DB_PORT);
+console.log('DB_NAME:', process.env.DB_NAME);
 
 // Database connection parameters
 const pool = new Pool({
@@ -26,29 +31,5 @@ log.info(`PgAdmin is running on port: ${process.env.PGADMIN_PORT}`);
 if (process.env.NODE_ENV === 'development') {
   log.warn('Recreateing all tables in development mode. This will drop all existing data!');
 }
-const initOtpTable = async () => {
-  try {
-    const query = `
-      CREATE TABLE IF NOT EXISTS otp_store (
-        email VARCHAR(255) PRIMARY KEY,
-        otp VARCHAR(6) NOT NULL,
-        otp_expiration BIGINT NOT NULL
-      );
-    `;
-    await pool.query(query);
-    log.info('otp_store table initialized successfully');
-  } catch (error) {
-    log.error('Error initializing otp_store table:', error.message);
-    throw new Error('Failed to initialize otp_store table');
-  }
-};
 
-// Initialize the database
-(async () => {
-  try {
-    await initOtpTable();
-  } catch (error) {
-    log.error('Database initialization failed:', error.message);
-  }
-})();
 export default pool;

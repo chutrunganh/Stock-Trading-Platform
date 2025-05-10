@@ -16,6 +16,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - my_network
+    healthcheck: # Added healthcheck
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   pgadmin:
     image: dpage/pgadmin4:${PGADMIN_VERSION}
@@ -31,7 +36,42 @@ services:
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:
-      - postgres
+      postgres: # Changed depends_on for pgadmin to use condition
+        condition: service_healthy
+    networks:
+      - my_network
+
+  backend:
+    build:
+      context: ./app/backend
+      dockerfile: Dockerfile
+    container_name: backend_app
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "${BE_PORT}:3000" # Map host BE_PORT to container 3000
+    volumes:
+      - ./app/backend/logs:/app/logs # Mount logs directory
+      # Optional: Mount source code for development (remove for production image)
+      # - ./app/backend:/app
+      # - /app/node_modules # Prevent host node_modules from overwriting container's
+    depends_on:
+      postgres: # Changed depends_on for backend to use condition
+        condition: service_healthy
+    networks:
+      - my_network
+
+  frontend:
+    build:
+      context: ./app/frontend
+      dockerfile: Dockerfile
+    container_name: frontend_app
+    restart: always
+    ports:
+      - "${FE_PORT}:80" # Map host FE_PORT to container 80 (Nginx)
+    depends_on:
+      - backend # Frontend depends on backend for API calls
     networks:
       - my_network
 
@@ -41,3 +81,4 @@ volumes:
 
 networks:
   my_network:
+    driver: bridge # Explicitly define bridge network

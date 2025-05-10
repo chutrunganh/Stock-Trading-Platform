@@ -1,7 +1,6 @@
 .home {
-    margin: 0;
-    display: grid;
-    place-items: center;
-    place-content: center;
-    
-  }
+  margin: 0;
+  display: grid;
+  place-items: center;
+  place-content: center;
+}

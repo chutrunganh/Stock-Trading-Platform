@@ -1,15 +1,14 @@
+/**
+ * @file userValidationMiddleware.js
+ * @description Middleware to validate user input for creating, updating, and logging in users.
+ */
 import Joi from 'joi';
 
 // Middleware to validate user input when creating a new user
 const userSchema = Joi.object({
   username: Joi.string().required(),
   email: Joi.string().email().required(),
-  password: Joi.string()
-  .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,72}$/)
-  .required()
-  .messages({
-    'string.pattern.base': 'Password must include uppercase, lowercase, numbers, symbols, and be 8-72 characters long.',
-  }),
+  password: Joi.string().required()
 });
 
 const validateUser = (req, res, next) => {
@@ -20,20 +19,20 @@ const validateUser = (req, res, next) => {
   next();
 };
 
-// Middleware to validate login input - accepts identifier (email or username) and password
+// Middleware to validate login input - accepts identifier (email or username), password and turnstileToken
 const loginSchema = Joi.object({
   identifier: Joi.string().required(),
-  password: Joi.string().required()
-  .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,72}$/)
-  .required()
-  .messages({
-    'string.pattern.base': 'Password must include uppercase, lowercase, numbers, symbols, and be 8-72 characters long.',
-  }),
+  password: Joi.string().required(),
+  turnstileToken: Joi.string().required()
 });
 
 const validateLogin = (req, res, next) => {
   const { error } = loginSchema.validate(req.body);
   if (error) {
+    // Check if the error is related to the turnstileToken
+    if (error.details[0].path.includes('turnstileToken')) {
+      return res.status(400).json({ error: 'Please complete the CAPTCHA verification first' });
+    }
     return res.status(400).json({ error: error.details[0].message });
   }
   next();
@@ -44,11 +43,6 @@ const userUpdateSchema = Joi.object({
   username: Joi.string(),
   email: Joi.string().email(),
   password: Joi.string()
-  .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,72}$/)
-  .required()
-  .messages({
-    'string.pattern.base': 'Password must include uppercase, lowercase, numbers, symbols, and be 8-72 characters long.',
-  }),
 }).min(1); // At least one field must be provided
 
 const validateUserUpdate = (req, res, next) => {

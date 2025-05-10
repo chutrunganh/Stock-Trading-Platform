@@ -1,0 +1,52 @@
+.portfolio {
+    margin: 0;
+    display: grid;
+    place-items: center;
+    place-content: center;
+    padding: 20px;
+    width: 100%;
+}
+
+.portfolio-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.portfolio-section {
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 20px;
+    min-height: 100px; /* Ensure minimum height even when collapsed */
+}
+
+.section-header {
+    cursor: pointer;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+}
+
+.section-header:hover {
+    background-color: #f5f5f5;
+}
+
+/* Make tables take full width */
+.portfolio-section .MuiTableContainer-root {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Ensure consistent table width */
+.portfolio-section .MuiTable-root {
+    width: 100%;
+    min-width: 800px;
+}
+
+/* Ensure consistent width for collapsed sections */
+.portfolio-section:not(:has(.MuiTableContainer-root)) {
+    min-width: 800px;
+}
+
+/* Add any additional custom styles here */

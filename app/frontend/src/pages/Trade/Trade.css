@@ -6,6 +6,25 @@ body {
   color: #e0e0e0;
 }
 
+/* === Alert Styles === */
+.alert {
+  border-radius: 4px;
+  padding: 12px;
+  margin-top: 15px;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
 .trade-page-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -270,3 +289,40 @@ text-overflow: ellipsis; overflow: hidden;
   background-color: #007bff; border-color: #007bff; color: #ffffff;
 }
 .btn-preview:hover { background-color: #0056b3; border-color: #004085; }
+
+.estimated-value-display {
+  margin-top: 8px; /* Add some space above the text */
+  font-size: 0.9em; /* Slightly smaller font size */
+  color: #555; /* Grey color for the text */
+  text-align: right; /* Align to the right below the input */
+  padding-right: 5px; /* Align with input padding if needed */
+}
+
+/* Optional: Adjust input padding if needed */
+.input-with-side-action input {
+  padding-right: 10px; /* Ensure space for potential side actions */
+}
+
+.input-with-icon .MuiAutocomplete-root {
+    width: 100%;
+}
+
+.input-with-icon .MuiTextField-root {
+    width: 100%;
+}
+
+.input-with-icon .MuiAutocomplete-input {
+    padding: 8px 12px;
+}
+
+.input-with-icon .MuiAutocomplete-option {
+    padding: 8px 12px;
+}
+
+.input-with-icon .MuiAutocomplete-option strong {
+    color: #1976d2;
+}
+
+.input-with-icon .MuiAutocomplete-option small {
+    color: #666;
+}

@@ -4,7 +4,7 @@
     color: #f0b90b; /* Màu chữ vàng */
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Thêm bóng */
+    box-shadow: none; /* Consistent with LoginForm */
     border: none; /* Xóa viền trắng */
     opacity: 0; /* Bắt đầu với độ mờ 0 */
     transform: translateY(-20px); /* Bắt đầu từ vị trí cao hơn */
@@ -20,6 +20,7 @@
 
 .register-form h2 {
     text-align: center;
+    margin-bottom: 20px;
 }
 
 .form-group {
@@ -40,46 +41,6 @@
     color: #f0b90b; /* Màu chữ input */
 }
 
-.submit-button {
-    background-color: #f0b90b; /* Nút màu vàng */
-    color: #121314; /* Chữ màu đen */
-    border: none;
-    padding: 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 100%;
-    font-weight: bold;
-}
-
-.submit-button:hover {
-    background-color: #ffd700; /* Màu vàng sáng hơn khi hover */
-}
-
-.close-button {
-    background-color: transparent; /* Nền trong suốt */
-    color: #f0b90b; /* Màu chữ vàng */
-    border: none;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 10px;
-}
-
-.success-message {
-    color: #2e7d32;
-    font-size: 14px;
-    margin-top: 10px;
-    text-align: center;
-    padding: 10px;
-    background-color: rgba(46, 125, 50, 0.1);
-    border-radius: 4px;
-}
-
-.error-message {
-    color: red;
-    font-size: 14px;
-    margin-top: 10px;
-}
-
 .password-input {
     position: relative;
 }
@@ -89,41 +50,110 @@
     padding-right: 40px; /* Chừa khoảng trống cho biểu tượng mắt */
 }
 
+/* Style cho password wrapper */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+/* Style cho toggle-password */
 .toggle-password {
     position: absolute;
     top: 50%;
-    right: 10px;
+    right: 12px;
     transform: translateY(-50%);
     cursor: pointer;
-    color: #f0b90b; /* Màu vàng */
-    font-size: 18px;
+    color: #f0b90b;
+    font-size: 16px;
+    background: none;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    z-index: 2;
 }
 
-.redirect-container {
+/* Styles for form actions container */
+.form-actions {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+    gap: 10px;
+}
+
+/* Styles for submit button */
+.submit-btn {
+    background-color: #f0b90b; /* Nút màu vàng */
+    color: #121314; /* Chữ màu đen */
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    flex: 1;
+}
+
+.submit-btn:hover {
+    background-color: #ffd700; /* Màu vàng sáng hơn khi hover */
+}
+
+/* Styles for cancel button */
+.cancel-btn {
+    background-color: transparent; /* Nền trong suốt */
+    color: #f0b90b; /* Màu chữ vàng */
+    border: 1px solid #f0b90b;
+    border-radius: 4px;
+    padding: 10px;
+    cursor: pointer;
+    flex: 1;
+}
+
+.cancel-btn:hover {
+    background-color: rgba(240, 185, 11, 0.1);
+}
+
+/* Styles for error messages */
+.error-message {
+    color: #ff4d4f;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Style for success message */
+.success-message {
+    color: #52c41a;
+    font-size: 14px;
     margin-top: 10px;
 }
 
-.redirect-container p {
-    margin-top: 8px;
-    font-size: 0.9em;
-    color: #e6c748;
+/* Spinner and redirect styles */
+.redirect-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
 }
 
 .spinner {
-    width: 24px;
-    height: 24px;
-    border: 3px solid rgba(240, 185, 11, 0.2);
-    border-top-color: #f0b90b;
+    border: 2px solid rgba(240, 185, 11, 0.3);
     border-radius: 50%;
+    border-top: 2px solid #f0b90b;
+    width: 16px;
+    height: 16px;
     animation: spin 1s linear infinite;
-    margin: 0 auto;
+    margin-right: 8px;
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Cập nhật style cho input khi có lỗi */
+.form-group input.error {
+    border: 1px solid #ff4d4f;
+    background-color: rgba(255, 77, 79, 0.05);
 }

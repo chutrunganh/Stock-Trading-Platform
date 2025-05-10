@@ -41,6 +41,8 @@ out
 .serverless/
 .fusebox/
 .dynamodb/
+package-lock.json
+yarn.lock
 
 # Dependency directories
 node_modules/
@@ -99,7 +101,7 @@ web_modules/
 docs/techStack
 
 # dotenv files (uncomment if needed)
-# .env
+.env
 # .env.development.local
 # .env.test.local
 # .env.production.local

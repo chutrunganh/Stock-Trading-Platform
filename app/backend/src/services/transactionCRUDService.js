@@ -1,10 +1,12 @@
-// SQL queries to retrieves transactions information from the Transactions table
-
+/**
+ * This service is responsible for operations related to the transactions table, which include:
+ * - creating a new transaction (when order is matcheed, create transactions for both seller and buyer)
+ * - retrieving transactions by portfolio ID (so that a user can view their transaction history)
+ */
 import pool from '../config/dbConnect.js';
 import Transaction from '../models/transactionModel.js';
-//CRUD Services
 
-//create
+// Create a new transaction
 export const createTransactionService = async (transactionData) => {
     const {portfolio_id, stock_id, transaction_type, quantity, price} = transactionData;
 
@@ -23,96 +25,15 @@ export const createTransactionService = async (transactionData) => {
     }
 };
 
-// //read
 
-// //get all transactions(for admin)
-
-// export const getAllTransactionsService = async () => {
-//     try{
-//         const result = await pool.query('SELECT * FROM transactions');
-//         return result.rows;
-//     }
-//     catch (error){
-//         throw new Error('Error occurs when getting all transactions:', error.message);
-//     }
-// };
-
-// //get transaction by portfolio_id - specific user
-
-// export const getTransactionByPortfolioIdService = async (portfolio_id) => {
-//     try {
-//         const result = await pool.query(
-//             'SELECT * FROM transactions WHERE portfolio_id = $1',
-//         [portfolio_id]);
-//         if (!result.rows[0]){ //no transaction found
-//             throw new Error('This user does not have any transaction');
-//         }
-//         return Transaction.getTransaction(result.rows[0]);
-//     }
-//     catch(error){
-//         throw error;
-//     }
-// };
-
-// //get transaction by stock_id - get transaction history of a specific stock
-// export const getTransactionByStockIdService = async (stock_id) => {
-//     try {
-//         const result = await pool.query(
-//             'SELECT * FROM transactions WHERE stock_id = $1',
-//         [stock_id]);
-//         if (!result.rows[0]){ //no transaction found
-//             throw new Error('This stock does not have any transaction history');
-//         }
-//         return Transaction.getTransaction(result.rows[0]);
-//     }
-//     catch(error){
-//         throw error;
-//     }
-// };
-
-// //for update - i think that the information about transaction should be fixed
-
-
-
-
-// //delete a transaction from the table
-
-// //delete transaction by portfolio_id - specific user
-// // this should only be performed after an user is deleted from the system
-// export const deleteTransactionByPortfolioIdService = async (portfolio_id) => {
-//     try{
-//         const result = await pool.query(
-//             'DELETE FROM transactions WHERE portfolio_id = $1 RETURNING *',
-//             [portfolio_id]
-//         );
-//         if (!result.rows[0]){ //no transaction found
-//             throw new Error('This user does not have any transaction to delete');
-//         }
-//         return Transaction.getTransaction(result.rows[0]);
-//     }
-//     catch(error){
-//         throw error;
-//     }
-// };
-
-
-
-// //delete transaction by stock_id - delete all transactions of a specific stock (for admin only)
-// //this should only be performed after a stock is deleted from the system
-// export const deleteTransactionByStockIdService = async (stock_id) => {
-//     try{
-//         const result = await pool.query(
-//             'DELETE FROM transactions WHERE stock_id = $1 RETURNING *',
-//             [stock_id]
-//         );
-//         if (!result.rows[0]){ //no transaction found
-//             throw new Error('This stock does not have any transaction to delete');
-//         }
-//         return Transaction.getTransaction(result.rows[0]);
-//     }
-//     catch(error){
-//         throw error;
-//     }
-// };
-
-
+// Retrieve transactions by portfolio ID
+export const getTransactionsByPortfolioIdService = async (portfolioId) => {
+    try{
+        const result = await pool.query('SELECT * FROM transactions WHERE portfolio_id = $1', [portfolioId]);
+        return result.rows.map(Transaction.getTransaction);
+    }
+    catch(error){
+        console.error('Error:', error.message);
+        throw new Error(error.message);
+    }
+};

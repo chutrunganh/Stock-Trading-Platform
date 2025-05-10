@@ -1,11 +1,9 @@
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:3000/api';
+import apiClient from './apiClient';
 
 // Function to register a new user
 export const registerUser = async (userData) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/register`, userData);
+    const response = await apiClient.post('/register', userData);
     return response.data;
   } catch (error) {
     console.error('Error during registration:', error);
@@ -14,13 +12,13 @@ export const registerUser = async (userData) => {
 };
 
 // Function to log in a user
-export const loginUser = async ({ identifier, password }) => {
+export const loginUser = async ({ identifier, password, turnstileToken }) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/login`, {
+    console.log('Login request payload:', { identifier, password, turnstileToken });
+    const response = await apiClient.post('/login', {
       identifier,  // This can be either email or username
-      password
-    }, {
-      withCredentials: true, // To include cookies in the request
+      password,
+      turnstileToken
     });
     console.log('Login response:', response.data); // Debug log to verify response structure
     return response.data;
@@ -33,7 +31,7 @@ export const loginUser = async ({ identifier, password }) => {
 // Function to request password reset
 export const requestPasswordReset = async (email) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/forgot-password`, { email });
+    const response = await apiClient.post('/forgot-password', { email });
     return response.data;
   } catch (error) {
     console.error('Error during password reset request:', error);
@@ -44,70 +42,12 @@ export const requestPasswordReset = async (email) => {
 // Function to get user profile
 export const getUserProfile = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/profile`, {
-      withCredentials: true,
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-      }
-    });
+    console.log('Fetching user profile...');
+    const response = await apiClient.get('/profile');
+    console.log('User profile response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching user profile:', error);
     throw error;
-  }
-};
-// Function to send OTP
-export const sendOtp = async (email) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/send-otp`, { email });
-    return response.data;
-  } catch (error) {
-    console.error('Error during sending OTP:', error);
-    throw error.response?.data || { message: 'Failed to send OTP' };
-  }
-};
-
-// Function to verify OTP
-export const verifyOtp = async (email, otp) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/verify-otp`, { email, otp });
-    return response.data;
-  } catch (error) {
-    console.error('Error during OTP verification:', error);
-    throw error.response?.data || { message: 'Failed to verify OTP' };
-  }
-};
-
-// Function to reset password
-export const resetPassword = async (email, otp, newPassword) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/reset-password`, { email, otp, newPassword });
-    return response.data;
-  } catch (error) {
-    console.error('Error during password reset:', error.response || error);
-    throw error.response?.data || { message: 'Failed to reset password' };
-  }
-};
-export const forgotPasswordSendOtp = async (email) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/forgot-password/send-otp`, { email });
-    return response.data;
-  } catch (error) {
-    console.error('Error during sending OTP for forgot password:', error.response || error);
-    throw error.response?.data || { message: 'Failed to send OTP' };
-  }
-};
-export const sendLoginOtp = async (data) => {
-  const response = await axios.post(`${API_BASE_URL}/login`, data);
-  return response.data;
-};
-
-export const verifyLoginOtp = async (data) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/login/verify-otp`, data);
-    return response.data;
-  } catch (error) {
-    console.error('Error during OTP verification:', error.response || error);
-    throw error.response?.data || { message: 'Failed to verify OTP' };
   }
 };

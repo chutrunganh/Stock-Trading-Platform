@@ -4,10 +4,12 @@
  */
 
 import express from 'express';
-import { registerUser, getAllUsers, getUserById, updateUser, deleteUser, loginUser, googleAuth, googleAuthCallback ,resetPassword,sendOtp,verifyOtp,forgotPasswordSendOtp,verifyLoginOtp } from '../controllers/userControllers.js';
+import { registerUser, getAllUsers, getUserById, updateUser, deleteUser, loginUser, googleAuth, googleAuthCallback } from '../controllers/userControllers.js';
 import { validateUser, validateUserUpdate, validateLogin } from '../middlewares/userValidationMiddleware.js';
 import authorizeRole from '../middlewares/roleBasedAccessControlMiddleware.js';
 import authMiddleware from '../middlewares/authenticationMiddleware.js';
+
+
 const router = express.Router();
 
 // Routes realted to user operations arranged in privileged order
@@ -17,17 +19,18 @@ router.get("/", (req, res) => {}); // Placeholder for homepage route
 
 // Traditional login and registration routes
 router.post("/register", validateUser, registerUser); // Register a new user
-router.post("/login", validateLogin, loginUser);  // User login
-router.post('/send-otp', sendOtp);
-router.post('/verify-otp', verifyOtp);
-router.post('/reset-password', resetPassword);
-router.post('/forgot-password/send-otp', forgotPasswordSendOtp);
-router.post('/login', loginUser);
-router.post('/login/verify-otp', verifyLoginOtp);
+// Debug middleware to log request body
+const logRequestBody = (req, res, next) => {
+  console.log('Login request body:', req.body);
+  next();
+};
+
+router.post("/login", logRequestBody, validateLogin, loginUser);  // User login
+
 // Google OAuth routes
-// when user click on "Login with Google" button in frontend, they will be forward to  uor backend endpoint /api/auth/google
+// when user click on "Login with Google" button in frontend, they will be forward to  uor backend endpoint /apiapi/auth/google
 // Our backend then redirect user to Google authentication page
-// After user successfully authenticate with Google, they will be redirected back to our backend endpoint /api/auth/google/callback
+// After user successfully authenticate with Google, they will be redirected back to our backend endpoint /apiapi/auth/google/callback
 // Our backend then handle the authentication and create a new user in our database if they don't exist yet
 // Then your backend will send the user information and redirect user back to the frontend
 router.get("/auth/google", googleAuth); // Google SSO authentication initiate
@@ -52,13 +55,9 @@ router.get("/profile", authMiddleware, (req, res) => {
 
 
 router.post("/logout", authMiddleware, (req, res) => {}); // Placeholder for user logout route
-// Password reset route
+
 
 // 3. Protected routes (authentication required) + Authorization (admin role required)
 router.get("/admin/dashboard", authMiddleware, authorizeRole('admin'), (req, res) => {}); // Placeholder for admin dashboard route
-router.put("/admin/user/:id", validateUserUpdate, authMiddleware, authorizeRole('admin'), updateUser); // Update an user account based on a ID
-router.get("/admin/users", authMiddleware, authorizeRole('admin'), getAllUsers); // List all users
-router.get("/admin/user/:id", authMiddleware, authorizeRole('admin'),  getUserById); // View a user account based on a ID
-router.delete("/admin/user/:id", authMiddleware, authorizeRole('admin'), deleteUser); // Delete a user account based on a ID
 
 export default router;

@@ -1,3 +1,11 @@
+/**
+ * @file createHoldingTable.js
+ * @description This file contains the function to create the holdings table in the database. 
+ * This table will be initialized with empty data. Only when a new user is created in user table -> trigger a corresponding portfolio created
+ * in the portfolio table -> trigger create stock holdings with a default quantity of every stock in the stock table for that portfolio. See 
+ * implementation in userCRUDService.js for more details.
+ */
+
 import pool from './dbConnect.js'
 import log from '../utils/loggerUtil.js';
 
@@ -20,9 +28,6 @@ const createHoldingTable = async () => {
             await pool.query('DROP TABLE IF EXISTS "holdings" CASCADE');
         }
         await pool.query(queryText);
-        if(process.env.NODE_ENV === 'development'){
-            await seedHoldingTestData();
-        }
     }
     catch(error){
         log.error('\nError occurs when creating holdings table:', error.message);
@@ -30,19 +35,5 @@ const createHoldingTable = async () => {
     }
 };
 
-const seedHoldingTestData = async () => {
-    try{
-        const queryText = `
-        INSERT INTO holdings (portfolio_id, stock_id, quantity, average_price)
-        VALUES
-        (1,1,10,150.00),
-        (1,2,50,200.00)`;
-        await pool.query(queryText);
-        //console.log('\nTest data added to holdings table successfully');
-    }
-    catch(error){
-        log.error('\nError adding test data for holdings table:', error.message);
-    }
-}
 
 export default createHoldingTable;

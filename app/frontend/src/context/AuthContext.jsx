@@ -2,7 +2,8 @@
  * AuthContext provides authentication state and methods throughout the app
  */
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { loginUser, registerUser } from '../api/user';
+import { loginUser, registerUser, getUserProfile } from '../api/user';
+import apiClient from '../api/apiClient';
 
 // Create the Auth Context
 const AuthContext = createContext();
@@ -12,35 +13,39 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [authState, setAuthState] = useState({ initialized: false });
   // Check for stored auth token on mount
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem('authToken');
+      console.log('AuthContext: Checking authentication with token:', token ? 'Token exists' : 'No token');
+      
       if (token) {
         try {
           // Verify token by fetching user profile
-          const response = await fetch('http://localhost:3000/api/profile', {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            },
-            credentials: 'include'
-          });
-          const data = await response.json();
+          console.log('AuthContext: Verifying token by fetching user profile...');
+          const response = await getUserProfile();
           
-          if (data.status === 200 && data.data && data.data.user) {
-            setUser(data.data.user);
+          console.log('AuthContext: User profile response:', response);
+          
+          if (response && response.data && response.data.user) {
+            console.log('AuthContext: User authenticated successfully:', response.data.user);
+            setUser(response.data.user);
           } else {
-            // If verification fails, clear the auth state
+            console.warn('AuthContext: Invalid user profile response:', response);
             localStorage.removeItem('authToken');
             setUser(null);
           }
         } catch (err) {
-          console.error('Token verification failed:', err);
+          console.error('AuthContext: Token verification failed:', err);
           localStorage.removeItem('authToken');
           setUser(null);
-        }
+        }      } else {
+        console.log('AuthContext: No auth token found');
       }
+      
       setLoading(false);
+      setAuthState({ initialized: true });
     };
     
     checkAuth();
@@ -48,9 +53,10 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('userId'); // Remove user ID
     setUser(null);
   };  // Login function
-const login = async (credentials) => {
+  const login = async (credentials) => {
     setLoading(true);
     setError(null);
     try {
@@ -59,36 +65,43 @@ const login = async (credentials) => {
       
       // If credentials contains both user and token (from Google login)
       if (credentials.user && credentials.token) {
+        console.log('AuthContext: Processing Google login with user data:', credentials.user);
         userData = credentials.user;
         authToken = credentials.token;
       } else {
         // Regular identifier/password login
+        console.log('AuthContext: Performing regular login with identifier:', credentials.identifier);
         const response = await loginUser({
           identifier: credentials.identifier,
-          password: credentials.password
+          password: credentials.password,
+          turnstileToken: credentials.turnstileToken
         });
-        if (!response.data.user || !response.data.token) {
+        
+        console.log('AuthContext: Login response received:', response);
+        
+        // Validate response for regular login
+        if (!response || !response.data || !response.data.user || !response.data.token) {
+          console.error('AuthContext: Invalid login response:', response);
           throw new Error('Invalid login response from server.');
         }
+        
         userData = response.data.user;
         authToken = response.data.token;
       }
       
       // Store auth data and update state
       localStorage.setItem('authToken', authToken);
+      console.log('Storing user ID in localStorage:', userData.id);
+      localStorage.setItem('userId', userData.id); // Store user ID
+      
+      // Update user state immediately 
+      console.log('AuthContext: Setting user data immediately after login:', userData);
       setUser(userData);
       
-      // Verify the stored token immediately
-      const verifyResponse = await fetch('http://localhost:3000/api/profile', {
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        },
-        credentials: 'include'
-      });
-      const verifyData = await verifyResponse.json();
-        if (verifyData.status !== 200 || !verifyData.data?.user) {
-        throw new Error('Failed to verify login state');
-      }
+      // Force an immediate state update by dispatching an event
+      window.dispatchEvent(new CustomEvent('auth-state-changed', { 
+        detail: { user: userData, isAuthenticated: true }
+      }));
       
       return userData;
     } catch (err) {
@@ -97,71 +110,53 @@ const login = async (credentials) => {
     } finally {
       setLoading(false);
     }
-  };
+  };  // OTP verification removed
 
   // Register function
   const register = async (userData) => {
     setLoading(true);
     setError(null);
-    
     try {
       const response = await registerUser(userData);
-      return response;
+      if (!response || !response.data) {
+        throw new Error('Invalid registration response from server.');
+      }
+      
+      // Check for specific error cases in the response
+      if (response.status === 500) {
+        if (response.error?.includes('users_username_key')) {
+          throw new Error('Username already exists. Please choose a different username.');
+        }
+        if (response.error?.includes('users_email_key')) {
+          throw new Error('Email already exists. Please use a different email address.');
+        }
+      }
+      
+      return response.data;
     } catch (err) {
-      setError(err.message);
+      // Handle axios error response
+      if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else {
+        setError(err.message || 'Registration failed.');
+      }
       throw err;
     } finally {
       setLoading(false);
     }
-  };  const handleGoogleCallback = async () => {
-    try {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.has('login') && urlParams.get('login') === 'success') {
-        const token = urlParams.get('token');
-        if (!token) {
-          throw new Error('No token received from Google login');
-        }
-
-        // Store token first
-        localStorage.setItem('authToken', token);
-
-        // Get user profile with the token
-        const profileResponse = await fetch('http://localhost:3000/api/profile', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          credentials: 'include'
-        });
-        
-        const profileData = await profileResponse.json();
-        if (profileData.status === 200 && profileData.data?.user) {
-          setUser(profileData.data.user);
-          return { user: profileData.data.user, token };
-        } else {
-          throw new Error('Failed to get user profile');
-        }
-      }
-      return null;
-    } catch (error) {
-      setError(error.message);
-      throw error;
-    }
-  };
-
-  // Context value
-  const contextValue = {
-    user,
-    loading,
-    error,
-    isAuthenticated: !!user,
-    login,
-    register,
-    logout,
-    handleGoogleCallback
-  };
-
-  return (
-    <AuthContext.Provider value={contextValue}>
+  };  return (
+    <AuthContext.Provider 
+      value={{ 
+        user, 
+        loading, 
+        error,
+        isAuthenticated: !!user, // Add this to indicate if user is logged in
+        authInitialized: authState.initialized,
+        login,
+        logout,
+        register
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
