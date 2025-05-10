@@ -13,7 +13,7 @@ function ForgotPasswordForm({ onClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Password regex for validation
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,72}$/;
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,72}$/;
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
@@ -54,7 +54,7 @@ function ForgotPasswordForm({ onClose }) {
 
     // Validate password format
     if (!passwordRegex.test(newPassword)) {
-      setError('Password must include uppercase, lowercase, numbers, symbols, and be 8-72 characters long.');
+      setError('Password must include uppercase, lowercase, numbers, symbols, and be 6-72 characters long.');
       return;
     }
 

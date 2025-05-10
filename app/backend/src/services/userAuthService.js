@@ -199,13 +199,13 @@ export const resetPasswordService = async (email, otp, newPassword) => {
   const normalizedEmail = email.trim().toLowerCase();
 
   // Password regex for validation
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,72}$/;
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,72}$/;
 
   try {
     // Validate the new password against the regex
     if (!passwordRegex.test(newPassword)) {
       throw new Error(
-        'Password must include uppercase, lowercase, numbers, symbols, and be 8-72 characters long.'
+        'Password must include uppercase, lowercase, numbers, symbols, and be 6-72 characters long.'
       );
     }
 

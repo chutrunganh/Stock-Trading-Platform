@@ -24,10 +24,10 @@ function RegisterForm({ onClose }) {
     let isValid = true;
   
     // Password validation
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,72}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,72}$/;
   
-    if (password.length < 8) {
-      setPasswordError('Password must be at least 8 characters');
+    if (password.length < 6) {
+      setPasswordError('Password must be at least 6 characters');
       isValid = false;
     } else if (password.length > 72) {
       setPasswordError('Password must be shorter than 72 characters');
