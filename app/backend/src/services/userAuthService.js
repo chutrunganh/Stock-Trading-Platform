@@ -90,5 +90,92 @@ export const loginUserService = async (identifier, password) => {
 /** 
  * For user register function, just use the userCreateService, findOrCreateGoogleUserService function in userCRUDService.js
  */
+/**
+ * Reset the user's password after verifying the OTP.
+ * @param {string} email - The user's email address.
+ * @param {string} otp - The OTP submitted by the user.
+ * @param {string} newPassword - The new password to set.
+ * @returns {Object} - A success message.
+ */
+export const resetPasswordService = async (email, otp, newPassword) => {
+  const normalizedEmail = email.trim().toLowerCase();
 
+  // Password regex for validation
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,72}$/;
 
+  try {
+    // Validate the new password against the regex
+    if (!passwordRegex.test(newPassword)) {
+      throw new Error(
+        'Password must include uppercase, lowercase, numbers, symbols, and be 6-72 characters long.'
+      );
+    }
+
+    // Verify OTP first
+    await verifyOtpService(email, otp);
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the password in the database
+    const result = await pool.query(
+      'UPDATE users SET password = $1 WHERE email = $2',
+      [hashedPassword, normalizedEmail]
+    );
+
+    if (result.rowCount === 0) {
+      throw new Error('Failed to update password');
+    }
+
+    // Delete the OTP after successful password reset
+    await OTP.deleteByEmail(normalizedEmail);
+
+    return { message: 'Password reset successfully' };
+  } catch (error) {
+    console.error('Error in resetPasswordService:', error.message);
+    throw new Error(error.message || 'Failed to reset password');
+  }
+};
+export const verifyLoginOtpService = async (email, otp) => {
+  const isValidOtp = await verifyOtpService(email, otp); // Verify OTP
+  if (!isValidOtp) {
+    throw new Error('Invalid OTP');
+  }
+  try {
+    // Verify the OTP  const isValidOtp = await verifyOtpService(email, otp); // Verify OTP
+  if (!isValidOtp) {
+    throw new Error('Invalid OTP');
+  }
+
+    // Fetch the user by email
+    const userResult = await pool.query(
+      'SELECT id, username, email, role FROM users WHERE email = $1',
+      [email]
+    );
+
+    const user = userResult.rows[0];
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Generate JWT token
+    const userForToken = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+    };
+
+    const token = jwt.sign(userForToken, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN || '24h',
+    });
+
+    // Delete the OTP after successful verification
+    await OTP.deleteByEmail(email);
+
+    return { user: User.getSafeUser(user), token };
+  } catch (error) {
+    console.error('Error in verifyLoginOtpService:', error.message);
+    throw error;
+  }
+};

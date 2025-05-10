@@ -134,6 +134,25 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
+
+    // Check if we're in cooldown period
+    if (cooldownTimer > 0) {
+      setError(`Too many failed attempts. Please try again in ${cooldownTimer} seconds.`);
+      setIsLoading(false);
+      return;
+    }
+
+    if (!identifier || !password) {
+      setError('Please enter both username/email and password');
+      setIsLoading(false);
+      return;
+    }
+    // Password regex validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,72}$/;
+    if (!passwordRegex.test(password)) {
+      setError('Password must include uppercase, lowercase, numbers, symbols, and be 6-72 characters long.');
+      setIsLoading(false);
     
     // Check if the turnstile verification is completed
     if (!turnstileToken) {

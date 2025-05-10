@@ -25,6 +25,10 @@ function RegisterForm({ onClose }) {
     let isValid = true;
     
     // Password validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,72}$/;
+  
+    if (password.length < 6) {
+      setPasswordError('Password must be at least 6 characters');
     if (password.length < 8) {
       setPasswordError('Password must be at least 8 characters');
       isValid = false;
