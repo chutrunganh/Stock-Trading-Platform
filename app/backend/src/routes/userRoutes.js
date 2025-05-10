@@ -4,7 +4,7 @@
  */
 
 import express from 'express';
-import { registerUser, getAllUsers, getUserById, updateUser, deleteUser, loginUser, googleAuth, googleAuthCallback } from '../controllers/userControllers.js';
+import { registerUser, getAllUsers, getUserById, updateUser, deleteUser, loginUser, googleAuth, googleAuthCallback, verifyLoginOtp, sendLoginOtpController } from '../controllers/userControllers.js';
 import { validateUser, validateUserUpdate, validateLogin } from '../middlewares/userValidationMiddleware.js';
 import authorizeRole from '../middlewares/roleBasedAccessControlMiddleware.js';
 import authMiddleware from '../middlewares/authenticationMiddleware.js';
@@ -26,6 +26,10 @@ const logRequestBody = (req, res, next) => {
 };
 
 router.post("/login", logRequestBody, validateLogin, loginUser);  // User login
+
+// OTP-based login verification (2FA step)
+router.post("/send-login-otp", sendLoginOtpController);
+router.post("/login/verify-otp", verifyLoginOtp);
 
 // Google OAuth routes
 // when user click on "Login with Google" button in frontend, they will be forward to  uor backend endpoint /apiapi/auth/google

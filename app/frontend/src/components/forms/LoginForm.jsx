@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getUserProfile } from '../../api/user';
+import { getUserProfile, sendLoginOtp, verifyLoginOtp, loginUser } from '../../api/user';
 import './LoginForm.css';
+import OtpForm from './OtpForm.jsx';
 
 // Add this at the top, after other imports
 const SITE_KEY = import.meta.env.VITE_SITE_KEY;
@@ -14,6 +15,8 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
   const [isLoading, setIsLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState('');
   const turnstileWidgetRef = useRef(null);
+  const [step, setStep] = useState(1); // 1: credentials, 2: OTP
+  const [otpPreviewUrl, setOtpPreviewUrl] = useState('');
 
   console.log('Turnstile SITE_KEY:', SITE_KEY);
 
@@ -129,43 +132,62 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
     handleGoogleCallback();
   }, [onLogin]);
 
-  // OTP verification removed
-
-  const handleSubmit = async (e) => {    e.preventDefault();
+ 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setError('');
-    setIsLoading(true);    if (!identifier || !password) {
+    setIsLoading(true);
+    if (!identifier || !password) {
       setError('Please enter both username/email and password');
       setIsLoading(false);
       return;
     }
-
-    // Check if the turnstile verification is completed
     if (!turnstileToken) {
       setError('Please complete the CAPTCHA verification first');
       setIsLoading(false);
       return;
     }
-    
-    setIsLoading(true);    try {
-      console.log('Attempting login with credentials...');
-      const response = await login({ identifier, password, turnstileToken });
-      console.log('Login response:', response);
-      
-      if (response) {
-        // Login successful
-        console.log('Login successful');
-        onLogin(response); // Complete login
+    try {
+      // Step 1: Validate credentials (but do not log in yet)
+      const response = await loginUser({ identifier, password, turnstileToken });
+      // Only proceed to OTP step if backend says so
+      if (response && response.data && response.data.step === 'otp') {
+        setOtpPreviewUrl(response.data.previewUrl || '');
+        setStep(2); // Move to OTP step
       } else {
-        throw new Error('The username/email or password you entered is incorrect');
+        setError('Unexpected response from server.');
       }
     } catch (err) {
-      console.error('Login error:', err);
-      // Show user-friendly error messages
-      if (err.message.includes('Internal Server Error')) {
-        setError('Your username/email or password is incorrect. Please try again.');
-      } else {
-        setError(err.message || 'Server error. Please try again later.');
-      }
+      setError(err.message || 'Server error. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handler for OTP form submission
+  const handleOtpSubmit = async ({ identifier, otp }) => {
+    setError('');
+    setIsLoading(true);
+    try {
+      const result = await verifyLoginOtp({ identifier, otp });
+      // Complete login
+      onLogin(result.data);
+    } catch (err) {
+      setError(err.message || 'Invalid OTP. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handler to resend OTP
+  const handleResendOtp = async () => {
+    setError('');
+    setIsLoading(true);
+    try {
+      const otpResp = await sendLoginOtp(identifier);
+      setOtpPreviewUrl(otpResp.previewUrl || '');
+    } catch (err) {
+      setError('Failed to resend OTP. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -198,62 +220,73 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
 
   
   return (
-    <form className="login-form" onSubmit={handleSubmit}>
-      <h2>Login</h2>
-      {error && <p className="error-message">{error}</p>}
+    step === 1 ? (
+      <form className="login-form" onSubmit={handleSubmit}>
+        <h2>Login</h2>
+        {error && <p className="error-message">{error}</p>}
 
-      <div className="form-group">
-        <label>Email or Username:</label>
-        <input
-          type="text"
-          value={identifier}
-          onChange={(e) => setIdentifier(e.target.value)}
-          required
-          placeholder="Enter your email or username"
+        <div className="form-group">
+          <label>Email or Username:</label>
+          <input
+            type="text"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
+            required
+            placeholder="Enter your email or username"
+            disabled={isLoading}
+          />
+        </div>
+        <div className="form-group">
+          <label>Password:</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            placeholder="Enter your password"
+            disabled={isLoading}
+          />
+        </div>
+
+        <div style={{ display: 'block', flexFlow: 'row' }}>
+          {!SITE_KEY && (
+            <div style={{ color: 'red', fontWeight: 'bold' }}>
+              Warning: Turnstile SITE_KEY is missing or invalid! Check your .env and restart the dev server.
+            </div>
+          )}
+          <div className="turnstile-container" ref={turnstileWidgetRef}></div>
+        </div>
+
+        <button type="submit" className="submit-button" disabled={isLoading}>
+          {isLoading ? 'Processing...' : 'Login'}
+        </button>
+        <button
+          type="button"
+          className="google-login-button"
+          onClick={handleGoogleLogin}
           disabled={isLoading}
-        />
-      </div>
-      <div className="form-group">
-        <label>Password:</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          placeholder="Enter your password"
-          disabled={isLoading}
-        />
-      </div>
-
-      <div style={{ display: 'block', flexFlow: 'row' }}>
-        {!SITE_KEY && (
-          <div style={{ color: 'red', fontWeight: 'bold' }}>
-            Warning: Turnstile SITE_KEY is missing or invalid! Check your .env and restart the dev server.
-          </div>
-        )}
-        <div className="turnstile-container" ref={turnstileWidgetRef}></div>
-      </div>
-
-      <button type="submit" className="submit-button" disabled={isLoading}>
-        {isLoading ? 'Processing...' : 'Login'}
-      </button>
-      <button
-        type="button"
-        className="google-login-button"
-        onClick={handleGoogleLogin}
-        disabled={isLoading}
-      >
-        {isLoading ? 'Connecting...' : 'Login with Google'}
-      </button>
-      <div className="form-footer">
-        <a href="#" onClick={(e) => { e.preventDefault(); onRegisterClick(); }}>
-          Create New Account
-        </a>
-        <a href="#" onClick={(e) => { e.preventDefault(); onForgotPasswordClick(); }}>
-          Forgot Password?
-        </a>
-      </div>
-    </form>
+        >
+          {isLoading ? 'Connecting...' : 'Login with Google'}
+        </button>
+        <div className="form-footer">
+          <a href="#" onClick={(e) => { e.preventDefault(); onRegisterClick(); }}>
+            Create New Account
+          </a>
+          <a href="#" onClick={(e) => { e.preventDefault(); onForgotPasswordClick(); }}>
+            Forgot Password?
+          </a>
+        </div>
+      </form>
+    ) : (
+      <OtpForm
+        onSubmit={handleOtpSubmit}
+        identifier={identifier}
+        previewUrl={otpPreviewUrl}
+        isLoading={isLoading}
+        error={error}
+        onResend={handleResendOtp}
+      />
+    )
   );
 }
 

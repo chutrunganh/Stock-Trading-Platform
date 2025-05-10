@@ -63,30 +63,15 @@ export const AuthProvider = ({ children }) => {
       let userData;
       let authToken;
       
-      // If credentials contains both user and token (from Google login)
+      // Only allow login if credentials contains both user and token (from Google login or OTP verification)
       if (credentials.user && credentials.token) {
-        console.log('AuthContext: Processing Google login with user data:', credentials.user);
+        console.log('AuthContext: Processing login with user data:', credentials.user);
         userData = credentials.user;
         authToken = credentials.token;
       } else {
-        // Regular identifier/password login
-        console.log('AuthContext: Performing regular login with identifier:', credentials.identifier);
-        const response = await loginUser({
-          identifier: credentials.identifier,
-          password: credentials.password,
-          turnstileToken: credentials.turnstileToken
-        });
-        
-        console.log('AuthContext: Login response received:', response);
-        
-        // Validate response for regular login
-        if (!response || !response.data || !response.data.user || !response.data.token) {
-          console.error('AuthContext: Invalid login response:', response);
-          throw new Error('Invalid login response from server.');
-        }
-        
-        userData = response.data.user;
-        authToken = response.data.token;
+        // Defensive: If called with only identifier/password, do NOT authenticate
+        console.error('AuthContext: Invalid login attempt: missing user or token. This should only be called after OTP verification.');
+        throw new Error('Login must be completed after OTP verification.');
       }
       
       // Store auth data and update state

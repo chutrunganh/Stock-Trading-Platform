@@ -300,5 +300,17 @@ export const getUserByEmailService = async (email) => {
   }
 };
 
+export const getUserByUsernameService = async (username) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, username, email, role, created_at FROM users WHERE username = $1`,
+      [username]
+    );
+    return result.rows[0] || null;
+  } catch (error) {
+    throw error;
+  }
+};
+
 
 

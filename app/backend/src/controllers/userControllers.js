@@ -10,10 +10,12 @@
  */
 import dotenv from 'dotenv';
 dotenv.config({ path: '../../.env' }); // Adjust based on relative depth
-import { createUserService, getUserByIdService, updateUserService} from '../services/userCRUDService.js';
+import { createUserService, getUserByIdService, updateUserService, getUserByUsernameService } from '../services/userCRUDService.js';
 import { loginUserService } from '../services/userAuthService.js';
 import passport from 'passport';
 import { verifyTurnstileToken } from '../services/security/turnstileService.js';
+import { verifyLoginOtpService } from '../services/userAuthService.js';
+import { sendOtpService } from '../services/security/otpService.js';
 
 // Standardized response format
 const handleResponse = (res, status, message, data = null) => {
@@ -104,11 +106,22 @@ export const loginUser = async (req, res, next) => {
             });
         }
         // Proceed with login if captcha is valid
-        const result = await loginUserService(identifier, password); // Call to service function in userAuthService.js
-        // Return JWT token directly
-        handleResponse(res, 200, 'Login successful', {
-            user: result.user,
-            token: result.token
+        const result = await loginUserService(identifier, password); // Only check credentials
+        // Send OTP to user's email
+        let email = identifier;
+        if (!identifier.includes('@')) {
+            // If identifier is not an email, look up by username
+            const user = await getUserByUsernameService(identifier);
+            if (!user || !user.email) {
+                return handleResponse(res, 404, 'User not found');
+            }
+            email = user.email;
+        }
+        const otpResult = await sendOtpService(email);
+        // Return only OTP step info, not JWT or user info
+        handleResponse(res, 200, 'OTP sent', {
+            step: 'otp',
+            previewUrl: otpResult.previewUrl
         });
     }
     catch (error) {
@@ -116,6 +129,35 @@ export const loginUser = async (req, res, next) => {
     }
 }
 
+// Verify OTP and log in (2FA step)
+export const verifyLoginOtp = async (req, res, next) => {
+  const { email, identifier, otp } = req.body;
+  const userIdentifier = email || identifier; // Use either email or identifier
+  console.log('Received identifier:', userIdentifier);
+  console.log('Received OTP:', otp);
+
+  try {
+    if (!userIdentifier || !otp) {
+      return handleResponse(res, 400, 'Email/Username and OTP are required');
+    }
+
+    const result = await verifyLoginOtpService(userIdentifier, otp);
+    console.log('OTP verification result:', result);
+
+    // Set the JWT token in a cookie
+    res.cookie('jwt', result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: 'strict',
+    });
+
+    handleResponse(res, 200, 'Login successful', { user: result.user, token: result.token });
+  } catch (error) {
+    console.error('Error during OTP verification:', error);
+    next(error);
+  }
+};
 
 // Initiate Google OAuth authentication, no need to call to any services since this is handled by Passport.js built in function
 export const googleAuth = (req, res, next) => {
@@ -152,4 +194,29 @@ export const googleAuthCallback = (req, res, next) => {
             res.redirect(errorUrl);
         }
     })(req, res, next);
+};
+
+// Send OTP for login (2FA)
+export const sendLoginOtpController = async (req, res, next) => {
+  try {
+    const { identifier } = req.body;
+    if (!identifier) {
+      return handleResponse(res, 400, 'Identifier (email or username) is required');
+    }
+    // Find user by email or username
+    let email = identifier;
+    if (!identifier.includes('@')) {
+      // If identifier is not an email, look up by username
+      const user = await getUserByUsernameService(identifier);
+      if (!user || !user.email) {
+        return handleResponse(res, 404, 'User not found');
+      }
+      email = user.email;
+    }
+    // Send OTP to the user's email
+    const result = await sendOtpService(email);
+    handleResponse(res, 200, 'OTP sent', { previewUrl: result.previewUrl });
+  } catch (error) {
+    next(error);
+  }
 };

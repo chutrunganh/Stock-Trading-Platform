@@ -51,3 +51,25 @@ export const getUserProfile = async () => {
     throw error;
   }
 };
+
+// Function to request OTP for login (2FA)
+export const sendLoginOtp = async (identifier) => {
+  try {
+    const response = await apiClient.post('/send-login-otp', { identifier });
+    return response.data;
+  } catch (error) {
+    console.error('Error sending login OTP:', error);
+    throw error;
+  }
+};
+
+// Function to verify OTP for login (2FA)
+export const verifyLoginOtp = async ({ identifier, otp }) => {
+  try {
+    const response = await apiClient.post('/login/verify-otp', { identifier, otp });
+    return response.data;
+  } catch (error) {
+    console.error('Error verifying login OTP:', error);
+    throw error;
+  }
+};

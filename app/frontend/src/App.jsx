@@ -158,13 +158,11 @@ function App() {
     const handleLogin = async (userData) => {
         try {
             console.log("App: Login successful, userData received:", userData);
-            
+            // Use Auth context to log in (this updates the global state)
+            await login(userData);
             // Close the login modal
             setShowLoginModal(false);
-            
-            // Force a UI update by setting a state variable
-            // This is a common React pattern to force child components to re-render
-            setForceUpdate(prev => prev + 1);
+            // No need to force update, AuthContext will trigger re-render
         } catch (err) {
             console.error("Login error in App:", err);
         }
