@@ -74,3 +74,14 @@ export const verifyLoginOtp = async ({ identifier, otp }) => {
     throw error;
   }
 };
+
+// Function to reset password (forgot password flow)
+export const resetPassword = async ({ email, otp, newPassword }) => {
+  try {
+    const response = await apiClient.post('/reset-password', { email, otp, newPassword });
+    return response.data;
+  } catch (error) {
+    console.error('Error during password reset:', error);
+    throw error;
+  }
+};

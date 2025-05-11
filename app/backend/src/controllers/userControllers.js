@@ -17,6 +17,7 @@ import passport from 'passport';
 import { verifyTurnstileToken } from '../services/security/turnstileService.js';
 import { verifyLoginOtpService } from '../services/security/userAuthService.js';
 import { sendOtpService } from '../services/security/otpService.js';
+import { resetPasswordService } from '../services/security/userAuthService.js';
 
 // Standardized response format
 const handleResponse = (res, status, message, data = null) => {
@@ -218,6 +219,34 @@ export const sendLoginOtpController = async (req, res, next) => {
     // Send OTP to the user's email
     const result = await sendOtpService(email);
     handleResponse(res, 200, 'OTP sent', { previewUrl: result.previewUrl });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Send OTP for forgot password
+export const forgotPasswordController = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return handleResponse(res, 400, 'Email is required');
+    }
+    const result = await sendOtpService(email);
+    handleResponse(res, 200, 'OTP sent for password reset', { previewUrl: result.previewUrl });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Reset password after OTP verification
+export const resetPasswordController = async (req, res, next) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      return handleResponse(res, 400, 'Email, OTP, and new password are required');
+    }
+    const result = await resetPasswordService(email, otp, newPassword);
+    handleResponse(res, 200, result.message);
   } catch (error) {
     next(error);
   }

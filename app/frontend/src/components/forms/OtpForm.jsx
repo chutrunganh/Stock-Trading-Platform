@@ -43,7 +43,7 @@ function OtpForm({ onSubmit, identifier, previewUrl, isLoading, error, onResend 
       <h2 style={{ textAlign: 'center' }}>Two-Factor Authentication with OTP</h2>
       {error && <p className="error-message" style={{ color: 'red' }}>{error}</p>}
       <div className="form-group">
-        <label>OTP Code:</label>
+        <label>Please check your email linked to this account for the OTP code </label>
         <input
           type="text"
           value={otp}
