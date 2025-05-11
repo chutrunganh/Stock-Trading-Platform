@@ -158,7 +158,13 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
         setError('Unexpected response from server.');
       }
     } catch (err) {
-      setError(err.message || 'Invalid or expired OTP, or server error. Please try again later.');
+      if (err.response?.data?.error?.includes('timeout-or-duplicate')) {
+        setError('CAPTCHA expired or already used. Please complete the CAPTCHA again.');
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError('Login failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }

@@ -18,6 +18,7 @@ import Trade from './pages/Trade/Trade';
 import Portfolio from './pages/Portfolio/Portfolio';
 import Tutorial from './pages/Tutorial/Tutorial';
 import AdminPage from './pages/Admin/Admin';
+import NotFoundPage from './pages/NotFound/NotFoundPage';
 
 // Forms
 import LoginForm from './components/forms/LoginForm';
@@ -236,6 +237,7 @@ function App() {
                                 </RoleProtectedRoute>
                             } 
                         />
+                        <Route path="*" element={<NotFoundPage />} />
                     </Routes>
                 </main>
                 
