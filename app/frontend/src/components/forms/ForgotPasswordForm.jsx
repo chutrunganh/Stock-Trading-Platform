@@ -30,7 +30,7 @@ function ForgotPasswordForm({ onClose }) {
     try {
       const response = await requestPasswordReset(email);
       setMessage(response.message || 'OTP has been sent to your email.');
-      setPreviewUrl(response.previewUrl || '');
+      setPreviewUrl(response.data?.previewUrl || '');
       setStep(2);
     } catch (err) {
       setError(err.message || 'Failed to send OTP. Please try again.');
@@ -55,7 +55,7 @@ function ForgotPasswordForm({ onClose }) {
     try {
       const response = await requestPasswordReset(email);
       setMessage(response.message || 'OTP has been resent to your email.');
-      setPreviewUrl(response.previewUrl || '');
+      setPreviewUrl(response.data?.previewUrl || '');
     } catch (err) {
       setError(err.message || 'Failed to resend OTP. Please try again.');
     } finally {
@@ -115,6 +115,7 @@ function ForgotPasswordForm({ onClose }) {
         </form>
       )}
       {step === 2 && (
+        // Reuse the OTP from for easy maintainable
         <OtpForm
           onSubmit={handleOtpSubmit}
           identifier={email}
@@ -122,6 +123,9 @@ function ForgotPasswordForm({ onClose }) {
           isLoading={isSubmitting}
           error={error}
           onResend={handleResendOtp}
+          title=" "
+          description="Enter the OTP sent to your email to continue."
+          className="forgot-password-form"
         />
       )}
       {step === 3 && (
