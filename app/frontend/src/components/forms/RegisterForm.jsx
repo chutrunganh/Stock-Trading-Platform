@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import './RegisterForm.css';
-import { Eye, EyeOff, EyeOffIcon } from "lucide-react";
+import { Eye, EyeOffIcon } from "lucide-react";
+import {getPasswordRequirements } from '../../utils/passwordUtil';
 
 /**
  * RegisterForm component
@@ -28,34 +29,7 @@ function RegisterForm({ onClose }) {
     hasSymbol: false,
     noUsername: true
   });  const updatePasswordRequirements = (password) => {
-    // Check if password contains username or parts of username (case insensitive)
-    let containsUsername = false;
-    if (username && username.length >= 3) {
-      const lowerPassword = password.toLowerCase();
-      const lowerUsername = username.toLowerCase();
-      
-      // Check for substrings of username with minimum length of 3
-      for (let i = 0; i < lowerUsername.length - 2; i++) {
-        for (let j = i + 3; j <= lowerUsername.length; j++) {
-          const part = lowerUsername.slice(i, j);
-          if (lowerPassword.includes(part)) {
-            containsUsername = true;
-            break;
-          }
-        }
-        if (containsUsername) break;
-      }
-    }
-    
-    setPasswordRequirements({
-      length: password.length >= 6,
-      maxLength: password.length <= 72,
-      hasUpper: /[A-Z]/.test(password),
-      hasLower: /[a-z]/.test(password),
-      hasNumber: /\d/.test(password),
-      hasSymbol: /[@$!%*?&]/.test(password),
-      noUsername: !containsUsername
-    });
+    setPasswordRequirements(getPasswordRequirements(password, username));
   };
 
   // Please note that this password policy needs to be check by BOTH frontend and backend

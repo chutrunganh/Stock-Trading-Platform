@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import './ForgotPasswordForm.css';
 import { requestPasswordReset, verifyLoginOtp, resetPassword } from '../../api/user';
 import OtpForm from './OtpForm';
+import { getPasswordRequirements } from '../../utils/passwordUtil';
+import { Eye, EyeOffIcon } from "lucide-react";
 
 /**
  * ForgotPasswordForm component
@@ -17,10 +19,19 @@ function ForgotPasswordForm({ onClose }) {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState('');
+  const [passwordRequirements, setPasswordRequirements] = useState({
+    length: false,
+    maxLength: true,
+    hasUpper: false,
+    hasLower: false,
+    hasNumber: false,
+    hasSymbol: false,
+    noUsername: true
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Password regex for validation
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,72}$/;
-
+ 
   // Step 1: Request OTP
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
@@ -68,8 +79,8 @@ function ForgotPasswordForm({ onClose }) {
     e.preventDefault();
     setError('');
     setMessage('');
-    if (!passwordRegex.test(newPassword)) {
-      setError('Password must include uppercase, lowercase, numbers, symbols, and be 6-72 characters long.');
+    if (!Object.values(passwordRequirements).every(req => req)) {
+      setError('Please meet all password requirements.');
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -134,25 +145,71 @@ function ForgotPasswordForm({ onClose }) {
           {message && <div className="success-message">{message}</div>}
           <div className="form-group">
             <label>New Password:</label>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={e => setNewPassword(e.target.value)}
-              required
-              placeholder="Enter new password"
-              disabled={isSubmitting}
-            />
+            <div className="password-wrapper">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={newPassword}
+                onChange={e => {
+                  setNewPassword(e.target.value);
+                  setPasswordRequirements(getPasswordRequirements(e.target.value, email));
+                }}
+                required
+                placeholder="Enter new password"
+                disabled={isSubmitting}
+              />
+              <button
+                type="button"
+                className="toggle-password"
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={isSubmitting}
+              >
+                {showPassword ? <Eye/> : <EyeOffIcon />}
+              </button>
+            </div>
+            <div className="password-requirements">
+              <p className={passwordRequirements.length ? 'requirement-met' : 'requirement'}>
+                &#x2022; At least 6 characters
+              </p>
+              <p className={passwordRequirements.maxLength ? 'requirement-met' : 'requirement'}>
+                &#x2022; No more than 72 characters
+              </p>
+              <p className={passwordRequirements.hasUpper ? 'requirement-met' : 'requirement'}>
+                &#x2022; At least one uppercase letter
+              </p>
+              <p className={passwordRequirements.hasLower ? 'requirement-met' : 'requirement'}>
+                &#x2022; At least one lowercase letter
+              </p>
+              <p className={passwordRequirements.hasNumber ? 'requirement-met' : 'requirement'}>
+                &#x2022; At least one number
+              </p>
+              <p className={passwordRequirements.hasSymbol ? 'requirement-met' : 'requirement'}>
+                &#x2022; At least one symbol (@$!%*?&)
+              </p>
+              <p className={passwordRequirements.noUsername ? 'requirement-met' : 'requirement'}>
+                &#x2022; Cannot contain any part of your email (3 or more characters)
+              </p>
+            </div>
           </div>
           <div className="form-group">
             <label>Confirm Password:</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              required
-              placeholder="Confirm new password"
-              disabled={isSubmitting}
-            />
+            <div className="password-wrapper">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                required
+                placeholder="Confirm new password"
+                disabled={isSubmitting}
+              />
+              <button
+                type="button"
+                className="toggle-password"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                disabled={isSubmitting}
+              >
+                {showConfirmPassword ? <Eye/> : <EyeOffIcon />}
+              </button>
+            </div>
           </div>
           <div className="form-actions">
             <button type="button" className="cancel-btn" onClick={onClose} disabled={isSubmitting}>Cancel</button>
