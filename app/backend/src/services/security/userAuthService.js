@@ -9,6 +9,8 @@ import OTP from '../../models/otpModel.js';
 import { createDefaultHoldingsForPortfolioService } from '../holdingCRUDService.js';
 import { createPortfolioForUserService } from '../portfolioCRUDService.js';
 import { validatePassword } from '../../utils/passwordUtil.js';
+import { isDeviceRememberedService } from './rememberedDeviceService.js';
+import { rememberDeviceService } from './rememberedDeviceService.js';
 dotenv.config({ path: '../../.env' }); // Adjust based on relative depth
 
 /**
@@ -19,7 +21,7 @@ dotenv.config({ path: '../../.env' }); // Adjust based on relative depth
  * @param {*} password - the password of the user typed in the login form
  * @returns 
  */
-export const loginUserService = async (identifier, password) => {
+export const loginUserService = async (identifier, password, visitorId = null) => {
   try {
     // Fetch the user by email or username, including their portfolio_id
     const result = await pool.query(
@@ -35,12 +37,23 @@ export const loginUserService = async (identifier, password) => {
     // Determine the hashed password to use for comparison
     const hashedPassword = user ? user.password : fakeHashedPassword; // Use the actual hashed password if user exists, otherwise use a dummy hash
     // ALWAYS perform input password hash and comparison
-    const isPasswordValid = await bcrypt.compare(password, hashedPassword);     // If user does not exist or password is incorrect, return a user-friendly error message
+    const isPasswordValid = await bcrypt.compare(password, hashedPassword);     
+    // If user does not exist or password is incorrect, return a user-friendly error message
     if (!user || !isPasswordValid) {
       throw new Error('The username/email or password you entered is incorrect');
     }
-    // If user authenticated successfully, generate JWT token and safe user
-    return generateUserTokenAndSafeUser(user, user.portfolio_id);
+
+    // Check if device is remembered (skip 2FA)
+    if (visitorId && await isDeviceRememberedService(user.id, visitorId)) {
+      return generateUserTokenAndSafeUser(user, user.portfolio_id);
+    }
+
+    // If device is not remembered, return step: 'otp' to trigger 2FA
+    return {
+      step: 'otp',
+      userId: user.id,
+      message: 'Please complete 2FA verification'
+    };
   } catch (error) {
     throw error;
   }
@@ -213,9 +226,14 @@ export const resetPasswordService = async (email, otp, newPassword) => {
   }
 };
 
-export const verifyLoginOtpService = async (identifier, otp, password) => {
+export const verifyLoginOtpService = async (identifier, otp, password, visitorId = null, rememberDevice = false) => {
   // First, check password
-  await loginUserService(identifier, password); // Throws if invalid
+  const loginResult = await loginUserService(identifier, password, visitorId); 
+  
+  // If login result has token, it means device was remembered and 2FA was skipped
+  if (loginResult.token) {
+    return loginResult;
+  }
 
   // Always resolve identifier to email
   let email = identifier;
@@ -234,6 +252,7 @@ export const verifyLoginOtpService = async (identifier, otp, password) => {
   if (!isValidOtp) {
     throw new Error('Invalid OTP');
   }
+
   try {
     // Fetch the user by email
     const userResult = await pool.query(
@@ -244,6 +263,12 @@ export const verifyLoginOtpService = async (identifier, otp, password) => {
     if (!user) {
       throw new Error('User not found');
     }
+
+    // If rememberDevice is true and visitorId is provided, remember this device
+    if (rememberDevice && visitorId) {
+      await rememberDeviceService(user.id, visitorId);
+    }
+
     // Generate JWT token
     const userForToken = {
       id: user.id,

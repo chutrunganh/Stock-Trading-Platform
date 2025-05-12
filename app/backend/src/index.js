@@ -25,6 +25,7 @@ import createStockPriceTable from './config/createStockPriceTable.js';
 import createHoldingTable from './config/createHoldingTable.js';
 import { INITIAL_CASH_BALANCE, SALT_ROUNDS } from './config/constants.js';
 import createPaymentTransactionsTable from './config/createPaymentTransactionsTable.js';
+import createRememberedDevicesTable from './config/createRememberedDevicesTable.js';
 
 
 // --- Routes ---
@@ -116,6 +117,7 @@ const initializeDatabase = async () => {  try {
     await createTransactionTable();  // Transactions depend on stocks and portfolios
     await createHoldingTable();      // Holdings depend on stocks and portfolios
     await createPaymentTransactionsTable();
+    await createRememberedDevicesTable();
     
     log.info('All tables initialized successfully!');
   } catch (error) {

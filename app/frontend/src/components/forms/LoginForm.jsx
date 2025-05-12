@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getUserProfile, sendLoginOtp, verifyLoginOtp, loginUser } from '../../api/user';
+import { getUserProfile, sendLoginOtp, loginUser } from '../../api/user';
 import './LoginForm.css';
 import OtpForm from './OtpForm.jsx';
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
 // Add this at the top, after other imports
 const SITE_KEY = import.meta.env.VITE_SITE_KEY;
@@ -17,8 +18,19 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
   const turnstileWidgetRef = useRef(null);
   const [step, setStep] = useState(1); // 1: credentials, 2: OTP
   const [otpPreviewUrl, setOtpPreviewUrl] = useState('');
+  const [fpPromise, setFpPromise] = useState(null);
+  const [visitorId, setVisitorId] = useState(null);
+  const [rememberDevice, setRememberDevice] = useState(false);
 
   console.log('Turnstile SITE_KEY:', SITE_KEY);
+
+  // Initialize FingerprintJS
+  useEffect(() => {
+    // We only need to initialize it once
+    setFpPromise(
+      FingerprintJS.load()
+    );
+  }, []);
 
   // Dynamically load Turnstile script and render widget
   useEffect(() => {
@@ -142,14 +154,37 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
       setIsLoading(false);
       return;
     }
-    if (!turnstileToken) {
+    // Only check turnstileToken in production
+    if (import.meta.env.MODE === 'production' && !turnstileToken) {
       setError('Please complete the CAPTCHA verification first');
       setIsLoading(false);
       return;
     }
+
     try {
+      // Get FingerprintJS visitor ID
+      let currentVisitorId = null;
+      if (fpPromise) {
+        const fp = await fpPromise;
+        const result = await fp.get();
+        currentVisitorId = result.visitorId;
+        setVisitorId(currentVisitorId);
+      }
+
       // Step 1: Validate credentials (but do not log in yet)
-      const response = await loginUser({ identifier, password, turnstileToken });
+      const response = await loginUser({ 
+        identifier, 
+        password, 
+        turnstileToken,
+        visitorId: currentVisitorId 
+      });
+
+      // If we get a token back, it means 2FA was skipped (remembered device)
+      if (response.data.token) {
+        onLogin(response.data);
+        return;
+      }
+
       // Only proceed to OTP step if backend says so
       if (response && response.data && response.data.step === 'otp') {
         setOtpPreviewUrl(response.data.previewUrl || '');
@@ -175,7 +210,14 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
     setError('');
     setIsLoading(true);
     try {
-      const result = await loginUser({ identifier, password, turnstileToken, otp });
+      const result = await loginUser({ 
+        identifier, 
+        password, 
+        turnstileToken, 
+        otp,
+        visitorId,
+        rememberDevice 
+      });
       // Complete login
       onLogin(result.data);
     } catch (err) {
@@ -301,6 +343,8 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
         isLoading={isLoading}
         error={error}
         onResend={handleResendOtp}
+        rememberDevice={rememberDevice}
+        onRememberDeviceChange={(e) => setRememberDevice(e.target.checked)}
       />
     )
   );

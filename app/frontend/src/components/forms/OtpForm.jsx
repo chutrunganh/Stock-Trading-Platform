@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './OtpForm.css';
 
-function OtpForm({ onSubmit, identifier, previewUrl, isLoading, error, onResend, title, description, className }) {
+function OtpForm({ onSubmit, identifier, previewUrl, isLoading, error, onResend, title, description, className, rememberDevice, onRememberDeviceChange }) {
   const [otp, setOtp] = useState('');
   const [timer, setTimer] = useState(60); // 1 minute countdown
   const [expired, setExpired] = useState(false);
@@ -67,6 +67,17 @@ function OtpForm({ onSubmit, identifier, previewUrl, isLoading, error, onResend,
           </a>
         </div>
       )}
+      <div className="form-group checkbox-group">
+        <label>
+          <input
+            type="checkbox"
+            checked={rememberDevice}
+            onChange={onRememberDeviceChange}
+            disabled={isLoading}
+          />
+          Remember this device for 1 minute (testing purposes)
+        </label>
+      </div>
       <button type="submit" className="submit-button" disabled={isLoading || expired}>
         {isLoading ? 'Verifying...' : 'Verify OTP'}
       </button>

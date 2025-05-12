@@ -9,7 +9,7 @@
  * - Login a user (via email/password or Google SSO), also set the JWT token in a cookie to return to the client
  */
 import dotenv from 'dotenv';
-dotenv.config({ path: '../../.env' }); // Adjust based on relative depth
+dotenv.config({ path: '../../../../.env' }); // Adjust based on relative depth
 import { getUserByIdService, updateUserService, getUserByUsernameService } from '../services/userCRUDService.js';
 import { createUserService } from '../services/security/userAuthService.js';
 import { loginUserService } from '../services/security/userAuthService.js';
@@ -105,18 +105,22 @@ function setJwtCookie(res, token) {
 }
 
 export const loginUser = async (req, res, next) => {
-    const { identifier, password, turnstileToken, otp } = req.body;
+    const { identifier, password, turnstileToken, otp, visitorId, rememberDevice } = req.body;
     try {
-        // Verify Turnstile token before authenticating
-        const remoteip = req.ip || req.connection?.remoteAddress;
-        const turnstileResult = await verifyTurnstileToken(turnstileToken, remoteip);
-        if (!turnstileResult.success) {
-            return res.status(400).json({
-                status: 400,
-                message: 'Captcha verification failed. Please try again.',
-                error: turnstileResult["error-codes"] || turnstileResult.error || 'Unknown error',
-            });
+        // Skip Turnstile verification in development
+        if (process.env.NODE_ENV === 'production') {
+            // Verify Turnstile token before authenticating
+            const remoteip = req.ip || req.connection?.remoteAddress;
+            const turnstileResult = await verifyTurnstileToken(turnstileToken, remoteip);
+            if (!turnstileResult.success) {
+                return res.status(400).json({
+                    status: 400,
+                    message: 'Captcha verification failed. Please try again.',
+                    error: turnstileResult["error-codes"] || turnstileResult.error || 'Unknown error',
+                });
+            }
         }
+
         if (otp) {
             // Step 2: Verify both password and OTP, then log in and set cookie
             let email = identifier;
@@ -128,12 +132,19 @@ export const loginUser = async (req, res, next) => {
                 }
                 email = user.email;
             }
-            const result = await verifyLoginOtpService(email, otp, password); // Use email, not identifier
+            const result = await verifyLoginOtpService(email, otp, password, visitorId, rememberDevice); // Pass visitorId and rememberDevice
             setJwtCookie(res, result.token);
             handleResponse(res, 200, 'Login successful', { user: result.user, token: result.token });
         } else {
             // Step 1: Check credentials and send OTP
-            const result = await loginUserService(identifier, password); // Only check credentials
+            const result = await loginUserService(identifier, password, visitorId); // Pass visitorId
+            
+            // If result has token, it means device was remembered and 2FA was skipped
+            if (result.token) {
+                setJwtCookie(res, result.token);
+                return handleResponse(res, 200, 'Login successful', result);
+            }
+
             // Send OTP to user's email
             let email = identifier;
             if (!identifier.includes('@')) {
@@ -150,8 +161,7 @@ export const loginUser = async (req, res, next) => {
                 previewUrl: otpResult.previewUrl
             });
         }
-    }
-    catch (error) {
+    } catch (error) {
         // Graceful error handling for incorrect credentials
         if (error.message === 'The username/email or password you entered is incorrect') {
             return res.status(401).json({
@@ -165,7 +175,7 @@ export const loginUser = async (req, res, next) => {
             message: 'Server error. Please try again later.'
         });
     }
-}
+};
 
 // Initiate Google OAuth authentication, no need to call to any services since this is handled by Passport.js built in function
 export const googleAuth = (req, res, next) => {

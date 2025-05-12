@@ -12,16 +12,21 @@ export const registerUser = async (userData) => {
 };
 
 // Function to log in a user
-export const loginUser = async ({ identifier, password, turnstileToken, otp }) => {
+export const loginUser = async ({ identifier, password, turnstileToken, otp, visitorId, rememberDevice }) => {
   try {
-    console.log('Login request payload:', { identifier, password, turnstileToken, otp });
-    const response = await apiClient.post('/login', {
-      identifier,  // This can be either email or username
+    // In development mode, we don't need to send turnstileToken
+    const payload = {
+      identifier,
       password,
-      turnstileToken,
-      ...(otp ? { otp } : {})
-    });
-    console.log('Login response:', response.data); // Debug log to verify response structure
+      ...(import.meta.env.MODE === 'production' ? { turnstileToken } : {}),
+      ...(otp ? { otp } : {}),
+      visitorId,
+      rememberDevice
+    };
+
+    console.log('Login request payload:', payload);
+    const response = await apiClient.post('/login', payload);
+    console.log('Login response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error during login:', error);

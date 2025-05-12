@@ -23,8 +23,10 @@ const validateUser = (req, res, next) => {
 const loginSchema = Joi.object({
   identifier: Joi.string().required(),
   password: Joi.string().required(),
-  turnstileToken: Joi.string().required(),
-  otp: Joi.string().optional()
+  turnstileToken: process.env.NODE_ENV === 'production' ? Joi.string().required() : Joi.string().optional(),
+  otp: Joi.string().optional(),
+  visitorId: Joi.string().optional(),
+  rememberDevice: Joi.boolean().optional()
 });
 
 const validateLogin = (req, res, next) => {
