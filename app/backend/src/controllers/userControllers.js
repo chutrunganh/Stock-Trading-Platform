@@ -105,7 +105,7 @@ function setJwtCookie(res, token) {
 }
 
 export const loginUser = async (req, res, next) => {
-    const { identifier, password, turnstileToken, otp, visitorId, rememberDevice } = req.body;
+    const { identifier, password, turnstileToken, otp, visitorId, rememberDevice, fingerprintConfidence } = req.body;
     try {
         // Skip Turnstile verification in development
         if (process.env.NODE_ENV === 'production') {
@@ -132,16 +132,25 @@ export const loginUser = async (req, res, next) => {
                 }
                 email = user.email;
             }
-            const result = await verifyLoginOtpService(email, otp, password, visitorId, rememberDevice); // Pass visitorId and rememberDevice
+            const result = await verifyLoginOtpService(email, otp, password, visitorId, rememberDevice, fingerprintConfidence); // Pass fingerprintConfidence
             setJwtCookie(res, result.token);
             handleResponse(res, 200, 'Login successful', { user: result.user, token: result.token });
         } else {
             // Step 1: Check credentials and send OTP
-            const result = await loginUserService(identifier, password, visitorId); // Pass visitorId
+            const result = await loginUserService(identifier, password, visitorId, fingerprintConfidence); // Pass fingerprintConfidence
             
             // If result has token, it means device was remembered and 2FA was skipped
             if (result.token) {
                 setJwtCookie(res, result.token);
+                
+                // If there's a warning about low confidence, include it in the response
+                if (result.warning) {
+                    return handleResponse(res, 200, 'Login successful', {
+                        ...result,
+                        warning: result.warning
+                    });
+                }
+                
                 return handleResponse(res, 200, 'Login successful', result);
             }
 

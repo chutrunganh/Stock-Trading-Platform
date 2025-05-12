@@ -21,7 +21,7 @@ dotenv.config({ path: '../../.env' }); // Adjust based on relative depth
  * @param {*} password - the password of the user typed in the login form
  * @returns 
  */
-export const loginUserService = async (identifier, password, visitorId = null) => {
+export const loginUserService = async (identifier, password, visitorId = null, confidenceScore = 0) => {
   try {
     // Fetch the user by email or username, including their portfolio_id
     const result = await pool.query(
@@ -44,8 +44,19 @@ export const loginUserService = async (identifier, password, visitorId = null) =
     }
 
     // Check if device is remembered (skip 2FA)
-    if (visitorId && await isDeviceRememberedService(user.id, visitorId)) {
-      return generateUserTokenAndSafeUser(user, user.portfolio_id);
+    if (visitorId) {
+      const deviceCheck = await isDeviceRememberedService(user.id, visitorId, confidenceScore);
+      
+      if (deviceCheck.success) {
+        const result = generateUserTokenAndSafeUser(user, user.portfolio_id);
+        
+        // Add warning if present
+        if (deviceCheck.warning) {
+          result.warning = deviceCheck.message;
+        }
+        
+        return result;
+      }
     }
 
     // If device is not remembered, return step: 'otp' to trigger 2FA
@@ -226,9 +237,9 @@ export const resetPasswordService = async (email, otp, newPassword) => {
   }
 };
 
-export const verifyLoginOtpService = async (identifier, otp, password, visitorId = null, rememberDevice = false) => {
+export const verifyLoginOtpService = async (identifier, otp, password, visitorId = null, rememberDevice = false, fingerprintConfidence = 0) => {
   // First, check password
-  const loginResult = await loginUserService(identifier, password, visitorId); 
+  const loginResult = await loginUserService(identifier, password, visitorId, fingerprintConfidence); 
   
   // If login result has token, it means device was remembered and 2FA was skipped
   if (loginResult.token) {
@@ -265,8 +276,12 @@ export const verifyLoginOtpService = async (identifier, otp, password, visitorId
     }
 
     // If rememberDevice is true and visitorId is provided, remember this device
+    let deviceWarning = null;
     if (rememberDevice && visitorId) {
-      await rememberDeviceService(user.id, visitorId);
+      const rememberResult = await rememberDeviceService(user.id, visitorId, fingerprintConfidence);
+      if (rememberResult.warning) {
+        deviceWarning = rememberResult.message;
+      }
     }
 
     // Generate JWT token
@@ -286,7 +301,13 @@ export const verifyLoginOtpService = async (identifier, otp, password, visitorId
     );
     // Delete the OTP after successful verification
     await OTP.deleteByEmail(email);
-    return { user: User.getSafeUser(user), token };
+    
+    const result = { user: User.getSafeUser(user), token };
+    if (deviceWarning) {
+      result.warning = deviceWarning;
+    }
+    
+    return result;
   } catch (error) {
     console.error('Error in verifyLoginOtpService:', error.message);
     throw error;

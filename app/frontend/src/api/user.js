@@ -12,7 +12,7 @@ export const registerUser = async (userData) => {
 };
 
 // Function to log in a user
-export const loginUser = async ({ identifier, password, turnstileToken, otp, visitorId, rememberDevice }) => {
+export const loginUser = async ({ identifier, password, turnstileToken, otp, visitorId, rememberDevice, fingerprintConfidence }) => {
   try {
     // In development mode, we don't need to send turnstileToken
     const payload = {
@@ -21,7 +21,8 @@ export const loginUser = async ({ identifier, password, turnstileToken, otp, vis
       ...(import.meta.env.MODE === 'production' ? { turnstileToken } : {}),
       ...(otp ? { otp } : {}),
       visitorId,
-      rememberDevice
+      rememberDevice,
+      fingerprintConfidence
     };
 
     console.log('Login request payload:', payload);

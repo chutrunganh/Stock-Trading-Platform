@@ -26,7 +26,8 @@ const loginSchema = Joi.object({
   turnstileToken: process.env.NODE_ENV === 'production' ? Joi.string().required() : Joi.string().optional(),
   otp: Joi.string().optional(),
   visitorId: Joi.string().optional(),
-  rememberDevice: Joi.boolean().optional()
+  rememberDevice: Joi.boolean().optional(),
+  fingerprintConfidence: Joi.number().optional()
 });
 
 const validateLogin = (req, res, next) => {

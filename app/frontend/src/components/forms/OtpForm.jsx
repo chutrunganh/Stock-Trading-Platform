@@ -14,6 +14,7 @@ function OtpForm({
   className, 
   rememberDevice, 
   onRememberDeviceChange,
+  warning,
   type = 'login' // Add type prop to distinguish between login and forgot password
 }) {
   const [otp, setOtp] = useState('');
@@ -62,6 +63,7 @@ function OtpForm({
       <div className="otp-content">
         <h2>{title || (type === 'login' ? 'Two-Factor Authentication with OTP' : 'Reset Password')}</h2>
         {error && <p className="error-message">{error}</p>}
+        {warning && <p className="warning-message" style={{ color: '#f0b90b' }}>{warning}</p>}
         <div className="form-group">
           <label>{description || 'Please check your email linked to this account for the OTP code'}</label>
           <input

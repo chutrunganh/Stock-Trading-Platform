@@ -8,6 +8,19 @@ import FingerprintJS from '@fingerprintjs/fingerprintjs';
 // Add this at the top, after other imports
 const SITE_KEY = import.meta.env.VITE_SITE_KEY;
 
+/**
+ * Note on FingerprintJS Implementation:
+ * We are using the open-source version of FingerprintJS for basic device fingerprinting.
+ * This provides a visitorId which is a fingerprint hash with some limitations:
+ * - Lower accuracy (40-60%)
+ * - May change after a few weeks
+ * - Possible collisions between similar devices
+ * - Can be spoofed as it's client-side
+ * 
+ * The confidence score from FingerprintJS helps determine the reliability of the fingerprint.
+ * Score ranges from 0 to 1, where higher values indicate more reliable identification.
+ */
+
 function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
   const { login } = useAuth();
   const [identifier, setIdentifier] = useState('');
@@ -20,17 +33,47 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
   const [otpPreviewUrl, setOtpPreviewUrl] = useState('');
   const [fpPromise, setFpPromise] = useState(null);
   const [visitorId, setVisitorId] = useState(null);
+  const [fingerprintConfidence, setFingerprintConfidence] = useState(null);
   const [rememberDevice, setRememberDevice] = useState(false);
+  const [warning, setWarning] = useState('');
 
   console.log('Turnstile SITE_KEY:', SITE_KEY);
 
-  // Initialize FingerprintJS
+  // Initialize FingerprintJS with debug mode in development
   useEffect(() => {
-    // We only need to initialize it once
     setFpPromise(
-      FingerprintJS.load()
+      FingerprintJS.load({
+        debug: import.meta.env.MODE === 'development',
+      })
     );
   }, []);
+
+  // Function to get fingerprint with confidence check
+  const getFingerprint = async () => {
+    if (!fpPromise) return null;
+    
+    try {
+      const fp = await fpPromise;
+      const result = await fp.get();
+      
+      // Store both the visitorId and confidence score
+      setVisitorId(result.visitorId);
+      setFingerprintConfidence(result.confidence);
+
+      // Log components in development mode
+      if (import.meta.env.MODE === 'development') {
+        console.log('Fingerprint components:', FingerprintJS.componentsToDebugString(result.components));
+      }
+
+      return {
+        visitorId: result.visitorId,
+        confidence: result.confidence
+      };
+    } catch (error) {
+      console.error('Error getting fingerprint:', error);
+      return null;
+    }
+  };
 
   // Dynamically load Turnstile script and render widget
   useEffect(() => {
@@ -149,12 +192,13 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
     e.preventDefault();
     setError('');
     setIsLoading(true);
+    
     if (!identifier || !password) {
       setError('Please enter both username/email and password');
       setIsLoading(false);
       return;
     }
-    // Only check turnstileToken in production
+
     if (import.meta.env.MODE === 'production' && !turnstileToken) {
       setError('Please complete the CAPTCHA verification first');
       setIsLoading(false);
@@ -162,46 +206,52 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
     }
 
     try {
-      // Get FingerprintJS visitor ID
-      let currentVisitorId = null;
-      if (fpPromise) {
-        const fp = await fpPromise;
-        const result = await fp.get();
-        currentVisitorId = result.visitorId;
-        setVisitorId(currentVisitorId);
-      }
-
-      // Step 1: Validate credentials (but do not log in yet)
+      // Get fingerprint with confidence check
+      const fingerprintResult = await getFingerprint();
+      
+      // Always send the fingerprint data if available, even if confidence is low
+      // The backend will decide what to do with it based on its own threshold
       const response = await loginUser({ 
         identifier, 
         password, 
         turnstileToken,
-        visitorId: currentVisitorId 
+        visitorId: fingerprintResult ? fingerprintResult.visitorId : null,
+        fingerprintConfidence: fingerprintResult && fingerprintResult.confidence ? fingerprintResult.confidence.score : null
       });
 
       // If we get a token back, it means 2FA was skipped (remembered device)
       if (response.data.token) {
+        // If there's a warning, show it to the user
+        if (response.data.warning) {
+          // Show warning but still proceed with login
+          console.warn('Device fingerprint warning:', response.data.warning);
+          setWarning(response.data.warning);
+        }
         onLogin(response.data);
         return;
       }
 
       // Only proceed to OTP step if backend says so
-      if (response && response.data && response.data.step === 'otp') {
+      if (response?.data?.step === 'otp') {
         setOtpPreviewUrl(response.data.previewUrl || '');
-        setStep(2); // Move to OTP step
+        setStep(2);
       } else {
         setError('Unexpected response from server.');
       }
     } catch (err) {
-      if (err.response?.data?.error?.includes('timeout-or-duplicate')) {
-        setError('CAPTCHA expired or already used. Please complete the CAPTCHA again.');
-      } else if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError('Login failed. Please try again.');
-      }
+      handleLoginError(err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleLoginError = (err) => {
+    if (err.response?.data?.error?.includes('timeout-or-duplicate')) {
+      setError('CAPTCHA expired or already used. Please complete the CAPTCHA again.');
+    } else if (err.response?.data?.message) {
+      setError(err.response.data.message);
+    } else {
+      setError('Login failed. Please try again.');
     }
   };
 
@@ -216,8 +266,17 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
         turnstileToken, 
         otp,
         visitorId,
-        rememberDevice 
+        rememberDevice,
+        fingerprintConfidence: fingerprintConfidence ? fingerprintConfidence.score : null
       });
+      
+      // If there's a warning, show it to the user
+      if (result.data && result.data.warning) {
+        // Show warning but still proceed with login
+        console.warn('Device fingerprint warning:', result.data.warning);
+        setWarning(result.data.warning);
+      }
+      
       // Complete login
       onLogin(result.data);
     } catch (err) {
@@ -282,6 +341,7 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
       <form className="login-form" onSubmit={handleSubmit}>
         <h2>Login</h2>
         {error && <p className="error-message">{error}</p>}
+        {warning && <p className="warning-message" style={{ color: '#f0b90b' }}>{warning}</p>}
 
         <div className="form-group">
           <label>Email or Username:</label>
@@ -342,6 +402,7 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
         previewUrl={otpPreviewUrl}
         isLoading={isLoading}
         error={error}
+        warning={warning}
         onResend={handleResendOtp}
         rememberDevice={rememberDevice}
         onRememberDeviceChange={(e) => setRememberDevice(e.target.checked)}

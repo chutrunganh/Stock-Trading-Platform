@@ -46,8 +46,8 @@
     padding: 12px;
     border: 2px solid transparent;
     border-radius: 4px;
-    background-color: #202127;
-    color: #f0b90b;
+    background-color: #ffffff;
+    color: #121314;
     font-size: 16px;
     transition: all 0.2s ease;
 }
@@ -59,13 +59,13 @@
 }
 
 .form-group input[type="text"]:disabled {
-    background-color: rgba(32, 33, 39, 0.7);
-    color: #b3a369;
+    background-color: rgba(255, 255, 255, 0.7);
+    color: #666666;
     cursor: not-allowed;
 }
 
 .form-group input[type="text"]::placeholder {
-    color: rgba(240, 185, 11, 0.5);
+    color: rgba(0, 0, 0, 0.5);
 }
 
 .form-group.checkbox-group {
@@ -121,12 +121,13 @@
 
 /* Show checkmark when checked */
 .form-group.checkbox-group input[type="checkbox"]:checked ~ .checkbox-wrapper {
-    background-color: #00c853;
-    border-color: #00c853;
+    background-color: #f0b90b;
+    border-color: #f0b90b;
 }
 
 .form-group.checkbox-group input[type="checkbox"]:checked ~ .checkbox-wrapper:after {
     display: block;
+    border-color: #121314; /* Make checkmark dark for better contrast on yellow */
 }
 
 /* Hover effect */
