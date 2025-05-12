@@ -111,7 +111,7 @@ function OtpForm({
               disabled={isLoading}
             />
             <div className="checkbox-wrapper"></div>
-            <span>Trust this device and skip 2FA next time</span>
+            <span>Remember this device (for 1 minute by testing purposes) and skip 2FA next time</span>
           </label>
         </div>
       )}
