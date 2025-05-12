@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ForgotPasswordForm.css';
 import { requestPasswordReset, verifyLoginOtp, resetPassword } from '../../api/user';
-import OtpForm from './OtpForm';
 import { getPasswordRequirements } from '../../utils/passwordUtil';
 import { Eye, EyeOffIcon } from "lucide-react";
 
@@ -19,6 +18,8 @@ function ForgotPasswordForm({ onClose }) {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState('');
+  const [timer, setTimer] = useState(60);
+  const [expired, setExpired] = useState(false);
   const [passwordRequirements, setPasswordRequirements] = useState({
     length: false,
     maxLength: true,
@@ -31,7 +32,17 @@ function ForgotPasswordForm({ onClose }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
- 
+  // Timer effect
+  useEffect(() => {
+    let interval;
+    if (step === 2 && timer > 0 && !expired) {
+      interval = setInterval(() => setTimer(t => t - 1), 1000);
+    } else if (timer === 0) {
+      setExpired(true);
+    }
+    return () => clearInterval(interval);
+  }, [timer, expired, step]);
+
   // Step 1: Request OTP
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
@@ -42,6 +53,8 @@ function ForgotPasswordForm({ onClose }) {
       const response = await requestPasswordReset(email);
       setMessage(response.message || 'OTP has been sent to your email.');
       setPreviewUrl(response.data?.previewUrl || '');
+      setTimer(60);
+      setExpired(false);
       setStep(2);
     } catch (err) {
       setError(err.message || 'Failed to send OTP. Please try again.');
@@ -50,15 +63,24 @@ function ForgotPasswordForm({ onClose }) {
     }
   };
 
-  // Step 2: Verify OTP (for forgot password, just move to next step)
-  const handleOtpSubmit = async ({ identifier, otp }) => {
+  // Step 2: Handle OTP submit
+  const handleOtpSubmit = async (e) => {
+    e.preventDefault();
+    if (!otp.trim() || expired) return;
+    
     setError('');
     setMessage('');
-    setOtp(otp); // Store OTP for use in reset step
-    setStep(3);  // Move to password reset step
+    setIsSubmitting(true);
+    try {
+      setStep(3); // Move to password reset step
+    } catch (err) {
+      setError(err.message || 'Invalid OTP. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // Step 2: Resend OTP
+  // Handle OTP resend
   const handleResendOtp = async () => {
     setError('');
     setMessage('');
@@ -67,6 +89,9 @@ function ForgotPasswordForm({ onClose }) {
       const response = await requestPasswordReset(email);
       setMessage(response.message || 'OTP has been resent to your email.');
       setPreviewUrl(response.data?.previewUrl || '');
+      setTimer(60);
+      setExpired(false);
+      setOtp('');
     } catch (err) {
       setError(err.message || 'Failed to resend OTP. Please try again.');
     } finally {
@@ -120,25 +145,61 @@ function ForgotPasswordForm({ onClose }) {
             />
           </div>
           <div className="form-actions">
-            <button type="button" className="cancel-btn" onClick={onClose} disabled={isSubmitting}>Cancel</button>
-            <button type="submit" className="submit-btn" disabled={isSubmitting}>{isSubmitting ? 'Sending...' : 'Send OTP'}</button>
+            <button type="button" className="cancel-btn" onClick={onClose} disabled={isSubmitting}>
+              Cancel
+            </button>
+            <button type="submit" className="submit-btn" disabled={isSubmitting}>
+              {isSubmitting ? 'Sending...' : 'Send OTP'}
+            </button>
           </div>
         </form>
       )}
+
       {step === 2 && (
-        // Reuse the OTP from for easy maintainable
-        <OtpForm
-          onSubmit={handleOtpSubmit}
-          identifier={email}
-          previewUrl={previewUrl}
-          isLoading={isSubmitting}
-          error={error}
-          onResend={handleResendOtp}
-          title=" "
-          description="Enter the OTP sent to your email to continue."
-          className="forgot-password-form"
-        />
+        <form onSubmit={handleOtpSubmit}>
+          {error && <div className="error-message">{error}</div>}
+          {message && <div className="success-message">{message}</div>}
+          <div className="form-group">
+            <label>Enter the OTP sent to your email to continue.</label>
+            <input
+              type="text"
+              value={otp}
+              onChange={e => setOtp(e.target.value)}
+              required
+              placeholder="Enter the OTP you received"
+              disabled={isSubmitting || expired}
+            />
+          </div>
+          <div className="otp-timer" style={{ color: expired ? 'red' : '#f0b90b' }}>
+            {expired ? (
+              <span>OTP expired.</span>
+            ) : (
+              <span>Expires in 0:{timer.toString().padStart(2, '0')}</span>
+            )}
+          </div>
+          {previewUrl && (
+            <div className="preview-url">
+              <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+                Click here for your simulated Ethereal email
+              </a>
+            </div>
+          )}
+          <div className="form-actions">
+            <button 
+              type="button" 
+              className="cancel-btn" 
+              onClick={expired ? handleResendOtp : onClose} 
+              disabled={isSubmitting}
+            >
+              {expired ? 'Resend OTP' : 'Cancel'}
+            </button>
+            <button type="submit" className="submit-btn" disabled={isSubmitting || expired}>
+              {isSubmitting ? 'Verifying...' : 'Reset Password'}
+            </button>
+          </div>
+        </form>
       )}
+
       {step === 3 && (
         <form onSubmit={handlePasswordReset}>
           {error && <div className="error-message">{error}</div>}
@@ -212,8 +273,12 @@ function ForgotPasswordForm({ onClose }) {
             </div>
           </div>
           <div className="form-actions">
-            <button type="button" className="cancel-btn" onClick={onClose} disabled={isSubmitting}>Cancel</button>
-            <button type="submit" className="submit-btn" disabled={isSubmitting}>{isSubmitting ? 'Resetting...' : 'Reset Password'}</button>
+            <button type="button" className="cancel-btn" onClick={onClose} disabled={isSubmitting}>
+              Cancel
+            </button>
+            <button type="submit" className="submit-btn" disabled={isSubmitting}>
+              {isSubmitting ? 'Resetting...' : 'Reset Password'}
+            </button>
           </div>
         </form>
       )}

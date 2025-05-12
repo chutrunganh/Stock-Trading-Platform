@@ -1,7 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import './OtpForm.css';
 
-function OtpForm({ onSubmit, identifier, previewUrl, isLoading, error, onResend, title, description, className, rememberDevice, onRememberDeviceChange }) {
+function OtpForm({ 
+  onSubmit, 
+  identifier, 
+  previewUrl, 
+  isLoading, 
+  error, 
+  onResend, 
+  onCancel,
+  title, 
+  description, 
+  className, 
+  rememberDevice, 
+  onRememberDeviceChange,
+  type = 'login' // Add type prop to distinguish between login and forgot password
+}) {
   const [otp, setOtp] = useState('');
   const [timer, setTimer] = useState(60); // 1 minute countdown
   const [expired, setExpired] = useState(false);
@@ -38,53 +52,66 @@ function OtpForm({ onSubmit, identifier, previewUrl, isLoading, error, onResend,
     }
   };
 
+  const getButtonText = () => {
+    if (isLoading) return 'Verifying...';
+    return type === 'login' ? 'Verify OTP' : 'Reset Password';
+  };
+
   return (
     <form className={`otp-form${className ? ' ' + className : ''}`} onSubmit={handleSubmit}>
-      <h2>{title || 'Two-Factor Authentication with OTP'}</h2>
-      {error && <p className="error-message">{error}</p>}
-      <div className="form-group">
-        <label>{description || 'Please check your email linked to this account for the OTP code'}</label>
-        <input
-          type="text"
-          value={otp}
-          onChange={(e) => setOtp(e.target.value)}
-          required
-          placeholder="Enter the OTP you received"
-          disabled={isLoading || expired}
-        />
-      </div>
-      <div className="otp-timer" style={{ color: expired ? 'red' : undefined }}>
-        {expired ? (
-          <span>OTP expired. <button type="button" className="resend-button" onClick={handleResend}>Resend OTP</button></span>
-        ) : (
-          <span>Expires in 0:{timer.toString().padStart(2, '0')}</span>
-        )}
-      </div>
-      {previewUrl && (
-        <div className="preview-url">
-          <a href={previewUrl} target="_blank" rel="noopener noreferrer">
-            Click here to view your simulated OTP email <br /> ( we use Ethereal mail)
-          </a>
-        </div>
-      )}
-      <div className="form-group checkbox-group">
-        <label>
+      <div className="otp-content">
+        <h2>{title || (type === 'login' ? 'Two-Factor Authentication with OTP' : 'Reset Password')}</h2>
+        {error && <p className="error-message">{error}</p>}
+        <div className="form-group">
+          <label>{description || 'Please check your email linked to this account for the OTP code'}</label>
           <input
-            type="checkbox"
-            checked={rememberDevice}
-            onChange={onRememberDeviceChange}
-            disabled={isLoading}
+            type="text"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            required
+            placeholder="Enter the OTP you received"
+            disabled={isLoading || expired}
           />
-          Remember this device for 1 minute (testing purposes)
-        </label>
+        </div>
+        <div className="otp-timer" style={{ color: expired ? 'red' : undefined }}>
+          {expired ? (
+            <span>OTP expired. <button type="button" className="resend-button" onClick={handleResend}>Resend OTP</button></span>
+          ) : (
+            <span>Code expires in {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}</span>
+          )}
+        </div>
+        {previewUrl && (
+          <div className="preview-url">
+            <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+              Click here for your simulated Ethereal email
+            </a>
+          </div>
+        )}
+        <div className="form-actions">
+          {onResend && !expired && (
+            <button type="button" className="resend-button" onClick={handleResend} disabled={isLoading}>
+              Resend OTP
+            </button>
+          )}
+          <button type="submit" className="submit-button" disabled={isLoading || expired}>
+            {getButtonText()}
+          </button>
+        </div>
       </div>
-      <button type="submit" className="submit-button" disabled={isLoading || expired}>
-        {isLoading ? 'Verifying...' : 'Verify OTP'}
-      </button>
-      {onResend && !expired && (
-        <button type="button" className="resend-button" onClick={handleResend} disabled={isLoading}>
-          Resend OTP
-        </button>
+      {/* Only show remember device checkbox for login 2FA */}
+      {type === 'login' && (
+        <div className="form-group checkbox-group">
+          <label>
+            <input
+              type="checkbox"
+              checked={rememberDevice}
+              onChange={onRememberDeviceChange}
+              disabled={isLoading}
+            />
+            <div className="checkbox-wrapper"></div>
+            <span>Trust this device and skip 2FA next time</span>
+          </label>
+        </div>
       )}
     </form>
   );
