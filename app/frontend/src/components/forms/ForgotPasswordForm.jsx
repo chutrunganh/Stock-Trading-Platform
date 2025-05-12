@@ -42,7 +42,7 @@ function ForgotPasswordForm({ onClose }) {
     }
     return () => clearInterval(interval);
   }, [timer, expired, step]);
-
+ 
   // Step 1: Request OTP
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
@@ -160,13 +160,15 @@ function ForgotPasswordForm({ onClose }) {
           {error && <div className="error-message">{error}</div>}
           {message && <div className="success-message">{message}</div>}
           <div className="form-group">
-            <label>Enter the OTP sent to your email to continue.</label>
+            <label>Enter the 8-character OTP sent to your email to continue.</label>
             <input
               type="text"
               value={otp}
               onChange={e => setOtp(e.target.value)}
               required
-              placeholder="Enter the OTP you received"
+              placeholder="Enter the 8-character OTP you received"
+              pattern="[A-Za-z0-9]{8}"
+              maxLength={8}
               disabled={isSubmitting || expired}
             />
           </div>

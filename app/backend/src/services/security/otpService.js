@@ -1,6 +1,6 @@
-
 import nodemailer from 'nodemailer';
 import OTP from '../../models/otpModel.js';
+import otpGenerator from 'otp-generator';
 
 let cachedTestAccount = null;
 
@@ -30,8 +30,14 @@ export const sendOtpService = async (email) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiration = Date.now() + 1 * 60 * 1000; // 1 minutes from now
+    // Generate 8-character alphanumeric OTP using crypto
+    const otp = otpGenerator.generate(8, {
+      upperCaseAlphabets: true,
+      lowerCaseAlphabets: true,
+      digits: true,
+      specialChars: false
+    });
+    const otpExpiration = Date.now() + 1 * 60 * 1000; // 1 minute from now
 
     // Save OTP to the database (in-memory)
     await OTP.save(normalizedEmail, otp, otpExpiration);
@@ -53,7 +59,7 @@ export const sendOtpService = async (email) => {
           <h3 style="color: #222;">Two-Factor Authentication (OTP) Verification</h3>
           <p>Dear user,</p>
           <p>To complete your secure login to <b>Soict Stock</b>, please use the following One-Time Password (OTP):</p>
-          <div style="font-size: 2rem; font-weight: bold; letter-spacing: 4px; color: #f0b90b; background: #222; padding: 12px 0; border-radius: 6px; text-align: center; margin: 16px 0;">${otp}</div>
+          <div style="font-size: 2rem; font-weight: bold; letter-spacing: 2px; color: #f0b90b; background: #222; padding: 12px 0; border-radius: 6px; text-align: center; margin: 16px 0;">${otp}</div>
           <p style="margin: 0 0 8px 0;">This OTP is valid for <b>1 minute</b>.</p>
           <p style="color: #888; font-size: 13px; margin: 0 0 16px 0;">If you did not request this OTP, please ignore this email or contact our support team immediately.</p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />

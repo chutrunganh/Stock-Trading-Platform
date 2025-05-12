@@ -71,7 +71,9 @@ function OtpForm({
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
             required
-            placeholder="Enter the OTP you received"
+            placeholder="Enter the 8-character OTP you received"
+            pattern="[A-Za-z0-9]{8}"
+            maxLength={8}
             disabled={isLoading || expired}
           />
         </div>
