@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import log from './loggerUtil.js';
 import dotenv from 'dotenv';
-dotenv.config({ path: '../../../.env' }); // Load environment variables
+dotenv.config({ path: '../../.env' }); // Load environment variables
 
 
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'default-access-secret';
