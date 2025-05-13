@@ -11,6 +11,7 @@ import { createPortfolioForUserService } from '../portfolioCRUDService.js';
 import { validatePassword } from '../../utils/passwordUtil.js';
 import { isDeviceRememberedService } from './rememberedDeviceService.js';
 import { rememberDeviceService } from './rememberedDeviceService.js';
+import { generateTokens, refreshTokens } from '../../utils/jwtUtil.js';
 dotenv.config({ path: '../../.env' }); // Adjust based on relative depth
 
 /**
@@ -48,7 +49,14 @@ export const loginUserService = async (identifier, password, visitorId = null, c
       const deviceCheck = await isDeviceRememberedService(user.id, visitorId, confidenceScore);
       
       if (deviceCheck.success) {
-        const result = generateUserTokenAndSafeUser(user, user.portfolio_id);
+        const tokens = generateTokens({
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          portfolio_id: user.portfolio_id
+        });
+        const result = { user: User.getSafeUser(user), ...tokens };
         
         // Add warning if present
         if (deviceCheck.warning) {
@@ -182,7 +190,14 @@ export const findOrCreateGoogleUserService = async (userData) => {
       // Commit transaction
       await client.query('COMMIT');
       // Generate JWT token and safe user
-      return generateUserTokenAndSafeUser(user, user.portfolio_id);
+      const tokens = generateTokens({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        portfolio_id: user.portfolio_id
+      });
+      return { user: User.getSafeUser(user), ...tokens };
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;
@@ -240,12 +255,10 @@ export const resetPasswordService = async (email, otp, newPassword) => {
 export const verifyLoginOtpService = async (identifier, otp, password, visitorId = null, rememberDevice = false, fingerprintConfidence = 0) => {
   // First, check password
   const loginResult = await loginUserService(identifier, password, visitorId, fingerprintConfidence); 
-  
-  // If login result has token, it means device was remembered and 2FA was skipped
-  if (loginResult.token) {
+  // If login result has accessToken, it means device was remembered and 2FA was skipped
+  if (loginResult.accessToken) {
     return loginResult;
   }
-
   // Always resolve identifier to email
   let email = identifier;
   if (!identifier.includes('@')) {
@@ -257,13 +270,11 @@ export const verifyLoginOtpService = async (identifier, otp, password, visitorId
     }
     email = user.email;
   }
-
   // Then, check OTP
   const isValidOtp = await verifyOtpService(email, otp);
   if (!isValidOtp) {
     throw new Error('Invalid OTP');
   }
-
   try {
     // Fetch the user by email
     const userResult = await pool.query(
@@ -274,7 +285,6 @@ export const verifyLoginOtpService = async (identifier, otp, password, visitorId
     if (!user) {
       throw new Error('User not found');
     }
-
     // If rememberDevice is true and visitorId is provided, remember this device
     let deviceWarning = null;
     if (rememberDevice && visitorId) {
@@ -283,30 +293,19 @@ export const verifyLoginOtpService = async (identifier, otp, password, visitorId
         deviceWarning = rememberResult.message;
       }
     }
-
-    // Generate JWT token
-    const userForToken = {
+    // Generate JWT tokens
+    const { accessToken, refreshToken } = generateTokens({
       id: user.id,
       username: user.username,
       email: user.email,
       role: user.role,
-    };
-    const token = jwt.sign(
-      {
-        ...userForToken,
-        login_at: Date.now()
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
-    );
+    });
     // Delete the OTP after successful verification
     await OTP.deleteByEmail(email);
-    
-    const result = { user: User.getSafeUser(user), token };
+    const result = { user: User.getSafeUser(user), accessToken, refreshToken };
     if (deviceWarning) {
       result.warning = deviceWarning;
     }
-    
     return result;
   } catch (error) {
     console.error('Error in verifyLoginOtpService:', error.message);
@@ -314,25 +313,22 @@ export const verifyLoginOtpService = async (identifier, otp, password, visitorId
   }
 };
 
-// Helper to generate JWT and safe user object
-function generateUserTokenAndSafeUser(user, portfolio_id_override) {
-  const userForToken = {
-    id: user.id,
-    username: user.username,
-    email: user.email,
-    role: user.role,
-    portfolio_id: portfolio_id_override ?? user.portfolio_id
-  };
-  const token = jwt.sign(
-    {
-      ...userForToken,
-      login_at: Date.now()
-    },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
-  );
-  return {
-    user: User.getSafeUser(user),
-    token
-  };
-}
+export const logoutUserService = async () => {
+  // No server-side action needed for stateless JWT logout
+  return { message: 'Logged out successfully' };
+};
+
+/**
+ * Refresh access and refresh tokens using a valid refresh token.
+ * @param {string} refreshToken
+ * @returns {{ accessToken: string, refreshToken: string }}
+ */
+export const refreshAccessTokenService = async (refreshToken) => {
+  try {
+    // This will throw if invalid/expired
+    const tokens = refreshTokens(refreshToken);
+    return tokens;
+  } catch (error) {
+    throw new Error('Invalid or expired refresh token');
+  }
+};

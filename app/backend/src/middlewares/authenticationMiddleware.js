@@ -8,14 +8,14 @@
  * Protected routes that require login must use this middleware to ensure authentication before the request is processed.
  */
 
-import jwt from 'jsonwebtoken';
+import { verifyAccessToken } from '../utils/jwtUtil.js';
 
 const authMiddleware = (req, res, next) => {
   let token;
   
   // Get token from cookie
-  if (req.cookies && req.cookies.jwt) {
-    token = req.cookies.jwt;
+  if (req.cookies && req.cookies.accessToken) {
+    token = req.cookies.accessToken;
   } 
   // Or from Authorization header (for API clients that don't use cookies)
   else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -32,7 +32,7 @@ const authMiddleware = (req, res, next) => {
 
   try {
     // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-here');
+    const decoded = verifyAccessToken(token);
     
     // Attach user info to request object
     req.user = {

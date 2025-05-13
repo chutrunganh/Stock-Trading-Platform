@@ -221,21 +221,31 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
 
       // If we get a token back, it means 2FA was skipped (remembered device)
       if (response.data.token) {
+        console.log('Login successful - 2FA skipped (device remembered):', {
+          tokenReceived: !!response.data.token,
+          tokenLength: response.data.token?.length,
+          userReceived: !!response.data.user
+        });
+        
         // If there's a warning, show it to the user
         if (response.data.warning) {
           // Show warning but still proceed with login
           console.warn('Device fingerprint warning:', response.data.warning);
           setWarning(response.data.warning);
         }
-        onLogin(response.data);
+        // Call onLogin with the full user/token object (this will call AuthContext.login)
+        onLogin({ user: response.data.user, token: response.data.token });
         return;
       }
 
       // Only proceed to OTP step if backend says so
       if (response?.data?.step === 'otp') {
+        console.log('OTP verification required - proceeding to OTP step');
         setOtpPreviewUrl(response.data.previewUrl || '');
         setStep(2);
+        // Do NOT call onLogin or login here!
       } else {
+        console.error('Unexpected server response:', response.data);
         setError('Unexpected response from server.');
       }
     } catch (err) {
@@ -277,10 +287,25 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
         setWarning(result.data.warning);
       }
       
-      // Complete login
-      onLogin(result.data);
+      // Check if we have user and token in the response
+      if (result.data && result.data.user && result.data.token) {
+        console.log('OTP verification successful - Login completed:', {
+          tokenReceived: !!result.data.token,
+          tokenLength: result.data.token?.length,
+          userReceived: !!result.data.user
+        });
+        
+        onLogin({ 
+          user: result.data.user, 
+          token: result.data.token 
+        });
+      } else {
+        console.error('Invalid server response:', result);
+        setError('Invalid server response. Missing user or token data.');
+      }
     } catch (err) {
-      setError(err.message || 'Invalid OTP. Please try again.');
+      console.error('OTP verification error:', err);
+      setError(err.response?.data?.message || err.message || 'Invalid OTP. Please try again.');
     } finally {
       setIsLoading(false);
     }

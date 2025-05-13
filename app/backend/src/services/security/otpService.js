@@ -84,22 +84,22 @@ export const sendOtpService = async (email) => {
 
 export const verifyOtpService = async (email, otp) => {
   const normalizedEmail = email.trim().toLowerCase();
-
   try {
     const otpData = await OTP.findByEmail(normalizedEmail);
-
-    console.log('Verifying OTP:', { email: normalizedEmail, otp, otpData });
-
+    console.log('Verifying OTP:', { email: normalizedEmail, receivedOtp: otp, otpData });
     if (!otpData) {
-      throw new Error('OTP not found or expired');
+      console.error('OTP not found for email:', normalizedEmail);
+      throw new Error('OTP not found or expired. Please request a new OTP.');
     }
-
     const { otp: storedOtp, otp_expiration: otpExpiration } = otpData;
-
-    if (storedOtp !== otp || Date.now() > otpExpiration) {
-      throw new Error('Invalid or expired OTP');
+    if (storedOtp !== otp) {
+      console.error('Incorrect OTP:', { receivedOtp: otp, storedOtp });
+      throw new Error('Incorrect OTP. Please check and try again.');
     }
-
+    if (Date.now() > otpExpiration) {
+      console.error('OTP expired:', { now: Date.now(), otpExpiration });
+      throw new Error('OTP has expired. Please request a new OTP.');
+    }
     // Do not delete the OTP here; it will be deleted after the password is reset
     return { message: 'OTP verified successfully' };
   } catch (error) {

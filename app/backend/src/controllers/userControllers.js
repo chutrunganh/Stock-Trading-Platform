@@ -18,6 +18,8 @@ import { verifyTurnstileToken } from '../services/security/turnstileService.js';
 import { verifyLoginOtpService } from '../services/security/userAuthService.js';
 import { sendOtpService } from '../services/security/otpService.js';
 import { resetPasswordService } from '../services/security/userAuthService.js';
+import { logoutUserService, refreshAccessTokenService } from '../services/security/userAuthService.js';
+import { setAuthCookies } from '../utils/setCookieUtil.js';
 
 // Standardized response format
 const handleResponse = (res, status, message, data = null) => {
@@ -94,14 +96,16 @@ export const deleteUser = async (req, res, next) => {
     }
 }
 
-// Helper to set JWT cookie with secure properties
-function setJwtCookie(res, token) {
-  res.cookie('jwt', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: 'strict',
-  });
+// Helper to resolve email from identifier (email or username)
+async function resolveEmailFromIdentifier(identifier) {
+  if (!identifier.includes('@')) {
+    const user = await getUserByUsernameService(identifier);
+    if (!user || !user.email) {
+      throw new Error('User not found');
+    }
+    return user.email;
+  }
+  return identifier;
 }
 
 export const loginUser = async (req, res, next) => {
@@ -123,46 +127,63 @@ export const loginUser = async (req, res, next) => {
 
         if (otp) {
             // Step 2: Verify both password and OTP, then log in and set cookie
-            let email = identifier;
-            if (!identifier.includes('@')) {
-                // If identifier is not an email, look up by username
-                const user = await getUserByUsernameService(identifier);
-                if (!user || !user.email) {
-                    return handleResponse(res, 404, 'User not found');
-                }
-                email = user.email;
+            let email;
+            try {
+              email = await resolveEmailFromIdentifier(identifier);
+            } catch (err) {
+              return handleResponse(res, 404, err.message);
             }
-            const result = await verifyLoginOtpService(email, otp, password, visitorId, rememberDevice, fingerprintConfidence); // Pass fingerprintConfidence
-            setJwtCookie(res, result.token);
-            handleResponse(res, 200, 'Login successful', { user: result.user, token: result.token });
+            const result = await verifyLoginOtpService(email, otp, password, visitorId, rememberDevice, fingerprintConfidence);
+            
+            // Log token information for debugging
+            console.log('OTP verification successful - Tokens generated:', { 
+              accessTokenExists: !!result.accessToken,
+              refreshTokenExists: !!result.refreshToken,
+              accessTokenLength: result.accessToken?.length,
+              refreshTokenLength: result.refreshToken?.length
+            });
+            
+            setAuthCookies(res, result.accessToken, result.refreshToken);
+            return handleResponse(res, 200, 'Login successful', { 
+                user: result.user, 
+                token: result.accessToken // Consistent naming: this is the accessToken
+            });
         } else {
             // Step 1: Check credentials and send OTP
-            const result = await loginUserService(identifier, password, visitorId, fingerprintConfidence); // Pass fingerprintConfidence
+            const result = await loginUserService(identifier, password, visitorId, fingerprintConfidence);
             
-            // If result has token, it means device was remembered and 2FA was skipped
-            if (result.token) {
-                setJwtCookie(res, result.token);
+            // If result has accessToken, it means device was remembered and 2FA was skipped
+            if (result.accessToken) {
+                console.log('Device remembered - Skipping 2FA - Tokens generated:', { 
+                  accessTokenExists: !!result.accessToken,
+                  refreshTokenExists: !!result.refreshToken,
+                  accessTokenLength: result.accessToken?.length,
+                  refreshTokenLength: result.refreshToken?.length
+                });
+                
+                setAuthCookies(res, result.accessToken, result.refreshToken);
                 
                 // If there's a warning about low confidence, include it in the response
                 if (result.warning) {
                     return handleResponse(res, 200, 'Login successful', {
-                        ...result,
+                        user: result.user,
+                        token: result.accessToken, // Consistent naming: this is the accessToken
                         warning: result.warning
                     });
                 }
                 
-                return handleResponse(res, 200, 'Login successful', result);
+                return handleResponse(res, 200, 'Login successful', {
+                    user: result.user,
+                    token: result.accessToken // Consistent naming: this is the accessToken
+                });
             }
 
             // Send OTP to user's email
-            let email = identifier;
-            if (!identifier.includes('@')) {
-                // If identifier is not an email, look up by username
-                const user = await getUserByUsernameService(identifier);
-                if (!user || !user.email) {
-                    return handleResponse(res, 404, 'User not found');
-                }
-                email = user.email;
+            let email;
+            try {
+              email = await resolveEmailFromIdentifier(identifier);
+            } catch (err) {
+              return handleResponse(res, 404, err.message);
             }
             const otpResult = await sendOtpService(email);
             handleResponse(res, 200, 'OTP sent', {
@@ -205,11 +226,19 @@ export const googleAuthCallback = (req, res, next) => {
         }
         
         try {
-            // Put the JWT token in a cookie
-            setJwtCookie(res, user.token);
+            // Log token information for debugging
+            console.log('Google auth successful - Tokens generated:', { 
+              accessTokenExists: !!user.accessToken,
+              refreshTokenExists: !!user.refreshToken,
+              accessTokenLength: user.accessToken?.length,
+              refreshTokenLength: user.refreshToken?.length
+            });
             
-            // Redirect back to frontend with success
-            const successUrl = `${process.env.FE_URL}?login=success&token=${user.token}`;
+            // Put the access token in a cookie
+            setAuthCookies(res, user.accessToken, user.refreshToken);
+            
+            // Redirect back to frontend with success - use accessToken for consistency
+            const successUrl = `${process.env.FE_URL}?login=success&token=${user.accessToken}`;
             res.redirect(successUrl);
         } catch (error) {
             const errorUrl = `${process.env.FE_URL}?error=${encodeURIComponent(error.message)}`;
@@ -226,14 +255,11 @@ export const sendLoginOtpController = async (req, res, next) => {
       return handleResponse(res, 400, 'Identifier (email or username) is required');
     }
     // Find user by email or username
-    let email = identifier;
-    if (!identifier.includes('@')) {
-      // If identifier is not an email, look up by username
-      const user = await getUserByUsernameService(identifier);
-      if (!user || !user.email) {
-        return handleResponse(res, 404, 'User not found');
-      }
-      email = user.email;
+    let email;
+    try {
+      email = await resolveEmailFromIdentifier(identifier);
+    } catch (err) {
+      return handleResponse(res, 404, err.message);
     }
     // Send OTP to the user's email
     const result = await sendOtpService(email);
@@ -268,5 +294,57 @@ export const resetPasswordController = async (req, res, next) => {
     handleResponse(res, 200, result.message);
   } catch (error) {
     next(error);
+  }
+};
+
+// Logout controller
+export const logoutUser = async (req, res, next) => {
+  try {
+    await logoutUserService();
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+    handleResponse(res, 200, 'Logged out successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Refresh token controller
+export const refreshToken = async (req, res, next) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+      console.log('Refresh token missing in request cookies');
+      return handleResponse(res, 401, 'No refresh token provided');
+    }
+    
+    console.log('Attempting to refresh token with existing refreshToken:', {
+      refreshTokenExists: !!refreshToken,
+      refreshTokenLength: refreshToken?.length
+    });
+    
+    const tokens = await refreshAccessTokenService(refreshToken);
+    
+    console.log('Token refresh successful:', {
+      newAccessTokenExists: !!tokens.accessToken,
+      newRefreshTokenExists: !!tokens.refreshToken,
+      newAccessTokenLength: tokens.accessToken?.length,
+      newRefreshTokenLength: tokens.refreshToken?.length
+    });
+    
+    // Set new cookies
+    setAuthCookies(res, tokens.accessToken, tokens.refreshToken);
+    handleResponse(res, 200, 'Token refreshed', tokens);
+  } catch (error) {
+    console.error('Token refresh failed:', error.message);
+    handleResponse(res, 401, error.message || 'Invalid or expired refresh token');
   }
 };

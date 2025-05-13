@@ -2,7 +2,7 @@
  * AuthContext provides authentication state and methods throughout the app
  */
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { loginUser, registerUser, getUserProfile } from '../api/user';
+import { loginUser, registerUser, getUserProfile, logoutUser as logoutUserApi, refreshToken as refreshTokenApi } from '../api/user';
 import apiClient from '../api/apiClient';
 
 // Create the Auth Context
@@ -51,23 +51,30 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await logoutUserApi();
+    } catch (err) {
+      console.error('Logout API error:', err);
+    }
     localStorage.removeItem('authToken');
-    localStorage.removeItem('userId'); // Remove user ID
+    localStorage.removeItem('userId');
     setUser(null);
-  };  // Login function
+  };
+
+  // Login function
   const login = async (credentials) => {
     setLoading(true);
     setError(null);
     try {
       let userData;
-      let authToken;
+      let accessToken;
       
       // Only allow login if credentials contains both user and token (from Google login or OTP verification)
       if (credentials.user && credentials.token) {
         console.log('AuthContext: Processing login with user data:', credentials.user);
         userData = credentials.user;
-        authToken = credentials.token;
+        accessToken = credentials.token; // This is actually the accessToken
       } else {
         // Defensive: If called with only identifier/password, do NOT authenticate
         console.error('AuthContext: Invalid login attempt: missing user or token. This should only be called after OTP verification.');
@@ -75,8 +82,9 @@ export const AuthProvider = ({ children }) => {
       }
       
       // Store auth data and update state
-      localStorage.setItem('authToken', authToken);
-      console.log('Storing user ID in localStorage:', userData.id);
+      console.log('AuthContext: Storing accessToken in localStorage');
+      localStorage.setItem('authToken', accessToken);
+      console.log('AuthContext: Storing user ID in localStorage:', userData.id);
       localStorage.setItem('userId', userData.id); // Store user ID
       
       // Update user state immediately 
@@ -129,7 +137,41 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };  return (
+  };
+
+  // Refresh token function
+  const refresh = async () => {
+    try {
+      console.log('AuthContext: Attempting to refresh token');
+      const response = await refreshTokenApi();
+      
+      if (response && response.data && response.data.accessToken) {
+        console.log('AuthContext: Token refresh successful, storing new accessToken');
+        localStorage.setItem('authToken', response.data.accessToken);
+        // Optionally update user state if needed (e.g., decode token or refetch profile)
+        return response.data;
+      }
+      
+      console.warn('AuthContext: Token refresh response missing accessToken');
+      return null;
+    } catch (err) {
+      console.error('AuthContext: Token refresh failed:', err);
+      await logout();
+      return null;
+    }
+  };
+
+  // Make refresh and logout globally accessible for apiClient interceptor
+  useEffect(() => {
+    window.AuthRefresh = refresh;
+    window.AuthLogout = logout;
+    return () => {
+      window.AuthRefresh = null;
+      window.AuthLogout = null;
+    };
+  }, [refresh, logout]);
+
+  return (
     <AuthContext.Provider 
       value={{ 
         user, 
@@ -139,6 +181,7 @@ export const AuthProvider = ({ children }) => {
         authInitialized: authState.initialized,
         login,
         logout,
+        refresh,
         register
       }}
     >

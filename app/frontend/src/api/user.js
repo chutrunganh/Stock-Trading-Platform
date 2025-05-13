@@ -91,3 +91,31 @@ export const resetPassword = async ({ email, otp, newPassword }) => {
     throw error;
   }
 };
+
+// Function to log out a user
+export const logoutUser = async () => {
+  try {
+    const response = await apiClient.post('/logout');
+    return response.data;
+  } catch (error) {
+    console.error('Error during logout:', error);
+    throw error;
+  }
+};
+
+// Function to refresh tokens
+export const refreshToken = async () => {
+  try {
+    console.log('Attempting to refresh token');
+    const response = await apiClient.post('/refresh-token');
+    console.log('Token refresh response:', {
+      success: response.data.status === 200,
+      accessTokenReceived: !!response.data.data?.accessToken,
+      refreshTokenReceived: !!response.data.data?.refreshToken
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error refreshing token:', error);
+    throw error;
+  }
+};

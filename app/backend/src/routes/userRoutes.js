@@ -4,7 +4,7 @@
  */
 
 import express from 'express';
-import { registerUser, getAllUsers, getUserById, updateUser, deleteUser, loginUser, googleAuth, googleAuthCallback, sendLoginOtpController, forgotPasswordController, resetPasswordController } from '../controllers/userControllers.js';
+import { registerUser, getAllUsers, getUserById, updateUser, deleteUser, loginUser, googleAuth, googleAuthCallback, sendLoginOtpController, forgotPasswordController, resetPasswordController, logoutUser, refreshToken } from '../controllers/userControllers.js';
 import { validateUser, validateUserUpdate, validateLogin } from '../middlewares/userValidationMiddleware.js';
 import authorizeRole from '../middlewares/roleBasedAccessControlMiddleware.js';
 import authMiddleware from '../middlewares/authenticationMiddleware.js';
@@ -26,6 +26,8 @@ const logRequestBody = (req, res, next) => {
 };
 
 router.post("/login", logRequestBody, validateLogin, loginUser);  // User login
+router.post("/logout", logoutUser); // User logout
+router.post("/refresh-token", refreshToken); // Refresh access/refresh token
 
 // OTP-based login verification (2FA step)
 router.post("/send-login-otp", sendLoginOtpController);
@@ -59,9 +61,6 @@ router.get("/profile", authMiddleware, (req, res) => {
     }
   });
 }); // User profile route to test authentication
-
-
-router.post("/logout", authMiddleware, (req, res) => {}); // Placeholder for user logout route
 
 
 // 3. Protected routes (authentication required) + Authorization (admin role required)
