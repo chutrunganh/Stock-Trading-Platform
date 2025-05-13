@@ -14,6 +14,23 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [authState, setAuthState] = useState({ initialized: false });
+
+  // Add window unload listener
+  useEffect(() => {
+    const handleUnload = () => {
+      // Clear auth state when window closes
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userId');
+      setUser(null);
+    };
+
+    window.addEventListener('unload', handleUnload);
+    
+    return () => {
+      window.removeEventListener('unload', handleUnload);
+    };
+  }, []);
+
   // Check for stored auth token on mount
   useEffect(() => {
     const checkAuth = async () => {
