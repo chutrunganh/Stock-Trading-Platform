@@ -121,7 +121,7 @@ function Portfolio() {
                     </div>
                     <Box mt={2}>
                         <Grid container spacing={3}>
-                            <Grid xs={12} md={6}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <Typography variant="subtitle1">Available Balance</Typography>
                                 <Typography variant="h4" sx={{ color: 'success.main' }}>
                                     {formatCurrency(portfolioDetails?.cash_balance || 0)}
@@ -135,7 +135,7 @@ function Portfolio() {
                                     Add Funds
                                 </Button>
                             </Grid>
-                            <Grid xs={12} md={6}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                                 <Typography variant="subtitle1">Total Holdings Value</Typography>
                                 <Typography variant="h4" sx={{ color: 'success.main' }}>
                                     {formatCurrency(portfolioDetails?.total_value || 0)}

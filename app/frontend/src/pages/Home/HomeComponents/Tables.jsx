@@ -52,7 +52,7 @@ const columns = [
   createVolumeColumn('bid_vol2', 'Vol\u00a02'),
   createPriceColumn('bid_prc1', 'Prc\u00a01'),
   createVolumeColumn('bid_vol1', 'Vol\u00a01'),
-  createPriceColumn('match_prc', 'Price'),
+  createPriceColumn('match_prc', 'Match'),
   createVolumeColumn('match_vol', 'Vol'),
   createPriceColumn('ask_prc1', 'Prc\u00a01'),
   createVolumeColumn('ask_vol1', 'Vol\u00a01'),
@@ -110,13 +110,14 @@ const createData = (Symbol, ref, ceil, floor, bid_prc1, bid_vol1, bid_prc2, bid_
 const OrderBookTableRow = memo(({ row, columns }) => {
   return (
     <TableRow hover tabIndex={-1}>
-      {columns.map(({ id, align, format }) => {        const value = row[id];
+      {columns.map(({ id, align, format }) => {
+        const value = row[id];
         const isSymbolColumn = id === 'Symbol';
         const isPriceCell = id.includes('prc') || id === 'match_prc' || id === 'ref' || id === 'ceil' || id === 'floor';
         const isVolumeCell = id.includes('vol');
         const isMatchPrice = id === 'match_prc';
-        const isRefPrice = id === 'ref';
-        const borderRightStyle = ['Symbol', 'floor', 'bid_vol1', 'match_vol'].includes(id)
+        const isMatchVolume = id === 'match_vol';
+        const borderRightStyle = ['Symbol', 'floor', 'bid_vol1', 'match_vol', 'ask_vol2'].includes(id)
           ? '3px solid #000'
           : '1px solid #ccc';
 
@@ -127,11 +128,12 @@ const OrderBookTableRow = memo(({ row, columns }) => {
             data-price-cell={isPriceCell ? "true" : "false"}
             data-volume-cell={isVolumeCell ? "true" : "false"}
             data-match-price={isMatchPrice ? "true" : "false"}
-            data-ref-price={isRefPrice ? "true" : "false"}
-            style={{
+            sx={{
               fontWeight: isSymbolColumn ? 'bold' : 'normal',
               color: getCellTextColor(id, value, row.floor, row.ceil, row.ref, row.match_prc, row),
               borderRight: borderRightStyle,
+              backgroundColor: (isMatchPrice || isMatchVolume) ? '#f9f9f9' : 'inherit',
+              padding: '8px 16px',
             }}
           >
             {format && typeof value === 'number' ? format(value) : value}
@@ -141,6 +143,7 @@ const OrderBookTableRow = memo(({ row, columns }) => {
     </TableRow>
   );
 }, (prevProps, nextProps) => {
+  // Only re-render if the relevant data has changed
   const { row: prevRow } = prevProps;
   const { row: nextRow } = nextProps;
 
@@ -176,7 +179,8 @@ const OrderBookTableHeader = () => (
             minWidth: column.minWidth,
             paddingLeft: '16px',
             paddingRight: '16px',
-            borderRight: ['bid_vol1', 'match_vol'].includes(column.id) ? '3px solid #000' : '1px solid #ccc',
+            borderRight: ['bid_vol1', 'match_vol', 'ask_vol2'].includes(column.id) ? '3px solid #000' : '1px solid #ccc',
+            backgroundColor: column.id === 'match_prc' || column.id === 'match_vol' ? '#f9f9f9' : 'inherit',
           }}
         >
           {column.label}
@@ -209,7 +213,61 @@ function Tables() {
     localStorage.setItem('shownNotifications', JSON.stringify(shownNotifications));
   };
 
-  // Handle SSE connection and initial data loading
+  // Transform orderBookData into the format expected by the table
+  const processedRows = useMemo(() => {
+    if (!Array.isArray(orderBookData) || orderBookData.length === 0) {
+      return [];
+    }
+
+    return orderBookData.map(stockData => {
+      console.log('Data received from backend:', stockData); // Log the raw data
+      
+      // Convert all values to numbers and handle null/undefined
+      const refPrice = Number(stockData.ref) || 0;
+      const ceilPrice = Math.round(refPrice * 1.07 * 100) / 100;
+      const floorPrice = Math.round(refPrice * 0.93 * 100) / 100;
+      
+      // Extract bid and ask data directly
+      const bid_prc1 = Number(stockData.bid_prc1) || 0;
+      const bid_vol1 = Number(stockData.bid_vol1) || 0;
+      const bid_prc2 = Number(stockData.bid_prc2) || 0;
+      const bid_vol2 = Number(stockData.bid_vol2) || 0;
+      
+      const ask_prc1 = Number(stockData.ask_prc1) || 0;
+      const ask_vol1 = Number(stockData.ask_vol1) || 0;
+      const ask_prc2 = Number(stockData.ask_prc2) || 0;
+      const ask_vol2 = Number(stockData.ask_vol2) || 0;
+      
+      // Extract match data
+      const match_prc = Number(stockData.match_prc) || 0;
+      const match_vol = Number(stockData.match_vol) || 0;
+      const match_timestamp = stockData.match_timestamp || null;
+      
+      // Create the row data object (no frontend aggregation needed)
+      const finalData = {
+        Symbol: stockData.symbol,
+        ref: refPrice,
+        ceil: ceilPrice,
+        floor: floorPrice,
+        bid_prc1: bid_prc1,
+        bid_vol1: bid_vol1,
+        bid_prc2: bid_prc2,
+        bid_vol2: bid_vol2,
+        match_prc: match_prc,
+        match_vol: match_vol,
+        ask_prc1: ask_prc1,
+        ask_vol1: ask_vol1,
+        ask_prc2: ask_prc2,
+        ask_vol2: ask_vol2,
+        match_timestamp: match_timestamp
+      };
+
+      console.log('Final data for UI row:', finalData); // Log the data being passed to the UI
+      return finalData;
+    });
+  }, [orderBookData, lastUpdateTime]);
+
+  // Improve SSE connection handling
   useEffect(() => {
     let eventSource = null;
     let retryCount = 0;
@@ -234,7 +292,7 @@ function Tables() {
       }
     };
     
-    // Initialize SSE connection
+    // Initialize SSE connection with better error handling and reconnection
     const initSSEConnection = () => {
       if (eventSource) {
         eventSource.close();
@@ -253,57 +311,37 @@ function Tables() {
           const { type, data } = JSON.parse(event.data);
           
           if ((type === 'initial' || type === 'update') && Array.isArray(data)) {
-            // Check for new matches and show notifications
+            // Process notifications
             data.forEach(stock => {
               if (stock.match_notification) {
                 const currentUserId = localStorage.getItem('userId');
                 const matchTimestamp = stock.match_notification.timestamp;
                 
-                // Only show notification if it hasn't been shown before
                 if (!hasNotificationBeenShown(stock.symbol, matchTimestamp)) {
-                  console.log('New match notification received:', {
-                    stock: stock.symbol,
-                    notification: stock.match_notification,
-                    currentUserId,
-                    buyerUserId: stock.match_notification.buyerUserId,
-                    sellerUserId: stock.match_notification.sellerUserId,
-                    matchTimestamp
-                  });
-                  
-                  if (!currentUserId) {
-                    console.log('No current user ID found in localStorage');
-                    return;
-                  }
+                  if (currentUserId) {
+                    const isBuyer = stock.match_notification.buyerUserId === currentUserId;
+                    const isSeller = stock.match_notification.sellerUserId === currentUserId;
 
-                  // Check if the current user is either the buyer or seller
-                  const isBuyer = stock.match_notification.buyerUserId === currentUserId;
-                  const isSeller = stock.match_notification.sellerUserId === currentUserId;
-
-                  console.log('User role in match:', { isBuyer, isSeller, currentUserId });
-
-                  if (isBuyer) {
-                    console.log('Showing buy notification for user:', currentUserId);
-                    setNotification({
-                      type: 'success',
-                      message: `Your buy order for ${stock.symbol} was matched! Price: ${stock.match_notification.price}, Volume: ${stock.match_notification.volume}`
-                    });
-                    markNotificationAsShown(stock.symbol, matchTimestamp);
-                  } else if (isSeller) {
-                    console.log('Showing sell notification for user:', currentUserId);
-                    setNotification({
-                      type: 'success',
-                      message: `Your sell order for ${stock.symbol} was matched! Price: ${stock.match_notification.price}, Volume: ${stock.match_notification.volume}`
-                    });
-                    markNotificationAsShown(stock.symbol, matchTimestamp);
+                    if (isBuyer || isSeller) {
+                      setNotification({
+                        type: 'success',
+                        message: `Your ${isBuyer ? 'buy' : 'sell'} order for ${stock.symbol} was matched! Price: ${stock.match_notification.price}, Volume: ${stock.match_notification.volume}`
+                      });
+                      markNotificationAsShown(stock.symbol, matchTimestamp);
+                    }
                   }
                 }
               }
             });
 
-            // Update the data and timestamp
-            setOrderBookData(data);
-            setLastUpdateTime(new Date());
-            setLoading(false);
+            // Update order book data with debounce to prevent too frequent updates
+            const timeoutId = setTimeout(() => {
+              setOrderBookData(data);
+              setLastUpdateTime(new Date());
+              setLoading(false);
+            }, 100);
+
+            return () => clearTimeout(timeoutId);
           }
         } catch (error) {
           console.error('Error processing SSE message:', error);
@@ -354,46 +392,6 @@ function Tables() {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-
-  // Transform orderBookData into the format expected by the table
-  const processedRows = useMemo(() => {
-    if (!Array.isArray(orderBookData) || orderBookData.length === 0) {
-      return [];
-    }
-
-    return orderBookData.map(stockData => {
-      const refPrice = stockData.ref || 0;
-      const ceilPrice = Math.round(refPrice * 1.07 * 100) / 100;
-      const floorPrice = Math.round(refPrice * 0.93 * 100) / 100;
-
-      // Ensure match data is properly formatted
-      const matchData = {
-        price: stockData.match_prc || 0,
-        volume: stockData.match_vol || 0,
-        timestamp: stockData.match_timestamp || null
-      };
-
-      return {
-        ...createData(
-          stockData.symbol,
-          refPrice,
-          ceilPrice,
-          floorPrice,
-          stockData.bid_prc1 || 0,
-          stockData.bid_vol1 || 0,
-          stockData.bid_prc2 || 0,
-          stockData.bid_vol2 || 0,
-          matchData.price,
-          matchData.volume,
-          stockData.ask_prc1 || 0,
-          stockData.ask_vol1 || 0,
-          stockData.ask_prc2 || 0,
-          stockData.ask_vol2 || 0
-        ),
-        match_timestamp: matchData.timestamp
-      };
-    });
-  }, [orderBookData, lastUpdateTime]);
 
   // Display loading state or error
   if (loading) {

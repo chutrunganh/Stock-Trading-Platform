@@ -111,14 +111,38 @@ const processOrderBookData = (stocks, buyOrders, sellOrders, recentTransactions)
 
   // Process data for each stock
   return stocks.map(stock => {
-    // Filter orders for this stock
-    const stockBuyOrders = buyOrders
-      .filter(order => order.stockId === stock.stock_id)
-      .sort((a, b) => b.price - a.price);
+    // Helper function to aggregate and get top 2 orders
+    const getTopAggregatedOrders = (orders, isBuyOrder) => {
+      const aggregated = {};
+      orders.forEach(order => {
+        if (!order.price) return;
+        const price = Number(order.price);
+        const volume = Number(order.volume);
+        if (!aggregated[price]) {
+          aggregated[price] = 0;
+        }
+        aggregated[price] += volume;
+      });
+
+      const sorted = Object.entries(aggregated)
+        .map(([price, volume]) => ({ price: Number(price), volume }))
+        .sort((a, b) => isBuyOrder ? b.price - a.price : a.price - b.price);
+
+      return {
+        prc1: sorted[0]?.price || 0,
+        vol1: sorted[0]?.volume || 0,
+        prc2: sorted[1]?.price || 0,
+        vol2: sorted[1]?.volume || 0,
+      };
+    };
+
+    // Filter and aggregate bid orders for this stock
+    const stockBuyOrders = buyOrders.filter(order => order.stockId === stock.stock_id);
+    const topBids = getTopAggregatedOrders(stockBuyOrders, true);
       
-    const stockSellOrders = sellOrders
-      .filter(order => order.stockId === stock.stock_id)
-      .sort((a, b) => a.price - b.price);
+    // Filter and aggregate ask orders for this stock
+    const stockSellOrders = sellOrders.filter(order => order.stockId === stock.stock_id);
+    const topAsks = getTopAggregatedOrders(stockSellOrders, false);
 
     // Get recent transaction for this stock
     const transaction = recentTransactions[stock.stock_id];
@@ -128,14 +152,14 @@ const processOrderBookData = (stocks, buyOrders, sellOrders, recentTransactions)
       symbol: stock.symbol,
       company_name: stock.company_name,
       ref: stock.reference_price || 0,
-      bid_prc1: stockBuyOrders[0]?.price || 0,
-      bid_vol1: stockBuyOrders[0]?.volume || 0,
-      bid_prc2: stockBuyOrders[1]?.price || 0,
-      bid_vol2: stockBuyOrders[1]?.volume || 0,
-      ask_prc1: stockSellOrders[0]?.price || 0,
-      ask_vol1: stockSellOrders[0]?.volume || 0,
-      ask_prc2: stockSellOrders[1]?.price || 0,
-      ask_vol2: stockSellOrders[1]?.volume || 0,
+      bid_prc1: topBids.prc1,
+      bid_vol1: topBids.vol1,
+      bid_prc2: topBids.prc2,
+      bid_vol2: topBids.vol2,
+      ask_prc1: topAsks.prc1,
+      ask_vol1: topAsks.vol1,
+      ask_prc2: topAsks.prc2,
+      ask_vol2: topAsks.vol2,
       match_prc: transaction?.price || 0,
       match_vol: transaction?.volume || 0,
       match_timestamp: transaction?.timestamp || null,

@@ -163,12 +163,10 @@ function Trade(props) {
         setSuccessMessage('');
 
         try {
-            // Check if user is authenticated
-            const userId = localStorage.getItem('userId');
-            if (!userId) {
+            // Check if user is authenticated using the auth context
+            if (!user || !user.id) {
                 throw new Error('You must be logged in to place an order');
             }
-            console.log('Creating order with user ID:', userId);
 
             // First get the stock details to get the stock ID
             const stockDetails = await getStockBySymbol(symbol.toUpperCase());
@@ -177,7 +175,7 @@ function Trade(props) {
             }
 
             const orderData = {
-                userId,
+                userId: user.id,  // Use user.id from auth context
                 stockId: stockDetails.id,
                 quantity: parseInt(quantity),
                 price: orderType === 'limit' ? parseFloat(limitPrice) : null,

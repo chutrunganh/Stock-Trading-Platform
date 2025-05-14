@@ -63,7 +63,5 @@ router.get("/profile", authMiddleware, (req, res) => {
 }); // User profile route to test authentication
 
 
-// 3. Protected routes (authentication required) + Authorization (admin role required)
-router.get("/admin/dashboard", authMiddleware, authorizeRole('admin'), (req, res) => {}); // Placeholder for admin dashboard route
 
 export default router;

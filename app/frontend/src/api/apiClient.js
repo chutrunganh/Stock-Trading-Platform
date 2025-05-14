@@ -62,10 +62,28 @@ const getTokenInfo = (cookie) => {
   }
 };
 
+// Define public endpoints that don't need authentication
+const PUBLIC_ENDPOINTS = [
+  '/trading-session/status',
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
+  '/auth/google',
+  '/orders/orderBook',  // Order book should be publicly viewable
+  '/orders/orderBook/stream'  // Order book stream should also be public
+];
+
 // Request interceptor for logging token info
 apiClient.interceptors.request.use(
   (config) => {
     console.log(`\n[Token Debug] 🚀 Request to: ${config.method.toUpperCase()} ${config.url}`);
+    
+    // Skip auth for public endpoints
+    if (PUBLIC_ENDPOINTS.some(endpoint => config.url.includes(endpoint))) {
+      console.log('[Token Debug] 📢 Public endpoint - skipping authentication');
+      return config;
+    }
     
     // Special handling for refresh token endpoint
     if (config.url.includes('refresh-token')) {
