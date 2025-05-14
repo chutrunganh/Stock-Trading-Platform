@@ -128,13 +128,20 @@ export class OrderBook {
     // Add the order to the appropriate queue
     this.addOrderToQuene(order);
 
+    console.log(`[Order] Processing ${order.type} order for stock ${order.stockId}, price ${order.price}, volume ${order.volume}`);
+
     // Try to match the order immediately
     if (order.type === "Limit Buy") {
+      let matchOccurred = false;
+      
       while (this.limitSellOrderQueue.length > 0) {
         const sellOrder = this.limitSellOrderQueue[0];
         if (order.price >= sellOrder.price) {
           const matchedQuantity = Math.min(order.volume, sellOrder.volume);
           const matchedPrice = sellOrder.price;
+
+          console.log(`[Match] Buy match found: ${matchedQuantity} @ ${matchedPrice} (Stock ${order.stockId})`);
+          matchOccurred = true;
 
           // Update volumes
           order.volume -= matchedQuantity;
@@ -184,12 +191,23 @@ export class OrderBook {
           break;
         }
       }
+      
+      // If no match occurred, emit an update to show the new order
+      if (!matchOccurred) {
+        console.log(`[Order] No match found for buy order, emitting update`);
+        await emitOrderBookUpdate();
+      }
     } else if (order.type === "Limit Sell") {
+      let matchOccurred = false;
+      
       while (this.limitBuyOrderQueue.length > 0) {
         const buyOrder = this.limitBuyOrderQueue[0];
         if (buyOrder.price >= order.price) {
           const matchedQuantity = Math.min(order.volume, buyOrder.volume);
           const matchedPrice = buyOrder.price;
+
+          console.log(`[Match] Sell match found: ${matchedQuantity} @ ${matchedPrice} (Stock ${order.stockId})`);
+          matchOccurred = true;
 
           // Update volumes
           order.volume -= matchedQuantity;
@@ -238,6 +256,12 @@ export class OrderBook {
         } else {
           break;
         }
+      }
+      
+      // If no match occurred, emit an update to show the new order
+      if (!matchOccurred) {
+        console.log(`[Order] No match found for sell order, emitting update`);
+        await emitOrderBookUpdate();
       }
     }
   }

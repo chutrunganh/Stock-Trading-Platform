@@ -39,6 +39,21 @@
   font-size: 1.05em;
 }
 
+/* Match column styling */
+.match-column {
+  background-color: #e7eef6 !important;
+}
+
+/* Match header styling */
+.match-header {
+  background-color: #e7eef6 !important;
+}
+
+/* Hover style for match columns - ensure it works with the row hover */
+.MuiTableRow-root:hover .match-column {
+  background-color: #fff9c4 !important;
+}
+
 /* Style for reference price */
 .MuiTableCell-root[data-ref-price="true"] {
   font-weight: bold !important;
