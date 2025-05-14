@@ -1,150 +1,135 @@
 > [!IMPORTANT]
-> This repository is sting under development and not reflecting the final project yet.
+> This repository is still under development and does not yet reflect the final project.
 
-# Security checklist
+# 🔐 Security Checklist
 
-<table border="1">
-  <tr>
-    <th>Criteria</th>
-    <th>Requirements</th>
-    <th>Solution</th>
-  </tr>
-  <tr>
-    <td>Password Authentication</td>
-    <td> [x] Enforcing password policy</td>
-   <td>
-      Length 6-72 characters with at least 1 capital, 1 number and 1 special character (@$!%*?&).<br>
-      Must not contain any part of the username (3 or more consecutive characters).<br>
-      Password must be verified at both frontend and backend.<br>
-      <i>This password policy is a simplified version of the one enforced by 
-      <a href="https://www.vndirect.com.vn/tin_vndirect/thong-bao-thay-doi-mat-khau-giao-dich-dinh-ky/" target="_blank">
-        VNDIRECT Securities Joint Stock Company</i>
-      </a>.
-    </td>
-  </tr>
-  <tr>
-    <td></td>
-    <td> [x] Secure password storage</td>
-    <td> Using <code>bcrypt</code> for slow hashing + salting password when storing to database</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td> [x] Prevention of password guessing</td>
-    <td> Using <code>Cloudflare Turnstile</code> service to prevent automated/spam attacks (verify at both backend and frontend)</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td> [ ] Password recovery</td>
-    <td> Sends OTPs to user email account with expiration time (Using <code>Ethereal</code> email service insteal of sending real email for demo puspose only). How to prevent bruce force OTP, calculate this????</td>
-  </tr>
-  <tr>
-    <td>Session Authentication and Management</td>
-    <td>[ ] Secure mechanisms for using access tokens: prevention of tampering and guessing, expiration control, etc</td>
-    <td>Using <code>JWT</code> with timestamp (To prevent generate the same token when login two times). Need mechanism to end session, like when close session when close brower. Return JWT in Cookie with <code>Secure</code> and <code>HTTP ONly</code>, <code>sameSite: 'strict'</code> propertities enable</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td>[x] CSRF Defense</td>
-    <td> Same site orgin with set <code>app.use(cors({
-  origin: process.env.FE_URL
-}));</code> in the code to only allow requests from the frontend application. We do not provide public API.</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td>- Session hijacking defense</td>
-    <td></td>
-  </tr>
-  <tr>
-    <td>Authorization</td>
-    <td>- Implement suitable access control: MAC, DAC, RBAC</td>
-    <td>RBAC (User, Admin)</td>
-  </tr>
-  <tr>
-    <td>Input Validation and Output Sanitization</td>
-    <td> [ ] Input validation and sanitization</td>
-    <td>Handle all input fields to prevent payload attacks: with inputs fields will be check my middlewares before request can reach the service. Need defend in depth?, Filter output also with XSS since we may miss some input -> Use CSP header</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td>[x] Protection against Injection attacks</td>
-    <td>With SQL injectiosn, all query that receive parameter directly from the frontend use placeholder <code>$</code> when pass to SQL Query</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td>- Prevention of path traversal, directory indexing</td>
-    <td>Prevent access by ID (Idoor), A login using A accpount but can access to B index resources</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td>[-] Upload file restriction</td>
-    <td>Our app does not have file upload functionality</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td>- etc</td>
-    <td></td>
-  </tr>
-  <tr>
-    <td>Prevention of sensitive information leakage</td>
-    <td>- Minimization of sensitive information leakage about servers, software, and applications</td>
-    <td>Classify data (e.g., confidential, internal, public)</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td>- Minimization of sensitive information leakage in response</td>
-    <td>Apply least privilege access control (users only see what they need)</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td></td>
-    <td>Implement RBAC (Role-Based Access Control) for granular control</td>
-  </tr>
-  <tr>
-    <td>Compliance with Other Security Standards</td>
-    <td>[x] HTTPS implementation</td>
-    <td>Cloudflare Tunnels to public web to internet and get free SSL</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td>- Mitigation of DoS attacks</td>
-    <td>Using Cloudfalre Tunnels that make reqest go through Cloudflare proxy -> Incase not brucefore the server respource, but with our Cloudflare paid bandwidth, still need a active control the number of request</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td>- Secure storage and management of sensitive values</td>
-    <td></td>
-  </tr>
-  <tr>
-    <td>Security Testing</td>
-    <td>Source code review, using automated tools like SonarQube, RAF-Scanner</td>
-    <td>to be continued</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td>- Basic penetration testing, using automated tools like ZAP Proxy, RAF DAS, Nikto</td>
-    <td></td>
-  </tr>
-  <tr>
-    <td>Bonus</td>
-    <td>- Implementation of multi-factor authentication</td>
-    <td>- Sends OTP to email</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td>- Advanced session hijacking prevention: detection of access from unfamiliar devices, browsers, or IPs, prevention of cookie reuse</td>
-    <td>- Track user's IP</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td>- Advanced HTTP Flood prevention mechanisms</td>
-    <td>- CDN in Cloudflare</td>
-  </tr>
-  <tr>
-    <td></td>
-    <td>[x] Single Sign-On (SSO)</td>
-    <td>Using Google OAuth 2.0 service</td>
-  </tr>
+
+<table border=2>
+  <thead>
+    <tr>
+      <th>Criteria</th>
+      <th>Requirements</th>
+      <th>Solution</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td rowspan="4">Password Authentication</td>
+      <td>[x] Enforce password policy</td>
+      <td>
+        - Password length: 6–72 characters.<br>
+        - At least 1 uppercase letter, 1 number, and 1 special character (<code>@$!%*?&</code>).<br>
+        - Must not contain 3 or more consecutive characters from the username.<br>
+        - Verified at both frontend and backend.<br>
+        <i>This password policy is a simplified version from
+        <a href="https://www.vndirect.com.vn/tin_vndirect/thong-bao-thay-doi-mat-khau-giao-dich-dinh-ky/" target="_blank">VNDIRECT Securities JSC</a>.</i>
+      </td>
+    </tr>
+    <tr>
+      <td>[x] Secure password storage</td>
+      <td>Use <code>bcrypt</code> with salting for slow hashing when storing passwords.</td>
+    </tr>
+    <tr>
+      <td>[x] Prevention of password guessing</td>
+      <td>Use <code>Cloudflare Turnstile</code> to block spam/automated logins. Validate on both frontend and backend.</td>
+    </tr>
+    <tr>
+      <td>[x] Password recovery</td>
+      <td>
+        Send OTPs to the user's email with expiration. For demo, use <code>Ethereal</code> email. OTPs are 8 characters (mixed lower and upper case + numbers), generated with <code>otp-generator</code> dependency.
+      </td>
+    </tr>
+    <tr>
+      <td rowspan="3">Session Authentication & Management</td>
+      <td>[x] Secure access tokens</td>
+      <td>
+        Use <code>JWT</code>: Access token (1 min expiry for testing), refresh token (7 days). Store in cookies with <code>Secure</code>, <code>HttpOnly</code>, and <code>SameSite='Strict'</code>. Clear cookies on logout or browser close.
+      </td>
+    </tr>
+    <tr>
+      <td>[x] CSRF defense</td>
+      <td>
+        Only allow requests from the frontend origin using:
+        <pre><code>app.use(cors({
+  origin: process.env.FE_URL}));</code></pre>
+        No public API provided.
+      </td>
+    </tr>
+    <tr>
+      <td>[-] Session hijacking defense</td>
+      <td>(To be implemented)</td>
+    </tr>
+    <tr>
+      <td>Authorization</td>
+      <td>[x] Implement access control: MAC, DAC, RBAC</td>
+      <td>Implemented RBAC with middleware to restrict admin routes to admin users only.</td>
+    </tr>
+    <tr>
+      <td rowspan="4">Input Validation & Output Sanitization</td>
+      <td>[ ] Input validation and sanitization</td>
+      <td>Middleware handles input checks before requests reach services. Suggest adding CSP headers for output filtering and XSS mitigation.</td>
+    </tr>
+    <tr>
+      <td>[x] Protection against injection attacks</td>
+      <td>Use parameterized queries with placeholders like <code>$1</code> for SQL to prevent injections.</td>
+    </tr>
+    <tr>
+      <td>[-] Prevention of path traversal</td>
+      <td>Implement access control to avoid IDOR (e.g., user A accessing user B's resources).</td>
+    </tr>
+    <tr>
+      <td>[-] File upload restriction</td>
+      <td>No file upload functionality in current app version.</td>
+    </tr>
+    <tr>
+      <td rowspan="2">Sensitive Information Leakage</td>
+      <td>[-] Minimize system info exposure</td>
+      <td>Classify data into Confidential, Internal, and Public.</td>
+    </tr>
+    <tr>
+      <td>[-] Limit sensitive info in responses</td>
+      <td>Apply least privilege principle: only necessary data is returned per role.</td>
+    </tr>
+    <tr>
+      <td rowspan="3">Compliance with Standards</td>
+      <td>[x] HTTPS implementation</td>
+      <td>Use Cloudflare Tunnels to expose local app with HTTPS.</td>
+    </tr>
+    <tr>
+      <td>[-] Mitigation of DoS attacks</td>
+      <td>Requests pass through Cloudflare proxy. Still need rate-limiting and monitoring.</td>
+    </tr>
+    <tr>
+      <td>[-] Secure storage of secrets</td>
+      <td>(To be implemented)</td>
+    </tr>
+    <tr>
+      <td rowspan="2">Security Testing</td>
+      <td>[-] Code review with automated tools</td>
+      <td>Planned use of SonarQube and RAF-Scanner.</td>
+    </tr>
+    <tr>
+      <td>[-] Penetration testing with tools</td>
+      <td>To be done using ZAP Proxy, RAF DAS, Nikto.</td>
+    </tr>
+    <tr>
+      <td rowspan="4">Bonus</td>
+      <td>[x] Multi-factor authentication</td>
+      <td>
+        After enter correct username/email and password, OTP is sent to user's email. OTP must be valid and unexpired. We also have "Remember device in ...  time" implemented to skip OTP next time login. Devices are idntified by using <code>fingerprintJS</code> dependency (free version).
+      </td>
+    </tr>
+    <tr>
+      <td>[-] Advanced session hijacking prevention</td>
+      <td>Track user IPs, detect unfamiliar devices/browsers.</td>
+    </tr>
+    <tr>
+      <td>[-] Advanced HTTP flood prevention</td>
+      <td>Use Cloudflare CDN to absorb excessive traffic.</td>
+    </tr>
+    <tr>
+      <td>[x] Single Sign-On (SSO)</td>
+      <td>Implemented using Google OAuth 2.0.</td>
+    </tr>
+  </tbody>
 </table>
-
-# Features
-
