@@ -1,3 +1,19 @@
+/**
+ * Cookie Management Process:
+ * 1. When new tokens are generated (login/refresh):
+ *    - Old cookies are cleared first
+ *    - New cookies are set with new tokens
+ * 2. Session cookies:
+ *    - No explicit expiry time (expires: false)
+ *    - Automatically removed when browser closes
+ * 3. Security features:
+ *    - httpOnly: true (prevents JavaScript access)
+ *    - secure: true in production (requires HTTPS)
+ *    - sameSite: 'strict' (prevents CSRF)
+ */
+
+
+
 // Utility to set authentication cookies (access and refresh tokens)
 export function setAuthCookies(res, accessToken, refreshToken) {
   console.log('Setting auth cookies:', {
@@ -50,19 +66,6 @@ export function setAuthCookies(res, accessToken, refreshToken) {
   });
 }
 
-/**
- * Cookie Management Process:
- * 1. When new tokens are generated (login/refresh):
- *    - Old cookies are cleared first
- *    - New cookies are set with new tokens
- * 2. Session cookies:
- *    - No explicit expiry time (expires: false)
- *    - Automatically removed when browser closes
- * 3. Security features:
- *    - httpOnly: true (prevents JavaScript access)
- *    - secure: true in production (requires HTTPS)
- *    - sameSite: 'strict' (prevents CSRF)
- */
 
 
 /**

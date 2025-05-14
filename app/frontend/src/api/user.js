@@ -108,12 +108,16 @@ export const refreshToken = async () => {
   try {
     console.log('Attempting to refresh token');
     const response = await apiClient.post('/refresh-token');
-    console.log('Token refresh response:', {
-      success: response.data.status === 200,
-      accessTokenReceived: !!response.data.data?.accessToken,
-      refreshTokenReceived: !!response.data.data?.refreshToken
-    });
-    return response.data;
+    console.log('Token refresh response:', response.data);
+    
+    // Return the response in the expected format
+    return {
+      status: response.status,
+      data: {
+        accessToken: response.data.data?.accessToken,
+        refreshToken: response.data.data?.refreshToken
+      }
+    };
   } catch (error) {
     console.error('Error refreshing token:', error);
     throw error;

@@ -8,16 +8,9 @@ import authMiddleware from '../middlewares/authenticationMiddleware.js';
 
 const router = express.Router();
 
-// All routes require authentication
-router.use(authMiddleware);
-
-// Get portfolio details
-router.get('/details', getPortfolioDetails);
-
-// Get portfolio holdings
-router.get('/holdings', getPortfolioHoldings);
-
-// Get portfolio transactions
-router.get('/transactions', getPortfolioTransactions);
+// Apply auth middleware to individual routes instead of globally
+router.get('/details', authMiddleware, getPortfolioDetails);
+router.get('/holdings', authMiddleware, getPortfolioHoldings);
+router.get('/transactions', authMiddleware, getPortfolioTransactions);
 
 export default router; 

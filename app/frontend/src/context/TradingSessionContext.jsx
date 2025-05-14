@@ -3,13 +3,16 @@
  * @description This file contains the context for managing the trading session state throughout the application.
  * Every other componet if want to check the trading session status, import this file and use the context.
  */
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import apiClient from '../api/apiClient';
 
 const TradingSessionContext = createContext();
 
-export function TradingSessionProvider({ children }) {    const [isTradingActive, setIsTradingActive] = useState(false);
+export function TradingSessionProvider({ children }) {
+    const [isTradingActive, setIsTradingActive] = useState(false);
     const [error, setError] = useState(null);
+    // Use ref to prevent duplicate API calls during StrictMode double rendering
+    const initialCheckDone = useRef(false);
 
     const checkTradingStatus = async () => {
         try {
@@ -24,10 +27,15 @@ export function TradingSessionProvider({ children }) {    const [isTradingActive
     };
 
     useEffect(() => {
-        checkTradingStatus();
+        if (!initialCheckDone.current) {
+            checkTradingStatus();
+            initialCheckDone.current = true;
+        }
         const interval = setInterval(checkTradingStatus, 30000);
         return () => clearInterval(interval);
-    }, []);    const startTrading = async () => {
+    }, []);
+
+    const startTrading = async () => {
         try {
             await apiClient.post('/trading-session/start');
             await checkTradingStatus(); // Refresh the status after starting

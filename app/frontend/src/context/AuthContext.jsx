@@ -1,9 +1,9 @@
 /**
  * AuthContext provides authentication state and methods throughout the app
+ * Authentication is handled via HTTP-only cookies (access token and refresh token)
  */
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useContext } from 'react';
 import { loginUser, registerUser, getUserProfile, logoutUser as logoutUserApi, refreshToken as refreshTokenApi } from '../api/user';
-import apiClient from '../api/apiClient';
 
 // Create the Auth Context
 const AuthContext = createContext();
@@ -11,146 +11,88 @@ const AuthContext = createContext();
 // Auth Provider Component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [authState, setAuthState] = useState({ initialized: false });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Add window unload listener
-  useEffect(() => {
-    const handleUnload = () => {
-      // Clear auth state when window closes
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userId');
-      setUser(null);
-    };
-
-    window.addEventListener('unload', handleUnload);
-    
-    return () => {
-      window.removeEventListener('unload', handleUnload);
-    };
-  }, []);
-
-  // Check for stored auth token on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem('authToken');
-      console.log('AuthContext: Checking authentication with token:', token ? 'Token exists' : 'No token');
-      
-      if (token) {
-        try {
-          // Verify token by fetching user profile
-          console.log('AuthContext: Verifying token by fetching user profile...');
-          const response = await getUserProfile();
-          
-          console.log('AuthContext: User profile response:', response);
-          
-          if (response && response.data && response.data.user) {
-            console.log('AuthContext: User authenticated successfully:', response.data.user);
-            setUser(response.data.user);
-          } else {
-            console.warn('AuthContext: Invalid user profile response:', response);
-            localStorage.removeItem('authToken');
-            setUser(null);
-          }
-        } catch (err) {
-          console.error('AuthContext: Token verification failed:', err);
-          localStorage.removeItem('authToken');
-          setUser(null);
-        }      } else {
-        console.log('AuthContext: No auth token found');
+  // Check authentication status by calling backend
+  const checkAuth = async () => {
+    try {
+      const response = await getUserProfile();
+      if (response?.data?.user) {
+        setUser(response.data.user);
+        setIsAuthenticated(true);
+        return true;
       }
-      
-      setLoading(false);
-      setAuthState({ initialized: true });
-    };
-    
-    checkAuth();
-  }, []);
+    } catch (err) {
+      // If 401 or any error, user is not authenticated
+      setUser(null);
+      setIsAuthenticated(false);
+    }
+    return false;
+  };
 
+  // Logout function - only calls API if user is authenticated
   const logout = async () => {
+    if (!isAuthenticated) {
+      setUser(null);
+      setIsAuthenticated(false);
+      return;
+    }
+
     try {
       await logoutUserApi();
     } catch (err) {
-      console.error('Logout API error:', err);
+      console.error('Logout error:', err);
+    } finally {
+      setUser(null);
+      setIsAuthenticated(false);
     }
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userId');
-    setUser(null);
   };
 
   // Login function
   const login = async (credentials) => {
     setLoading(true);
     setError(null);
+    
     try {
-      let userData;
-      let accessToken;
-      
-      // Only allow login if credentials contains both user and token (from Google login or OTP verification)
-      if (credentials.user && credentials.token) {
-        console.log('AuthContext: Processing login with user data:', credentials.user);
-        userData = credentials.user;
-        accessToken = credentials.token; // This is actually the accessToken
-      } else {
-        // Defensive: If called with only identifier/password, do NOT authenticate
-        console.error('AuthContext: Invalid login attempt: missing user or token. This should only be called after OTP verification.');
-        throw new Error('Login must be completed after OTP verification.');
+      // Ensure we have user data (from OTP verification or social login)
+      if (!credentials?.user) {
+        throw new Error('Invalid login credentials');
       }
+
+      setUser(credentials.user);
+      setIsAuthenticated(true);
       
-      // Store auth data and update state
-      console.log('AuthContext: Storing accessToken in localStorage');
-      localStorage.setItem('authToken', accessToken);
-      console.log('AuthContext: Storing user ID in localStorage:', userData.id);
-      localStorage.setItem('userId', userData.id); // Store user ID
-      
-      // Update user state immediately 
-      console.log('AuthContext: Setting user data immediately after login:', userData);
-      setUser(userData);
-      
-      // Force an immediate state update by dispatching an event
+      // Notify any listeners of auth state change
       window.dispatchEvent(new CustomEvent('auth-state-changed', { 
-        detail: { user: userData, isAuthenticated: true }
+        detail: { user: credentials.user, isAuthenticated: true }
       }));
-      
-      return userData;
+
+      return credentials.user;
     } catch (err) {
-      setError(err.message || 'Login failed.');
+      setError(err.message || 'Login failed');
       throw err;
     } finally {
       setLoading(false);
     }
-  };  // OTP verification removed
+  };
 
   // Register function
   const register = async (userData) => {
     setLoading(true);
     setError(null);
+    
     try {
       const response = await registerUser(userData);
-      if (!response || !response.data) {
-        throw new Error('Invalid registration response from server.');
+      if (!response?.data) {
+        throw new Error('Invalid registration response');
       }
-      
-      // Check for specific error cases in the response
-      if (response.status === 500) {
-        if (response.error?.includes('users_username_key')) {
-          throw new Error('Username already exists. Please choose a different username.');
-        }
-        if (response.error?.includes('users_email_key')) {
-          throw new Error('Email already exists. Please use a different email address.');
-        }
-      }
-      
       return response.data;
     } catch (err) {
-      // Handle axios error response
-      if (err.response?.data?.error) {
-        setError(err.response.data.error);
-      } else {
-        setError(err.message || 'Registration failed.');
-      }
-      throw err;
+      const errorMessage = err.response?.data?.error || err.message || 'Registration failed';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -159,49 +101,73 @@ export const AuthProvider = ({ children }) => {
   // Refresh token function
   const refresh = async () => {
     try {
-      console.log('AuthContext: Attempting to refresh token');
       const response = await refreshTokenApi();
       
-      if (response && response.data && response.data.accessToken) {
-        console.log('AuthContext: Token refresh successful, storing new accessToken');
-        localStorage.setItem('authToken', response.data.accessToken);
-        // Optionally update user state if needed (e.g., decode token or refetch profile)
-        return response.data;
+      // Check if we got a successful response with tokens
+      if (response?.status === 200 && response?.data?.accessToken) {
+        console.log('[Auth Debug] Token refresh successful');
+        // Update authenticated state
+        setIsAuthenticated(true);
+        
+        // Get user profile after successful refresh
+        try {
+          const userResponse = await getUserProfile();
+          if (userResponse?.data?.user) {
+            setUser(userResponse.data.user);
+          }
+        } catch (err) {
+          console.log('[Auth Debug] Failed to get user profile after refresh:', err.message);
+        }
+        
+        return response;
       }
-      
-      console.warn('AuthContext: Token refresh response missing accessToken');
+
+      console.log('[Auth Debug] Token refresh failed - no valid response');
+      // If refresh failed, clear state
+      setUser(null);
+      setIsAuthenticated(false);
       return null;
     } catch (err) {
-      console.error('AuthContext: Token refresh failed:', err);
+      console.log('[Auth Debug] Token refresh failed with error:', err.message);
+      // If refresh fails, log out
       await logout();
       return null;
     }
   };
 
-  // Make refresh and logout globally accessible for apiClient interceptor
-  useEffect(() => {
+  // Make refresh, logout, and auth state globally accessible for apiClient interceptor
+  React.useEffect(() => {
     window.AuthRefresh = refresh;
     window.AuthLogout = logout;
+    window.AuthContext = {
+      isAuthenticated,
+      setIsAuthenticated
+    };
+    
+    // Check authentication status on mount
+    checkAuth();
+    
     return () => {
       window.AuthRefresh = null;
       window.AuthLogout = null;
+      window.AuthContext = null;
     };
-  }, [refresh, logout]);
+  }, [isAuthenticated]); // Add isAuthenticated to dependency array
+
+  const value = {
+    user,
+    loading,
+    error,
+    isAuthenticated,
+    login,
+    logout,
+    refresh,
+    register,
+    checkAuth
+  };
 
   return (
-    <AuthContext.Provider 
-      value={{ 
-        user, 
-        loading, 
-        error,
-        isAuthenticated: !!user, // Add this to indicate if user is logged in
-        authInitialized: authState.initialized,
-        login,
-        logout,
-        refresh,
-        register
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

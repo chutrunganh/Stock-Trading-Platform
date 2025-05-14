@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Box, Typography, Paper, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Button } from '@mui/material';
+import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Button, Grid } from '@mui/material';
 import { getPortfolioDetails, getHoldings, getTransactions } from '../../api/portfolio';
 import PaymentModal from './PaymentModal';
 import './Portfolio.css';
@@ -18,10 +18,16 @@ function Portfolio() {
     const [showHoldings, setShowHoldings] = useState(false);
     const [showTransactions, setShowTransactions] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
+    
+    // Use refs to prevent duplicate API calls during StrictMode double rendering
+    const initialFetchDone = useRef(false);
 
     // Fetch portfolio details on component mount
     useEffect(() => {
-        fetchPortfolioDetails();
+        if (!initialFetchDone.current) {
+            fetchPortfolioDetails();
+            initialFetchDone.current = true;
+        }
     }, []);
 
     const fetchPortfolioDetails = async () => {
@@ -115,7 +121,7 @@ function Portfolio() {
                     </div>
                     <Box mt={2}>
                         <Grid container spacing={3}>
-                            <Grid item xs={12} md={6}>
+                            <Grid xs={12} md={6}>
                                 <Typography variant="subtitle1">Available Balance</Typography>
                                 <Typography variant="h4" sx={{ color: 'success.main' }}>
                                     {formatCurrency(portfolioDetails?.cash_balance || 0)}
@@ -129,7 +135,7 @@ function Portfolio() {
                                     Add Funds
                                 </Button>
                             </Grid>
-                            <Grid item xs={12} md={6}>
+                            <Grid xs={12} md={6}>
                                 <Typography variant="subtitle1">Total Holdings Value</Typography>
                                 <Typography variant="h4" sx={{ color: 'success.main' }}>
                                     {formatCurrency(portfolioDetails?.total_value || 0)}
