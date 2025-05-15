@@ -300,7 +300,10 @@ export const resetPasswordController = async (req, res, next) => {
 // Logout controller
 export const logoutUser = async (req, res, next) => {
   try {
-    await logoutUserService();
+    const userId = req.user?.id;
+    await logoutUserService(userId); // The logout service should invalidate/delete the refresh token from the database/memory
+
+    // Send request to client to delete the cookies on the client side
     res.clearCookie('accessToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -320,29 +323,27 @@ export const logoutUser = async (req, res, next) => {
 // Refresh token controller
 export const refreshToken = async (req, res, next) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) {
-      console.log('Refresh token missing in request cookies');
-      return handleResponse(res, 401, 'No refresh token provided');
-    }
+    // The refresh token has already been verified by the middleware
+    const refreshToken = req.refreshToken;
     
-    console.log('Attempting to refresh token with existing refreshToken:', {
-      refreshTokenExists: !!refreshToken,
-      refreshTokenLength: refreshToken?.length
-    });
+    console.log('Generating new access token with verified refresh token');
     
-    const tokens = await refreshAccessTokenService(refreshToken);
+    const { accessToken } = await refreshAccessTokenService(refreshToken);
     
     console.log('Token refresh successful:', {
-      newAccessTokenExists: !!tokens.accessToken,
-      newRefreshTokenExists: !!tokens.refreshToken,
-      newAccessTokenLength: tokens.accessToken?.length,
-      newRefreshTokenLength: tokens.refreshToken?.length
+      newAccessTokenExists: !!accessToken,
+      newAccessTokenLength: accessToken?.length
     });
     
-    // Set new cookies
-    setAuthCookies(res, tokens.accessToken, tokens.refreshToken);
-    handleResponse(res, 200, 'Token refreshed', tokens);
+    // Set only the new access token cookie
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000 // 15 minutes in milliseconds
+    });
+    
+    handleResponse(res, 200, 'Token refreshed', { accessToken });
   } catch (error) {
     console.error('Token refresh failed:', error.message);
     handleResponse(res, 401, error.message || 'Invalid or expired refresh token');

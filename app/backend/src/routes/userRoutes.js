@@ -7,7 +7,7 @@ import express from 'express';
 import { registerUser, getAllUsers, getUserById, updateUser, deleteUser, loginUser, googleAuth, googleAuthCallback, sendLoginOtpController, forgotPasswordController, resetPasswordController, logoutUser, refreshToken } from '../controllers/userControllers.js';
 import { validateUser, validateUserUpdate, validateLogin } from '../middlewares/userValidationMiddleware.js';
 import authorizeRole from '../middlewares/roleBasedAccessControlMiddleware.js';
-import authMiddleware from '../middlewares/authenticationMiddleware.js';
+import authMiddleware, { refreshTokenMiddleware } from '../middlewares/authenticationMiddleware.js';
 
 
 const router = express.Router();
@@ -26,8 +26,8 @@ const logRequestBody = (req, res, next) => {
 };
 
 router.post("/login", logRequestBody, validateLogin, loginUser);  // User login
-router.post("/logout", logoutUser); // User logout
-router.post("/refresh-token", refreshToken); // Refresh access/refresh token
+router.post("/logout", authMiddleware, logoutUser); // User logout - requires auth to get user ID
+router.post("/refresh-token", refreshTokenMiddleware, refreshToken); // Protected refresh token route
 
 // OTP-based login verification (2FA step)
 router.post("/send-login-otp", sendLoginOtpController);

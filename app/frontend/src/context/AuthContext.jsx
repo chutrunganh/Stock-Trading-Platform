@@ -25,7 +25,6 @@ export const AuthProvider = ({ children }) => {
         return true;
       }
     } catch (err) {
-      // If 401 or any error, user is not authenticated
       setUser(null);
       setIsAuthenticated(false);
     }
@@ -50,13 +49,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Handle browser/tab close
+  const handleBeforeUnload = async (event) => {
+    if (isAuthenticated) {
+      event.preventDefault();
+      event.returnValue = ''; // Required for Chrome
+      console.log('[Auth Debug] Browser closing - logging out user');
+      await logout();
+    }
+  };
+
   // Login function
   const login = async (credentials) => {
     setLoading(true);
     setError(null);
     
     try {
-      // Ensure we have user data (from OTP verification or social login)
       if (!credentials?.user) {
         throw new Error('Invalid login credentials');
       }
@@ -98,51 +106,40 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Refresh token function
+  // Refresh token function - simplified since we only need to handle access token refresh
   const refresh = async () => {
     try {
       const response = await refreshTokenApi();
       
-      // Check if we got a successful response with tokens
-      if (response?.status === 200 && response?.data?.accessToken) {
-        console.log('[Auth Debug] Token refresh successful');
-        // Update authenticated state
+      if (response?.status === 200) {
+        // Update authenticated state and user profile
         setIsAuthenticated(true);
-        
-        // Get user profile after successful refresh
-        try {
-          const userResponse = await getUserProfile();
-          if (userResponse?.data?.user) {
-            setUser(userResponse.data.user);
-          }
-        } catch (err) {
-          console.log('[Auth Debug] Failed to get user profile after refresh:', err.message);
+        const userResponse = await getUserProfile();
+        if (userResponse?.data?.user) {
+          setUser(userResponse.data.user);
         }
-        
         return response;
       }
 
-      console.log('[Auth Debug] Token refresh failed - no valid response');
       // If refresh failed, clear state
       setUser(null);
       setIsAuthenticated(false);
       return null;
     } catch (err) {
-      console.log('[Auth Debug] Token refresh failed with error:', err.message);
-      // If refresh fails, log out
+      console.log('[Auth Debug] Token refresh failed:', err.message);
       await logout();
       return null;
     }
   };
 
-  // Make refresh, logout, and auth state globally accessible for apiClient interceptor
+  // Set up global auth handlers and cleanup
   React.useEffect(() => {
     window.AuthRefresh = refresh;
     window.AuthLogout = logout;
-    window.AuthContext = {
-      isAuthenticated,
-      setIsAuthenticated
-    };
+    window.AuthContext = { isAuthenticated, setIsAuthenticated };
+    
+    // Add browser close event listener
+    window.addEventListener('beforeunload', handleBeforeUnload);
     
     // Check authentication status on mount
     checkAuth();
@@ -151,8 +148,9 @@ export const AuthProvider = ({ children }) => {
       window.AuthRefresh = null;
       window.AuthLogout = null;
       window.AuthContext = null;
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [isAuthenticated]); // Add isAuthenticated to dependency array
+  }, [isAuthenticated]);
 
   const value = {
     user,

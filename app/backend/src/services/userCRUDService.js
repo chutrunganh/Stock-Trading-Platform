@@ -16,6 +16,12 @@ dotenv.config({ path: '../../.env' }); // Adjust based on relative depth
 
 
 /**
+ * The create user service function have been moved to the userAuthService.js file since it contain some login related to security.
+ */
+
+
+/**
+
  *  * This function retrieves a user by their ID from the database. It returns the user object without sensitive data like password.
  * If the user is not found, it throws an error.
  * 

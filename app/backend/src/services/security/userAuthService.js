@@ -11,7 +11,7 @@ import { createPortfolioForUserService } from '../portfolioCRUDService.js';
 import { validatePassword } from '../../utils/passwordUtil.js';
 import { isDeviceRememberedService } from './rememberedDeviceService.js';
 import { rememberDeviceService } from './rememberedDeviceService.js';
-import { generateTokens, refreshTokens } from '../../utils/jwtUtil.js';
+import { generateTokens, refreshTokens, invalidateRefreshToken } from '../../utils/jwtUtil.js';
 dotenv.config({ path: '../../.env' }); // Adjust based on relative depth
 
 /**
@@ -313,21 +313,24 @@ export const verifyLoginOtpService = async (identifier, otp, password, visitorId
   }
 };
 
-export const logoutUserService = async () => {
-  // No server-side action needed for stateless JWT logout
+export const logoutUserService = async (userId) => {
+  if (userId) {
+    // Invalidate the refresh token for this user
+    invalidateRefreshToken(userId);
+  }
   return { message: 'Logged out successfully' };
 };
 
 /**
- * Refresh access and refresh tokens using a valid refresh token.
+ * Refresh access token using a valid refresh token.
  * @param {string} refreshToken
- * @returns {{ accessToken: string, refreshToken: string }}
+ * @returns {{ accessToken: string }}
  */
 export const refreshAccessTokenService = async (refreshToken) => {
   try {
     // This will throw if invalid/expired
-    const tokens = refreshTokens(refreshToken);
-    return tokens;
+    const { accessToken } = refreshTokens(refreshToken);
+    return { accessToken };
   } catch (error) {
     throw new Error('Invalid or expired refresh token');
   }
