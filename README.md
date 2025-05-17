@@ -1,6 +1,78 @@
 > [!IMPORTANT]
 > This repository is still under development and does not yet reflect the final project.
 
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+    <img src="docs\images\logo.png" alt="Logo" width="200" height="200">
+</div>
+
+<br />
+
+<div align="center">
+
+[![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=700&size=30&pause=1000&color=36D253&center=true&vCenter=true&width=435&lines=Soict+Stock+Trading)](https://git.io/typing-svg)
+
+</div>
+
+<div>
+
+  <p align="center">
+    <b>A stock trading simulator built for beginners. Learn to trade without the risk</b>
+    <br />
+    <a href="https://github.com/chutrunganh/Biometric_IT4432E/blob/master/Slide_And_Report/Biometric_Report.pdf"><strong>Explore the docs »</strong></a>
+    <br />
+    <br />
+    <a href="#-usage-and-demo">Usage</a>
+    ·
+    <a href="https://github.com/chutrunganh/Biometric_IT4432E/issues">Report Bug</a>
+    ·
+    <a href="https://github.com/chutrunganh/Biometric_IT4432E/issues">Request Feature</a>
+  </p>
+</div>
+
+
+
+<a id="readme-top"></a>
+
+# 📝Overview 
+
+Title: Soict Stock Trading Platform
+
+Brief introduction
+
+## 🛠️ Technology Stack
+
+The project is built with the following technologies:
+
+- **Backend:** 
+
+![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
+![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)
+![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens)
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+![Yarn](https://img.shields.io/badge/yarn-%232C8EBB.svg?style=for-the-badge&logo=yarn&logoColor=white)
+
+
+- **Frontend:**
+
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
+![MUI](https://img.shields.io/badge/MUI-%230081CB.svg?style=for-the-badge&logo=mui&logoColor=white)
+
+- **Deployment:**
+
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)
+![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=for-the-badge&logo=Cloudflare&logoColor=white)
+
+
+# 📖 Usage and Demo
+
+# 🚀 Installation & Setup
+
+# 🏗️ Project Structure
+
 # 🔐 Security Checklist
 
 
@@ -166,3 +238,49 @@
 
 
 *Status:🟢: Done  |  🟡: Partially done or no need	 |  🔴: Not implement yet*
+
+
+<!-- CONTRIBUTING -->
+# 🤝 Contributing
+
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
+Don't forget to give the project a star! Thanks again!
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+For the success of this project, I want a special thanks to:
+
+- **Project supervisor**: MSc. Bùi Trọng Tùng, Ngoc, Dr. Đỗ Bá Lâm
+- **Team members**:
+
+  | Name | Student ID |
+  |:--|:--|
+  | Chu Trung Anh (team leader)| 20225564 |
+  | Bùi Duy Anh | 20225563 |
+  | Phạm Mạnh Tiến| 20225555 |
+
+
+<!-- LICENSE -->
+# 📜 License
+
+[![License: Apache-2.0](https://img.shields.io/badge/License-%20Apache%202.0-red)](https://www.apache.org/licenses/LICENSE-2.0)
+
+
+Distributed under the Apache-2.0 License License. See `LICENSE` for more information.
+
+
+
+<!-- CONTACT -->
+# 📧 Contact
+
+This project is maintained by: Chu Trung Anh - [Email](mailto:chutrunganh04@gmail.com).
+
+Feel free to contact me if you have any question or suggestion.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
