@@ -36,6 +36,8 @@ export const AuthProvider = ({ children }) => {
     if (!isAuthenticated) {
       setUser(null);
       setIsAuthenticated(false);
+      // Remove userId from localStorage
+      localStorage.removeItem('userId');
       return;
     }
 
@@ -46,6 +48,8 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setUser(null);
       setIsAuthenticated(false);
+      // Remove userId from localStorage
+      localStorage.removeItem('userId');
     }
   };
 
@@ -71,6 +75,11 @@ export const AuthProvider = ({ children }) => {
 
       setUser(credentials.user);
       setIsAuthenticated(true);
+      
+      // Store userId in localStorage for order match notifications
+      if (credentials.user.id) {
+        localStorage.setItem('userId', credentials.user.id);
+      }
       
       // Notify any listeners of auth state change
       window.dispatchEvent(new CustomEvent('auth-state-changed', { 

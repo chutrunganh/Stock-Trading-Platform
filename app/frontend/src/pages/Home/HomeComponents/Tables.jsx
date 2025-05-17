@@ -393,10 +393,20 @@ function Tables() {
                 const currentUserId = localStorage.getItem('userId');
                 const matchTimestamp = stock.match_notification.timestamp;
                 
+                // Debug logging
+                console.log('[Notification] Processing match notification:', {
+                  symbol: stock.symbol,
+                  buyerUserId: stock.match_notification.buyerUserId,
+                  sellerUserId: stock.match_notification.sellerUserId,
+                  currentUserId,
+                  timestamp: matchTimestamp
+                });
+                
                 if (!hasNotificationBeenShown(stock.symbol, matchTimestamp)) {
                   if (currentUserId) {
-                    const isBuyer = stock.match_notification.buyerUserId === currentUserId;
-                    const isSeller = stock.match_notification.sellerUserId === currentUserId;
+                    // Convert to strings for comparison to handle string vs number IDs
+                    const isBuyer = String(stock.match_notification.buyerUserId) === String(currentUserId);
+                    const isSeller = String(stock.match_notification.sellerUserId) === String(currentUserId);
 
                     if (isBuyer || isSeller) {
                       setNotification({
