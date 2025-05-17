@@ -86,7 +86,7 @@
   </td>
 </tr>
     <tr>
-      <td rowspan="4">Input Validation & Output Sanitization</td>
+      <td rowspan="4">4. Input Validation & Output Sanitization</td>
       <td>[ ] Input validation and sanitization</td>
       <td>Middleware handles input checks before requests reach services. Suggest adding CSP headers for output filtering and XSS mitigation.</td>
     </tr>
@@ -108,7 +108,7 @@
       <td>No file upload functionality in current app version.</td>
     </tr>
     <tr>
-      <td rowspan="3">4. Sensitive Information Leakage</td>
+      <td rowspan="3">5. Sensitive Information Leakage</td>
       <td>[ ] Minimization of sensitive information leakage about servers, software, and applications</td>
       <td></td>
     </tr>
@@ -121,7 +121,7 @@
     <td>Set <code>X-Frame-Options: DENY</code> in HTTP response header through using <code>helmet</code> dependency to prevent website to be embeded into other sites using iframe tag </td>
     </tr>
     <tr>
-      <td rowspan="3">5. Compliance with Standards</td>
+      <td rowspan="3">6. Compliance with Standards</td>
       <td>[x] HTTPS implementation</td>
       <td>Use <code>Cloudflare Tunnels</code> to public web service and get free SSL</td>
     </tr>
@@ -134,7 +134,7 @@
       <td>Use Environment Variables file (<code>.env</code>)</td>
     </tr>
     <tr>
-      <td rowspan="2">6. Security Testing</td>
+      <td rowspan="2">7. Security Testing</td>
       <td>[-] Code review with automated tools</td>
       <td>Planned use of Qodana from Jetbrains</td>
     </tr>
@@ -143,7 +143,7 @@
       <td>To be done using ZAP Proxy, RAF DAS, Nikto.</td>
     </tr>
     <tr>
-      <td rowspan="4">7. Bonus</td>
+      <td rowspan="4">8. Bonus</td>
       <td>[x] Multi-factor authentication</td>
       <td>
         After enter correct username/email and password, OTP is sent to user's email. OTP must be valid and unexpired. We also have "Remember device in ...  time" implemented to skip OTP next time login. Devices are idntified by using <code>fingerprintJS</code> dependency (free version).
