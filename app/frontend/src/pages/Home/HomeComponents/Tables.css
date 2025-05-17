@@ -58,3 +58,52 @@
 .MuiTableCell-root[data-ref-price="true"] {
   font-weight: bold !important;
 }
+
+/* Flash animation keyframes */
+@keyframes flash-yellow {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: #ff8000;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* Flash effect class */
+.flash-cell {
+  animation: flash-yellow 1s ease-out;
+}
+
+/* Fix table layout */
+.MuiTable-root {
+  table-layout: fixed !important;
+  width: 1200px !important;
+  max-width: 100% !important;
+}
+
+/* Fix cell widths */
+.MuiTableCell-root {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  padding: 8px 4px !important;
+  width: auto !important;
+}
+
+/* Symbol column width */
+.MuiTableCell-root:first-child {
+  width: 80px !important;
+}
+
+/* Price columns width */
+.MuiTableCell-root[data-price-cell="true"] {
+  width: 65px !important;
+}
+
+/* Volume columns width */
+.MuiTableCell-root[data-volume-cell="true"] {
+  width: 65px !important;
+}

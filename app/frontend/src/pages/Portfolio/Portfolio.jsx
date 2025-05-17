@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Button, Grid } from '@mui/material';
+import { Box, Typography, Paper, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Button, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import { getPortfolioDetails, getHoldings, getTransactions } from '../../api/portfolio';
-import PaymentModal from './PaymentModal';
+import PaymentModal from './PortfolioComponents/PaymentModal';
+import PortfolioPieChart from './PortfolioComponents/PortfolioPieChart';
 import './Portfolio.css';
 
 function Portfolio() {
@@ -16,18 +17,16 @@ function Portfolio() {
     });
     const [error, setError] = useState(null);
     const [showHoldings, setShowHoldings] = useState(false);
+    const [showCharts, setShowCharts] = useState(false);
     const [showTransactions, setShowTransactions] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
-    
-    // Use refs to prevent duplicate API calls during StrictMode double rendering
-    const initialFetchDone = useRef(false);
+    const [highlightedSlice, setHighlightedSlice] = useState(null);
+    const [chartView, setChartView] = useState('symbol');
 
     // Fetch portfolio details on component mount
     useEffect(() => {
-        if (!initialFetchDone.current) {
-            fetchPortfolioDetails();
-            initialFetchDone.current = true;
-        }
+        fetchPortfolioDetails();
+        fetchHoldings();
     }, []);
 
     const fetchPortfolioDetails = async () => {
@@ -58,7 +57,7 @@ function Portfolio() {
                 setLoading(prev => ({ ...prev, holdings: false }));
             }
         }
-        setShowHoldings(!showHoldings);
+        setShowHoldings(prev => !prev);
     };
 
     const fetchTransactions = async () => {
@@ -91,6 +90,50 @@ function Portfolio() {
         setPortfolioDetails(updatedPortfolioData);
     };
 
+    // Add function to group holdings by industry
+    const getIndustryData = () => {
+        console.log('Holdings in Portfolio:', holdings);
+        
+        const industryGroups = holdings.reduce((groups, holding) => {
+            console.log('Processing holding:', holding);
+            const industry = holding.industry || 'Other';
+            if (!groups[industry]) {
+                groups[industry] = 0;
+            }
+            groups[industry] += holding.holding_value;
+            return groups;
+        }, {});
+
+        console.log('Industry groups in Portfolio:', industryGroups);
+
+        return Object.entries(industryGroups)
+            .sort((a, b) => b[1] - a[1]) // Sort by value in descending order
+            .map(([industry, value], idx) => ({
+                id: idx,
+                value: value,
+                label: industry,
+            }));
+    };
+
+    // Get chart data based on current view
+    const getChartData = () => {
+        if (holdings.length === 0) {
+            return [{ id: 1, value: 1, label: 'No Holdings', arcLabel: '' }];
+        }
+
+        if (chartView === 'symbol') {
+            return holdings
+                .sort((a, b) => b.holding_value - a.holding_value)
+                .map((holding, idx) => ({
+                    id: holding.holding_id || idx,
+                    value: holding.holding_value,
+                    label: holding.symbol,
+                }));
+        } else {
+            return getIndustryData();
+        }
+    };
+
     if (loading.details) {
         return (
             <div className="portfolio">
@@ -115,41 +158,57 @@ function Portfolio() {
         <div className="portfolio">
             <div className="portfolio-container">
                 {/* Portfolio Summary Section */}
-                <Paper elevation={3} className="portfolio-section">
-                    <div className="section-header">
-                        <Typography variant="h5">Portfolio Summary</Typography>
-                    </div>
-                    <Box mt={2}>
-                        <Grid container spacing={3}>
-                            <Grid size={{ xs: 12, sm: 6 }}>
-                                <Typography variant="subtitle1">Available Balance</Typography>
-                                <Typography variant="h4" sx={{ color: 'success.main' }}>
-                                    {formatCurrency(portfolioDetails?.cash_balance || 0)}
-                                </Typography>
-                                <Button 
-                                    variant="contained" 
-                                    color="primary" 
-                                    onClick={() => setShowPaymentModal(true)}
-                                    sx={{ mt: 1 }}
-                                >
-                                    Add Funds
-                                </Button>
+                <div className = 'grid-container'>
+                    <Paper elevation={3} className = 'grid-section'>
+                        <div className="section-header">
+                            <Typography variant="h5">Portfolio Summary</Typography>
+                        </div>
+                        <Box mt={2}>
+                            <Grid container spacing={3}>
+                                <Grid item xs={12} md={6}>
+                                    <Typography variant="subtitle1">Available Balance</Typography>
+                                    <Typography variant="h4" sx={{ color: 'success.main' }}>
+                                        {formatCurrency(portfolioDetails?.cash_balance || 0)}
+                                    </Typography>
+                                    <Button 
+                                        variant="contained" 
+                                        color="primary" 
+                                        onClick={() => setShowPaymentModal(true)}
+                                        sx={{ mt: 1 }}
+                                    >
+                                        Add Funds
+                                    </Button>
+                                </Grid>
+                                <Grid item xs={12} md={6}>
+                                    <Typography variant="subtitle1">Total Holdings Value</Typography>
+                                    <Typography variant="h4" sx={{ color: 'success.main' }}>
+                                        {formatCurrency(portfolioDetails?.total_value || 0)}
+                                    </Typography>
+                                </Grid>
                             </Grid>
-                            <Grid size={{ xs: 12, sm: 6 }}>
-                                <Typography variant="subtitle1">Total Holdings Value</Typography>
-                                <Typography variant="h4" sx={{ color: 'success.main' }}>
-                                    {formatCurrency(portfolioDetails?.total_value || 0)}
-                                </Typography>
-                            </Grid>
-                        </Grid>
-                        <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
-                            * Estimated values are for reference only and do not constitute investment advice
-                        </Typography>
-                    </Box>
-                </Paper>
+                            <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
+                                * Estimated values are for reference only and do not constitute investment advice
+                            </Typography>
+                        </Box>
+                    </Paper>
 
+
+                    {/*Chart Section in Portfolio Summary*/}
+                    <Paper className='grid-section'>
+                        <PortfolioPieChart 
+                            holdings={holdings}
+                            totalValue={portfolioDetails?.total_value || 0}
+                            chartView={chartView}
+                            onChartViewChange={setChartView}
+                            highlightedSlice={highlightedSlice}
+                            onSliceClick={setHighlightedSlice}
+                        />
+                    </Paper>
+                </div>
                 {/* Holdings Section */}
                 <Paper elevation={3} className="portfolio-section">
+
+                    {/*Holdings Sections in Holdings*/}
                     <div className="section-header" onClick={fetchHoldings}>
                         <Typography variant="h6">
                             Holdings {showHoldings ? '▼' : '▶'}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { verifyPayment} from '../../api/payment';
-import { getPortfolioDetails } from '../../api/portfolio';
+import { verifyPayment} from '../../../api/payment';
+import { getPortfolioDetails } from '../../../api/portfolio';
 import './PaymentModal.css';
 
 function PaymentModal({ isOpen, onClose, onPaymentSuccess }) {

@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import bcrypt from 'bcrypt';
+import helmet from 'helmet';
+import crypto from 'crypto';
 
 // ====== Internal Dependencies ======
 
@@ -46,6 +48,104 @@ import { initializeAdminUser, initializeNormalUser } from './utils/initUserUtil.
 // ===== Initialize Express App ======
 const app = express();
 const port = process.env.BE_PORT || 3000;
+
+// --- Security Middleware Configuration ---
+// For more detail, you can refer to: https://www.npmjs.com/package/helmet
+// Configure Helmet with CSP and other security headers
+app.use(helmet());
+
+// Generate a nonce for each request
+app.use((req, res, next) => {
+  // Generate a random nonce
+  res.locals.cspNonce = crypto.randomBytes(16).toString('base64');
+  next();
+});
+
+// Configure Content Security Policy (CSP)
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      // Restrict default loading of resources to only our own domain
+      defaultSrc: ["'self'"],
+
+      // Only allow scripts from:
+      // - our own domain ('self')
+      // - Cloudflare's challenge scripts (for Turnstile)
+      scriptSrc: [
+        "'self'",
+        "https://challenges.cloudflare.com"
+      ],
+
+      // Only allow styles from:
+      // - our own domain ('self')
+      // - Google Fonts CSS
+      styleSrc: [
+        "'self'",
+        "https://fonts.googleapis.com"
+      ],
+
+      // Only allow images from our own domain
+      imgSrc: ["'self'"],
+
+      // Only allow API/AJAX calls to:
+      // - our own domain ('self')
+      // - Cloudflare's API (for Turnstile verification)
+      connectSrc: [
+        "'self'",
+        "https://api.cloudflare.com"
+      ],
+
+      // Only allow fonts from:
+      // - our own domain ('self')
+      // - Google Fonts
+      fontSrc: [
+        "'self'",
+        "https://fonts.gstatic.com"
+      ],
+
+      // Completely block all object/embed/applet tags
+      objectSrc: ["'none'"],
+
+      // Only allow media (audio/video) from our own domain
+      mediaSrc: ["'self'"],
+
+      // Only allow frames from:
+      // - our own domain ('self')
+      // - Cloudflare's challenge frames
+      frameSrc: [
+        "'self'",
+        "https://challenges.cloudflare.com"
+      ],
+
+      // Restrict base URI to our own domain only
+      baseUri: ["'self'"],
+
+      // Only allow forms to submit to our own domain
+      formAction: ["'self'"],
+
+      // Prevent our site from being embedded in any other website
+      frameAncestors: ["'none'"],
+
+      // Block mixed content (HTTP resources on HTTPS site)
+      upgradeInsecureRequests: [],
+
+      // Restrict manifest files to our own domain
+      manifestSrc: ["'self'"],
+
+      // Only allow workers from our own domain
+      workerSrc: ["'self'"],
+
+      // Prevent loading any plugins
+      pluginTypes: ["'none'"]
+    }
+  })
+);
+
+// Configure X-Frame-Options to prevent clickjacking
+app.use(helmet.frameguard({ action: 'deny' }));
+
+// Remove X-Powered-By header to prevent leaking information about s
+app.disable('x-powered-by');
 
 // --- Middleware Configuration ---
 app.use(express.json()); // Parse JSON request bodies
@@ -153,8 +253,8 @@ const startServer = async () => {
       role: 'user'
     });
     app.listen(port, () => {
-        log.info(`Server is running on port ${port}`);
-        log.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      log.info(`Server is running on port ${port}`);
+      log.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
     });
 };
 

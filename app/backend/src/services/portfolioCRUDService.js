@@ -109,6 +109,7 @@ export const getPortfolioHoldingsService = async (userId) => {
                 h.stock_id,
                 s.symbol,
                 s.company_name,
+                s.industry,
                 h.quantity,
                 h.average_price,
                 sp.close_price as current_price,
