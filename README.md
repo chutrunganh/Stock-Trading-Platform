@@ -165,4 +165,4 @@
 </table>
 
 
-Status:🟢: Done  |  🟡: Partial done or no need	 |  🔴: Not implement yet
+*Status:🟢: Done  |  🟡: Partially done or no need	 |  🔴: Not implement yet*
