@@ -1,0 +1,109 @@
+/* Chart Section Styles */
+.show-chart {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 32px 36px 24px 36px;
+  margin-bottom: 32px;
+  margin-top: 32px;
+  max-width: 1200px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1.5px solid #e0e0e0;
+}
+
+.header-chart {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.company-name {
+  color: #f0a400;
+  font-size: 2em;
+  font-weight: bold;
+  margin-bottom: 8px;
+  margin-left: 2px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 0 #fffbe6;
+}
+
+.chart-stats-row {
+  display: flex;
+  gap: 40px;
+  margin-top: 4px;
+  margin-left: 10px;
+}
+
+.chart-stats-row > div {
+  text-align: center;
+}
+
+.chart-stats-row div div:first-child {
+  font-weight: 600;
+  font-size: 20px;
+  color: #222;
+}
+
+.chart-stats-row div div:last-child {
+  font-size: 11px;
+  color: #888;
+  letter-spacing: 1px;
+}
+
+.button1, .button2 {
+  background: #f8f9fa;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 6px;
+  margin: 0 2px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  outline: none;
+  display: flex;
+  align-items: center;
+}
+.button1.active, .button2.active {
+  border-color: #f0a400;
+  background: #fffbe6;
+}
+.button1:hover, .button2:hover {
+  border-color: #f0a400;
+}
+
+.button-separator {
+  width: 10px;
+}
+
+.trade-button {
+  background: #f0a400;
+  color: #222;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 22px;
+  font-size: 1em;
+  font-weight: bold;
+  margin-top: 18px;
+  margin-right: 2px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+  transition: background 0.2s, color 0.2s;
+}
+.trade-button:hover {
+  background: #ffd966;
+  color: #000;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1300px) {
+  .show-chart {
+    max-width: 100%;
+    padding: 18px 6px 16px 6px;
+  }
+  .chart-stats-row {
+    gap: 18px;
+    margin-left: 0;
+  }
+}
