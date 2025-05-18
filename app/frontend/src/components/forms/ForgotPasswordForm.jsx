@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './ForgotPasswordForm.css';
-import { requestPasswordReset, verifyLoginOtp, resetPassword } from '../../api/user';
+import { requestPasswordReset, resetPassword } from '../../api/user';
 import { getPasswordRequirements } from '../../utils/passwordUtil';
 import { Eye, EyeOffIcon } from "lucide-react";
 

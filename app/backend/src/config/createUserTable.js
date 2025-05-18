@@ -15,7 +15,6 @@
 
 import pool from './dbConnect.js';
 import log from '../utils/loggerUtil.js';
-import bcrypt from 'bcrypt';
 
 // // Create seed admin user function
 // const createSeedAdminUser = async () => {

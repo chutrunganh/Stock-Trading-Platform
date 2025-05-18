@@ -41,26 +41,26 @@ const processQueue = (error) => {
 };
 
 // Helper function to decode JWT and get expiration time
-const getTokenInfo = (cookie) => {
-  try {
-    if (!cookie) return null;
-    const token = cookie.split('=')[1];
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => 
-      '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-    ).join(''));
-    const payload = JSON.parse(jsonPayload);
-    const expiresIn = payload.exp * 1000 - Date.now();
-    return {
-      type: payload.type,
-      expiresIn: Math.round(expiresIn / 1000),
-      exp: new Date(payload.exp * 1000).toISOString()
-    };
-  } catch (err) {
-    return null;
-  }
-};
+// const getTokenInfo = (cookie) => {
+//   try {
+//     if (!cookie) return null;
+//     const token = cookie.split('=')[1];
+//     const base64Url = token.split('.')[1];
+//     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+//     const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => 
+//       '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+//     ).join(''));
+//     const payload = JSON.parse(jsonPayload);
+//     const expiresIn = payload.exp * 1000 - Date.now();
+//     return {
+//       type: payload.type,
+//       expiresIn: Math.round(expiresIn / 1000),
+//       exp: new Date(payload.exp * 1000).toISOString()
+//     };
+//   } catch (err) {
+//     return null;
+//   }
+// };
 
 // Define public endpoints that don't need authentication
 const PUBLIC_ENDPOINTS = [

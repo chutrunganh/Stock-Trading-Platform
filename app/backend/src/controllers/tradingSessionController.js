@@ -10,7 +10,7 @@
  */
 import { activateTradingSession, deactivateTradingSession, isTradingSessionActiveStatus } from '../services/tradingSessionService.js';
 
-export const startTradingSession = (req, res) => {
+export const startTradingSession = (_req, res) => {
     try {
         activateTradingSession();
         res.status(200).json({ success: true, message: 'Trading session started.' });
@@ -19,7 +19,7 @@ export const startTradingSession = (req, res) => {
     }
 };
 
-export const stopTradingSession = async (req, res) => {
+export const stopTradingSession = async (_req, res) => {
     try {
         await deactivateTradingSession();
         res.status(200).json({ success: true, message: 'Trading session stopped and prices recorded.' });
@@ -28,7 +28,7 @@ export const stopTradingSession = async (req, res) => {
     }
 };
 
-export const getStatus = (req, res) => {
+export const getStatus = (_req, res) => {
     const isActive = isTradingSessionActiveStatus();
     res.status(200).json({ isActive });
 };

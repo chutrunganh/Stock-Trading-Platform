@@ -3,7 +3,7 @@
  * Authentication is handled via HTTP-only cookies (access token and refresh token)
  */
 import React, { createContext, useState, useContext } from 'react';
-import { loginUser, registerUser, getUserProfile, logoutUser as logoutUserApi, refreshToken as refreshTokenApi } from '../api/user';
+import {registerUser, getUserProfile, logoutUser as logoutUserApi, refreshToken as refreshTokenApi } from '../api/user';
 
 // Create the Auth Context
 const AuthContext = createContext();
@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(true);
         return true;
       }
-    } catch (err) {
+    } catch {
       setUser(null);
       setIsAuthenticated(false);
     }

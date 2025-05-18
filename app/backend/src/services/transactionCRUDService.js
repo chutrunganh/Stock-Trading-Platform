@@ -8,18 +8,21 @@ import Transaction from '../models/transactionModel.js';
 
 // Create a new transaction
 export const createTransactionService = async (transactionData) => {
-    const {portfolio_id, stock_id, transaction_type, quantity, price} = transactionData;
+    const {portfolio_id, stock_id, transaction_type, quantity, price, transaction_date} = transactionData;
 
-    try{
-        console.log("Create transaction:", {portfolio_id, stock_id, transaction_type, quantity, price});
+    try {
+        console.log("Create transaction:", {portfolio_id, stock_id, transaction_type, quantity, price, transaction_date});
 
-        const result = await pool.query(
-            'INSERT INTO transactions (portfolio_id, stock_id, transaction_type, quantity, price) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [portfolio_id, stock_id, transaction_type, quantity, price]
-        );
+        // Always ensure we have a valid transaction_date
+        const validTransactionDate = transaction_date || new Date().toISOString();
+        
+        const query = 'INSERT INTO transactions (portfolio_id, stock_id, transaction_type, quantity, price, transaction_date) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *';
+        const values = [portfolio_id, stock_id, transaction_type, quantity, price, validTransactionDate];
+        
+        const result = await pool.query(query, values);
         return Transaction.getTransaction(result.rows[0]);
     }
-    catch(error){
+    catch(error) {
         console.error('Error:', error.message);
         throw new Error(error.message);
     }

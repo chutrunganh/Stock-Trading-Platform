@@ -6,13 +6,24 @@ class Transactions{
         this.transaction_type = transactionData.transaction_type;
         this.quantity = transactionData.quantity;
         this.price = transactionData.price;
-        this.transaction_date = transactionData.transaction_date;
+        // Ensure transaction_date is a string in ISO format
+        this.transaction_date = transactionData.transaction_date instanceof Date 
+            ? transactionData.transaction_date.toISOString()
+            : transactionData.transaction_date;
     }
 
     //because the information of transaction is not sensitive
     //so we can return all the attributes 
     static getTransaction(transactionData){
         if (!transactionData) return null; // if transactionData is not exist, return null
+        
+        // Ensure transaction_date is properly formatted
+        const transaction_date = transactionData.transaction_date instanceof Date 
+            ? transactionData.transaction_date.toISOString()
+            : (typeof transactionData.transaction_date === 'string' 
+                ? transactionData.transaction_date 
+                : new Date().toISOString());
+
         return {
             transaction_id: transactionData.transaction_id,
             portfolio_id: transactionData.portfolio_id,
@@ -20,7 +31,7 @@ class Transactions{
             transaction_type: transactionData.transaction_type,
             quantity: transactionData.quantity,
             price: transactionData.price,
-            transaction_date: transactionData.transaction_date
+            transaction_date: transaction_date
         };
     }
 }

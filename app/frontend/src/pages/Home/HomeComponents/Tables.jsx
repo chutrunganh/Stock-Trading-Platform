@@ -101,10 +101,6 @@ const getCellTextColor = (columnId, value, floor, ceil, ref, match_prc, row) => 
   return priceMap[columnId] ? compareRefAndPrice(ref, priceMap[columnId], floor, ceil) : 'inherit';
 };
 
-// Helper function to create data objects from API response
-const createData = (Symbol, ref, ceil, floor, bid_prc1, bid_vol1, bid_prc2, bid_vol2, match_prc, match_vol, ask_prc1, ask_vol1, ask_prc2, ask_vol2) => {
-  return { Symbol, ref, ceil, floor, bid_prc1, bid_vol1, bid_prc2, bid_vol2, match_prc, match_vol, ask_prc1, ask_vol1, ask_prc2, ask_vol2 };
-};
 
 // Table header component
 const OrderBookTableHeader = () => (
@@ -202,7 +198,6 @@ function Tables() {
   const [error, setError] = useState(null);
   const [lastUpdateTime, setLastUpdateTime] = useState(null);
   const [notification, setNotification] = useState(null);
-  const [lastProcessedTimestamp, setLastProcessedTimestamp] = useState(null);
 
   // Helper function to check if a notification has been shown
   const hasNotificationBeenShown = (stockSymbol, timestamp) => {

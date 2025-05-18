@@ -40,13 +40,17 @@ export const settleMatchedOrder = async (matchedOrder) => {
         const sellerNewBalance = Number((parseFloat(sellerPortfolio.rows[0].cash_balance) + totalValue).toFixed(2));
         await updatePortfolioService(sellerPortfolioId, { cash_balance: sellerNewBalance });
 
-        // 3. Record Transactions        // Record buyer's transaction
+        // 3. Record Transactions
+        const transactionDate = new Date().toISOString();
+        
+        // Record buyer's transaction
         await createTransactionService({
             portfolio_id: buyerPortfolioId,
             stock_id: stockId,
             transaction_type: 'Buy',
             quantity: quantity,
-            price: price
+            price: price,
+            transaction_date: transactionDate
         });
 
         // Record seller's transaction
@@ -55,7 +59,8 @@ export const settleMatchedOrder = async (matchedOrder) => {
             stock_id: stockId,
             transaction_type: 'Sell',
             quantity: quantity,
-            price: price
+            price: price,
+            transaction_date: transactionDate
         });
 
         await client.query('COMMIT');

@@ -10,7 +10,7 @@ const TradingSessionContext = createContext();
 
 export function TradingSessionProvider({ children }) {
     const [isTradingActive, setIsTradingActive] = useState(false);
-    const [error, setError] = useState(null);
+    const [_error, setError] = useState(null);
     // Use ref to prevent duplicate API calls during StrictMode double rendering
     const initialCheckDone = useRef(false);
 

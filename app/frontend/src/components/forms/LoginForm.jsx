@@ -119,8 +119,6 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
     const handleGoogleCallback = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       
-      // Check if we're returning from Google authentication
-      const isGoogleLoginFlow = sessionStorage.getItem('googleLoginInProgress') === 'true';
       
       // Handle success case
       if (urlParams.has('login') && urlParams.get('login') === 'success') {

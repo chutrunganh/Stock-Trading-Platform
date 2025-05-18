@@ -22,7 +22,7 @@ export const createTransaction = async (req, res, next) => {
 }
 
 //read
-export const getAllTransactions = async (req, res, next) => {
+export const getAllTransactions = async (_req, res, next) => {
     try{
         const transactions = await getAllTransactionsService();
         handleResponse(res, 200, 'Transactions list', transactions);
@@ -59,5 +59,6 @@ export const getTransactionsByStockId = async (req,res, next) => {
         next(error);
     }
 }
+
 //look up to transactionCRUDService.js to see why we don't implement update service
 

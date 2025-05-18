@@ -32,7 +32,10 @@ const configurePassport = () => {
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: callbackURL,
         scope: ['profile', 'email']
-      },      async (accessToken, refreshToken, profile, done) => {
+              // NO NOT REMOVE accessToken and refreshToken as they are required by GoogleStrategy, although
+              // the editor may warn that:'refreshToken' is declared but its value is never read. Add an 
+              // underscore to the parameter name to suppress the warning, DO NOT REMOVE IT.
+      },      async (_accessToken, _refreshToken, profile, done) => {
         try {
           // Extract user information from Google profile
           const email = profile.emails[0].value;

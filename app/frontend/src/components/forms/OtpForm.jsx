@@ -8,7 +8,6 @@ function OtpForm({
   isLoading, 
   error, 
   onResend, 
-  onCancel,
   title, 
   description, 
   className, 

@@ -1,6 +1,7 @@
 import pool from '../config/dbConnect.js';
 import Portfolio from '../models/portfolioModel.js';
 import { INITIAL_CASH_BALANCE } from '../config/constants.js';
+import Transaction from '../models/transactionModel.js';
 
 // Create a new portfolio for a user
 export const createPortfolioForUserService = async (userId, client = pool) => {
@@ -140,6 +141,7 @@ export const getPortfolioTransactionsService = async (userId) => {
         const query = `
             SELECT 
                 t.transaction_id,
+                t.portfolio_id,
                 t.stock_id,
                 s.symbol,
                 s.company_name,
@@ -154,7 +156,23 @@ export const getPortfolioTransactionsService = async (userId) => {
             ORDER BY t.transaction_date DESC`;
         
         const result = await pool.query(query, [userId]);
-        return result.rows;
+        
+        console.log('Raw transaction data from database:', result.rows);
+        
+        // Transform each transaction through the Transaction model and add stock info
+        const transformedTransactions = result.rows.map(row => {
+            const transaction = Transaction.getTransaction(row);
+            console.log('Transformed transaction:', transaction);
+            return {
+                ...transaction,
+                symbol: row.symbol,
+                company_name: row.company_name
+            };
+        });
+        
+        console.log('Final transformed transactions:', transformedTransactions);
+        
+        return transformedTransactions;
     } catch (error) {
         throw error;
     }

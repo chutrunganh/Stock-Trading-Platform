@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { Box, Typography, Paper, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress, Button, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import { getPortfolioDetails, getHoldings, getTransactions } from '../../api/portfolio';
 import PaymentModal from './PortfolioComponents/PaymentModal';
@@ -17,7 +16,6 @@ function Portfolio() {
     });
     const [error, setError] = useState(null);
     const [showHoldings, setShowHoldings] = useState(false);
-    const [showCharts, setShowCharts] = useState(false);
     const [showTransactions, setShowTransactions] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [highlightedSlice, setHighlightedSlice] = useState(null);
@@ -65,6 +63,11 @@ function Portfolio() {
             try {
                 setLoading(prev => ({ ...prev, transactions: true }));
                 const response = await getTransactions();
+                console.log('Transactions response:', response.data.map(t => ({
+                    id: t.transaction_id,
+                    date: t.transaction_date,
+                    parsed: new Date(t.transaction_date)
+                })));
                 setTransactions(response.data);
                 setError(null);
             } catch (err) {
@@ -113,25 +116,6 @@ function Portfolio() {
                 value: value,
                 label: industry,
             }));
-    };
-
-    // Get chart data based on current view
-    const getChartData = () => {
-        if (holdings.length === 0) {
-            return [{ id: 1, value: 1, label: 'No Holdings', arcLabel: '' }];
-        }
-
-        if (chartView === 'symbol') {
-            return holdings
-                .sort((a, b) => b.holding_value - a.holding_value)
-                .map((holding, idx) => ({
-                    id: holding.holding_id || idx,
-                    value: holding.holding_value,
-                    label: holding.symbol,
-                }));
-        } else {
-            return getIndustryData();
-        }
     };
 
     if (loading.details) {
@@ -280,7 +264,34 @@ function Portfolio() {
                                             {transactions.map((transaction) => (
                                                 <TableRow key={transaction.transaction_id}>
                                                     <TableCell>
-                                                        {new Date(transaction.transaction_date).toLocaleString()}
+                                                        {(() => {
+                                                            const rawDate = transaction.transaction_date;
+                                                            console.log('Raw date:', rawDate, 'Type:', typeof rawDate);
+                                                            
+                                                            if (!rawDate) return 'N/A';
+                                                            
+                                                            // If it's a string, use it directly
+                                                            if (typeof rawDate === 'string') {
+                                                                try {
+                                                                    const date = new Date(rawDate);
+                                                                    if (!isNaN(date.getTime())) {
+                                                                        return date.toLocaleString('en-US', {
+                                                                            year: 'numeric',
+                                                                            month: 'short',
+                                                                            day: 'numeric',
+                                                                            hour: 'numeric',
+                                                                            minute: 'numeric',
+                                                                            hour12: true
+                                                                        });
+                                                                    }
+                                                                } catch (e) {
+                                                                    console.error('Error parsing date string:', rawDate, e);
+                                                                }
+                                                            }
+                                                            
+                                                            console.error('Invalid date value:', rawDate);
+                                                            return 'Invalid date';
+                                                        })()}
                                                     </TableCell>
                                                     <TableCell>{transaction.symbol}</TableCell>
                                                     <TableCell>{transaction.transaction_type}</TableCell>

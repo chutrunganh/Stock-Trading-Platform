@@ -70,19 +70,14 @@ export const cancelOrder = async (orderId) => {
  * @returns {Promise} Array of most traded stocks
  */
 export const getMostTradedStocks = async () => {
-  try {
-    // In a real implementation, this would be an API call
-    // For now returning mock data
-    return [
-      { ticker: 'AAPL', name: 'APPLE INC', price: 196.98, changePercent: 1.39, changeValue: 2.71, chartData: [180, 185, 183, 190, 195, 192, 198, 196, 193, 195] },
-      { ticker: 'NVDA', name: 'NVIDIA CORPORATION', price: 101.49, changePercent: -2.87, changeValue: -3.00, chartData: [110, 108, 112, 105, 103, 100, 102, 101, 104, 99] },
-      { ticker: 'TSLA', name: 'TESLA, INC.', price: 241.37, changePercent: -0.07, changeValue: -0.18, chartData: [230, 235, 228, 240, 245, 238, 242, 241, 248, 240] },
-      { ticker: 'COST', name: 'COSTCO WHOLESALE', price: 994.50, changePercent: 2.76, changeValue: 26.75, chartData: [950, 960, 955, 970, 985, 975, 995, 994, 980, 990] },
-      { ticker: 'NFLX', name: 'NETFLIX, INC.', price: 973.03, changePercent: 1.19, changeValue: 11.40, chartData: [920, 930, 925, 940, 955, 945, 965, 973, 960, 970] },
-      { ticker: 'MSFT', name: 'MICROSOFT CORP', price: 415.50, changePercent: 0.85, changeValue: 3.50, chartData: [400, 405, 402, 410, 412, 408, 415, 413, 416, 415] },
-    ];
-  } catch (error) {
-    console.error('Error fetching most traded stocks:', error);
-    throw error;
-  }
+  // In a real implementation, this would be an API call
+  // For now returning mock data
+  return [
+    { ticker: 'AAPL', name: 'APPLE INC', price: 196.98, changePercent: 1.39, changeValue: 2.71, chartData: [180, 185, 183, 190, 195, 192, 198, 196, 193, 195] },
+    { ticker: 'NVDA', name: 'NVIDIA CORPORATION', price: 101.49, changePercent: -2.87, changeValue: -3.00, chartData: [110, 108, 112, 105, 103, 100, 102, 101, 104, 99] },
+    { ticker: 'TSLA', name: 'TESLA, INC.', price: 241.37, changePercent: -0.07, changeValue: -0.18, chartData: [230, 235, 228, 240, 245, 238, 242, 241, 248, 240] },
+    { ticker: 'COST', name: 'COSTCO WHOLESALE', price: 994.50, changePercent: 2.76, changeValue: 26.75, chartData: [950, 960, 955, 970, 985, 975, 995, 994, 980, 990] },
+    { ticker: 'NFLX', name: 'NETFLIX, INC.', price: 973.03, changePercent: 1.19, changeValue: 11.40, chartData: [920, 930, 925, 940, 955, 945, 965, 973, 960, 970] },
+    { ticker: 'MSFT', name: 'MICROSOFT CORP', price: 415.50, changePercent: 0.85, changeValue: 3.50, chartData: [400, 405, 402, 410, 412, 408, 415, 413, 416, 415] },
+  ];
 };
