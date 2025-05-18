@@ -45,30 +45,35 @@ Brief introduction
 
 The project is built with the following technologies:
 
-- **Backend:** 
-
-<div>
+<strong>Backend:</strong>
+<div style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px;">
   <img src="docs/images/NodeJS-Light.svg" alt="NodeJS" width="60" height="60">
   <img src="docs/images/express.png" alt="Express" width="60" height="60">
-  <img src="docs/images/Yarn-Light.svg" alt="React" width="60" height="60">
-  <img src="docs/images/PostgreSQL-Light.svg" alt="Postgres" width="60" height="60">
+  <img src="docs/images/Yarn-Light.svg" alt="Yarn" width="60" height="60">
+  <img src="docs/images/PostgreSQL-Light.svg" alt="PostgreSQL" width="60" height="60">
 </div>
 
-- **Frontend:**
-
-<div>
+<strong>Frontend:</strong>
+<div style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px;">
   <img src="docs/images/React-Light.svg" alt="React" width="60" height="60">
   <img src="docs/images/Vite-Light.svg" alt="Vite" width="60" height="60">
   <img src="docs/images/mui.png" alt="Material UI" width="60" height="60">
 </div>
 
-- **Deployment:**
-
-<div>
+<strong>Deployment:</strong>
+<div style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px;">
   <img src="docs/images/Docker.svg" alt="Docker" width="60" height="60">
   <img src="docs/images/Nginx.png" alt="Nginx" width="60" height="60">
   <img src="docs/images/Cloudflare-Light.svg" alt="Cloudflare" width="60" height="60">
 </div>
+
+<strong>Security Testing:</strong>
+<div style="display: flex; gap: 20px; align-items: center;">
+  <img src="docs/images/Qodana.png" alt="Qodana" height="60">
+  <img src="docs/images/zap.png" alt="OWASP ZAP"  height="60">
+</div>
+
+<br>
 
 
 # 📖 Usage and Demo
@@ -206,7 +211,7 @@ The project is built with the following technologies:
       </td>
     </tr>
     <tr>
-      <td>[-] Prevention of path traversal</td>
+      <td>🔴 Prevention of path traversal</td>
       <td>Implement access control to avoid IDOR (e.g., user A accessing user B's resources).</td>
     </tr>
     <tr>
@@ -215,7 +220,7 @@ The project is built with the following technologies:
     </tr>
     <tr>
       <td rowspan="3">5. Sensitive Information Leakage</td>
-      <td>[ ] Minimization of sensitive information leakage about servers, software, and applications</td>
+      <td>🔴 Minimization of sensitive information leakage about servers, software, and applications</td>
       <td></td>
     </tr>
     <tr>
@@ -232,20 +237,25 @@ The project is built with the following technologies:
       <td>Use <code>Cloudflare Tunnels</code> to public web service and get free SSL</td>
     </tr>
     <tr>
-      <td>[-] Mitigation of DoS attacks</td>
+      <td>🔴 Mitigation of DoS attacks</td>
       <td>Requests pass through Cloudflare proxy. Still need rate-limiting and monitoring.</td>
     </tr>
     <tr>
       <td>🟢 Secure storage and management of sensitive values</td>
-      <td>Use Environment Variables file (<code>.env</code>)</td>
+      <td>
+      Use an environment variables file named <code>.env</code> to store secret values and keys.  
+      All parts of the source code that need these values must load them from this file instead of hardcoding them.  
+      The <code>.env</code> file is not committed to GitHub.  
+      Instead, we provide a <code>.env.example</code> file as a template to help you recreate your own <code>.env</code> file with your credentials.
+    </td>
     </tr>
     <tr>
       <td rowspan="2">7. Security Testing</td>
-      <td>[-] Code review with automated tools</td>
-      <td>Planned use of Qodana from Jetbrains</td>
+      <td>🟡 Code review with automated tools</td>
+      <td>Scan with <code>Qodana</code> from Jetbrains. All critical warning have been fixed</td>
     </tr>
     <tr>
-      <td>[-] Penetration testing with tools</td>
+      <td>🔴 Penetration testing with tools</td>
       <td>To be done using ZAP Proxy, RAF DAS, Nikto.</td>
     </tr>
     <tr>
@@ -256,11 +266,11 @@ The project is built with the following technologies:
       </td>
     </tr>
     <tr>
-      <td>[-] Advanced session hijacking prevention</td>
+      <td>🔴 Advanced session hijacking prevention</td>
       <td>Track user IPs, detect unfamiliar devices/browsers.</td>
     </tr>
     <tr>
-      <td>[-] Advanced HTTP flood prevention</td>
+      <td>🔴 Advanced HTTP flood prevention</td>
       <td>Use Cloudflare CDN to absorb excessive traffic.</td>
     </tr>
     <tr>
