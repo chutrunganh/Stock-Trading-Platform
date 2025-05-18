@@ -49,8 +49,8 @@ const PortfolioPieChart = ({
 
         console.log('Industry groups before processing:', industryGroups);
 
-        // eslint-disable-next-line no-unused-vars
-        const sortedData = Object.entries(industryGroups)
+        const sortedData = Object.entries(industryGroups)   
+            // eslint-disable-next-line no-unused-vars
             .filter(([_industry, value]) => value > 0) // Only include industries with positive values
             .sort((a, b) => b[1] - a[1]) // Sort by value in descending order
             .map(([industry, value], idx) => {
