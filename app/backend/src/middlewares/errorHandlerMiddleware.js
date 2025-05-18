@@ -38,16 +38,6 @@ const sanitizeValue = (value) => {
   return value;
 };
 
-// Sanitize error messages to prevent XSS
-const sanitizeErrorMessage = (message) => {
-  if (typeof message !== 'string') return 'An error occurred';
-  return xss(message, {
-    whiteList: {}, // No HTML tags allowed
-    stripIgnoreTag: true,
-    stripIgnoreTagBody: ['script', 'style']
-  });
-};
-
 // Handle different types of errors
 const handleCastError = (err) => {
   const message = `Invalid ${err.path}: ${err.value}`;
@@ -70,7 +60,7 @@ const handleDuplicateFieldsDB = (err) => {
   return new AppError(message, 400);
 };
 
-const errorHandling = (err, req, res, next) => {
+const errorHandling = (err, req, res, _next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 

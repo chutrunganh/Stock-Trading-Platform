@@ -3,7 +3,7 @@ import log from '../utils/loggerUtil.js';
 import pool from '../config/dbConnect.js';
 
 // Verify payment and update user's balance
-export const verifyPaymentController = async (req, res, next) => {
+export const verifyPaymentController = async (req, res, _next) => {
     const { referenceNumber } = req.body;
     const portfolioId = req.user.portfolio_id;
 

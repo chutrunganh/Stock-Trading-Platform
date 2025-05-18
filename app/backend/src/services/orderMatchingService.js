@@ -175,7 +175,7 @@ export class OrderBook {
             volume: matchedQuantity,
             buyerUserId: order.userId,
             sellerUserId: sellOrder.userId
-          });
+          }).catch(console.error);
 
           // Remove completed sell order
           if (sellOrder.volume === 0) {
@@ -241,7 +241,7 @@ export class OrderBook {
             volume: matchedQuantity,
             buyerUserId: buyOrder.userId,
             sellerUserId: order.userId
-          });
+          }).catch(console.error);
 
           // Remove completed buy order
           if (buyOrder.volume === 0) {
@@ -305,7 +305,7 @@ export class OrderBook {
           volume: matchQuantity,
           buyerUserId: buyOrder.userId,
           sellerUserId: sellOrder.userId
-        });
+        }).catch(console.error);
 
         // Process the match (update holdings, etc.)
         this.processMatch(buyOrder, sellOrder, matchQuantity, matchPrice);

@@ -216,7 +216,7 @@ function Trade() {
             }
         } catch (error) {
             console.error('Order placement error:', error);
-            let errorMsg = 'Failed to place order';
+            let errorMsg;
             
             if (error.response) {
                 errorMsg = error.response.data?.message || `Server error: ${error.response.status}`;

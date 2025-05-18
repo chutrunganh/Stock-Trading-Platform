@@ -16,7 +16,6 @@ export const settleMatchedOrder = async (matchedOrder) => {
         stockId,
         quantity,
         price,
-        matchType // 'limit' or 'market'
     } = matchedOrder;
 
     const client = await pool.connect();

@@ -4,7 +4,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
-import bcrypt from 'bcrypt';
 import helmet from 'helmet';
 import crypto from 'crypto';
 
@@ -54,7 +53,7 @@ const port = process.env.BE_PORT || 3000;
 app.use(helmet());
 
 // Generate a nonce for each request
-app.use((req, res, next) => {
+app.use((_req, res, next) => {
   // Generate a random nonce
   res.locals.cspNonce = crypto.randomBytes(16).toString('base64');
   next();
@@ -188,9 +187,8 @@ app.use((req, res, next) => {
 app.use(cookieParser()); // Add cookie-parser middleware
 
 // --- Google OAuth Configuration ---
-const passportInstance = configurePassport();
+configurePassport();
 app.use(passport.initialize());
-
 
 // --- API Routes ---
 // Mount routes
@@ -260,4 +258,10 @@ const startServer = async () => {
     });
 };
 
-startServer();
+startServer()
+  .then(() => {
+    // Server started successfully
+  })
+  .catch((err) => {
+    console.error('Failed to start server:', err);
+  });

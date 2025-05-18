@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import log from './loggerUtil.js';
+
 
 /**
  * Initializes an admin user with portfolio and holdings if not already present.

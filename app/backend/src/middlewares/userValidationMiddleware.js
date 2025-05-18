@@ -14,7 +14,7 @@ const joiXss = Joi.extend((joi) => ({
   },
   rules: {
     xss: {
-      validate(value, helpers) {
+      validate(value, _helpers) {
         const clean = xss(value, {
           whiteList: {},        // No tags allowed
           stripIgnoreTag: true, // Strip tags not in whitelist

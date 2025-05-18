@@ -55,7 +55,6 @@ export function generateTokens(payload) {
  * Verify an access token.
  * @param {string} token
  * @returns {Object} decoded payload
- * @throws if invalid/expired
  */
 export function verifyAccessToken(token) {
   try {
@@ -72,7 +71,6 @@ export function verifyAccessToken(token) {
  * Verify a refresh token.
  * @param {string} token
  * @returns {Object} decoded payload
- * @throws if invalid/expired
  */
 export function verifyRefreshToken(token) {
   try {

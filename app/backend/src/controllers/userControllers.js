@@ -108,7 +108,7 @@ async function resolveEmailFromIdentifier(identifier) {
   return identifier;
 }
 
-export const loginUser = async (req, res, next) => {
+export const loginUser = async (req, res, _next) => {
     const { identifier, password, turnstileToken, otp, visitorId, rememberDevice, fingerprintConfidence } = req.body;
     try {
         // Skip Turnstile verification in development
@@ -214,7 +214,7 @@ export const googleAuth = (req, res, next) => {
   
 // Handle Google OAuth callback, no need to call to any services since this is handled by Passport.js built in function
 export const googleAuthCallback = (req, res, next) => {
-    passport.authenticate('google', { session: false }, async (err, user, info) => {
+    passport.authenticate('google', { session: false }, async (err, user, _info) => {
         if (err) {
             const errorUrl = `${process.env.FE_URL}?error=${encodeURIComponent(err.message)}`;
             return res.redirect(errorUrl);
@@ -321,14 +321,14 @@ export const logoutUser = async (req, res, next) => {
 };
 
 // Refresh token controller
-export const refreshToken = async (req, res, next) => {
+export const refreshToken = async (req, res, _next) => {
   try {
     // The refresh token has already been verified by the middleware
     const refreshToken = req.refreshToken;
     
     console.log('Generating new access token with verified refresh token');
     
-    const { accessToken } = await refreshAccessTokenService(refreshToken);
+    const { accessToken } = refreshAccessTokenService(refreshToken);
     
     console.log('Token refresh successful:', {
       newAccessTokenExists: !!accessToken,
