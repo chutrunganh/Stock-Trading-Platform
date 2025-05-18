@@ -4,7 +4,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-    <img src="docs\images\logo.png" alt="Logo" width="200" height="200">
+    <img src="docs\images\logo.png" alt="Logo" width="250">
 </div>
 
 <br />
@@ -20,14 +20,14 @@
   <p align="center">
     <b>A stock trading simulator built for beginners. Learn to trade without the risk</b>
     <br />
-    <a href="https://github.com/chutrunganh/Biometric_IT4432E/blob/master/Slide_And_Report/Biometric_Report.pdf"><strong>Explore the docs »</strong></a>
+    <a href=""><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="#-usage-and-demo">Usage</a>
     ·
-    <a href="https://github.com/chutrunganh/Biometric_IT4432E/issues">Report Bug</a>
+    <a href="">Report Bug</a>
     ·
-    <a href="https://github.com/chutrunganh/Biometric_IT4432E/issues">Request Feature</a>
+    <a href="">Request Feature</a>
   </p>
 </div>
 
@@ -47,24 +47,28 @@ The project is built with the following technologies:
 
 - **Backend:** 
 
-![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
-![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)
-![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens)
-![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
-![Yarn](https://img.shields.io/badge/yarn-%232C8EBB.svg?style=for-the-badge&logo=yarn&logoColor=white)
-
+<div>
+  <img src="docs/images/NodeJS-Light.svg" alt="NodeJS" width="60" height="60">
+  <img src="docs/images/express.png" alt="Express" width="60" height="60">
+  <img src="docs/images/Yarn-Light.svg" alt="React" width="60" height="60">
+  <img src="docs/images/PostgreSQL-Light.svg" alt="Postgres" width="60" height="60">
+</div>
 
 - **Frontend:**
 
-![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
-![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
-![MUI](https://img.shields.io/badge/MUI-%230081CB.svg?style=for-the-badge&logo=mui&logoColor=white)
+<div>
+  <img src="docs/images/React-Light.svg" alt="React" width="60" height="60">
+  <img src="docs/images/Vite-Light.svg" alt="Vite" width="60" height="60">
+  <img src="docs/images/mui.png" alt="Material UI" width="60" height="60">
+</div>
 
 - **Deployment:**
 
-![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
-![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)
-![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=for-the-badge&logo=Cloudflare&logoColor=white)
+<div>
+  <img src="docs/images/Docker.svg" alt="Docker" width="60" height="60">
+  <img src="docs/images/Nginx.png" alt="Nginx" width="60" height="60">
+  <img src="docs/images/Cloudflare-Light.svg" alt="Cloudflare" width="60" height="60">
+</div>
 
 
 # 📖 Usage and Demo
@@ -239,6 +243,7 @@ The project is built with the following technologies:
 
 *Status:🟢: Done  |  🟡: Partially done or no need	 |  🔴: Not implement yet*
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTRIBUTING -->
 # 🤝 Contributing
