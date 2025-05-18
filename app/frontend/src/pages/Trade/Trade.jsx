@@ -101,7 +101,7 @@ const MostTradedStocks = () => {
                 const stocksData = await getMostTradedStocks();
                 setStocks(stocksData);
                 setLoading(false);
-            } catch (err) {
+            } catch {
                 setError('Failed to load stocks data');
                 setLoading(false);
             }
@@ -113,11 +113,20 @@ const MostTradedStocks = () => {
     return (
         <div className="most-traded-section">
             <h2 className="most-traded-title">MOST TRADED STOCKS</h2>
-            <div className="stock-cards-container">
-                {stocks.map(stock => (
-                    <StockCard key={stock.ticker} stock={stock} />
-                ))}
-            </div>
+            {loading ? (
+                <div className="loading-container">
+                    <div className="loading-spinner"></div>
+                    <p>Loading most traded stocks...</p>
+                </div>
+            ) : error ? (
+                <div className="error-message">{error}</div>
+            ) : (
+                <div className="stock-cards-container">
+                    {stocks.map(stock => (
+                        <StockCard key={stock.ticker} stock={stock} />
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
@@ -131,7 +140,7 @@ const InfoIcon = ({ title }) => (
     </span>
 );
 
-function Trade(props) {
+function Trade() {
     const [symbol, setSymbol] = useState('');
     const [action, setAction] = useState('buy');
     const [quantity, setQuantity] = useState(0);
@@ -255,7 +264,7 @@ function Trade(props) {
                                 return typeof option === 'string' ? option : option.symbol;
                             }}
                             renderOption={(props, option) => {
-                                const { key, ...otherProps } = props;
+                                const { _key, ...otherProps } = props;
                                 return (
                                     <li key={option.symbol} {...otherProps}>
                                         <strong>{option.symbol}</strong>

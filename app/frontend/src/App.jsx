@@ -170,7 +170,7 @@ function App() {
     };
     
     // Add a state variable to force re-render when auth state changes
-    const [forceUpdate, setForceUpdate] = useState(0);
+    const [_forceUpdate, setForceUpdate] = useState(0);
 
     return (
         <TradingSessionProvider>

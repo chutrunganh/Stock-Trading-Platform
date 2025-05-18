@@ -93,30 +93,6 @@ function Portfolio() {
         setPortfolioDetails(updatedPortfolioData);
     };
 
-    // Add function to group holdings by industry
-    const getIndustryData = () => {
-        console.log('Holdings in Portfolio:', holdings);
-        
-        const industryGroups = holdings.reduce((groups, holding) => {
-            console.log('Processing holding:', holding);
-            const industry = holding.industry || 'Other';
-            if (!groups[industry]) {
-                groups[industry] = 0;
-            }
-            groups[industry] += holding.holding_value;
-            return groups;
-        }, {});
-
-        console.log('Industry groups in Portfolio:', industryGroups);
-
-        return Object.entries(industryGroups)
-            .sort((a, b) => b[1] - a[1]) // Sort by value in descending order
-            .map(([industry, value], idx) => ({
-                id: idx,
-                value: value,
-                label: industry,
-            }));
-    };
 
     if (loading.details) {
         return (
