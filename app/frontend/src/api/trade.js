@@ -11,7 +11,7 @@ export const getStockBySymbol = async (symbol) => {
   try {
     const response = await apiClient.get(`/stocks/symbol/${symbol}`);
     if (!response.data) {
-      throw new Error(`Stock ${symbol} not found`);
+      return null;
     }
     return response.data;
   } catch (error) {

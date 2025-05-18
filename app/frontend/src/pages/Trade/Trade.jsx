@@ -174,13 +174,17 @@ function Trade() {
         try {
             // Check if user is authenticated using the auth context
             if (!user || !user.id) {
-                throw new Error('You must be logged in to place an order');
+                setErrorMessage('You must be logged in to place an order');
+                setLoading(false);
+                return;
             }
 
             // First get the stock details to get the stock ID
             const stockDetails = await getStockBySymbol(symbol.toUpperCase());
             if (!stockDetails || !stockDetails.id) {
-                throw new Error(`Could not find stock with symbol ${symbol}`);
+                setErrorMessage(`Could not find stock with symbol ${symbol}`);
+                setLoading(false);
+                return;
             }
 
             const orderData = {

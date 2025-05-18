@@ -140,11 +140,11 @@ apiClient.interceptors.response.use(
             return apiClient(originalRequest);
           } else {
             console.log('[Token Debug] ❌ Token refresh failed - invalid response');
-            throw new Error('Invalid refresh response');
+            return null;
           }
         } else {
           console.log('[Token Debug] ❌ No refresh function available');
-          throw new Error('No refresh function available');
+          return null;
         }
       } catch (refreshError) {
         console.log('[Token Debug] ❌ Token refresh failed, logging out...', refreshError.message);

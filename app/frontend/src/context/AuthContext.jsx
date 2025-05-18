@@ -70,7 +70,9 @@ export const AuthProvider = ({ children }) => {
     
     try {
       if (!credentials?.user) {
-        throw new Error('Invalid login credentials');
+        setError('Invalid login credentials');
+        setLoading(false);
+        return;
       }
 
       setUser(credentials.user);
@@ -103,7 +105,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await registerUser(userData);
       if (!response?.data) {
-        throw new Error('Invalid registration response');
+        setError('Invalid registration response');
+        setLoading(false);
+        return;
       }
       return response.data;
     } catch (err) {
