@@ -107,3 +107,44 @@
     font-size: 12px !important;
     color: rgba(0, 0, 0, 0.87) !important;
 }
+
+/* Table column width adjustments */
+.transaction-date-column {
+    min-width: 200px !important;
+    width: 200px !important;
+}
+
+.transaction-symbol-column {
+    min-width: 80px !important;
+    width: 80px !important;
+}
+
+.transaction-type-column {
+    min-width: 80px !important;
+    width: 80px !important;
+}
+
+.transaction-quantity-column {
+    min-width: 100px !important;
+    width: 100px !important;
+    text-align: right !important;
+}
+
+.transaction-price-column {
+    min-width: 120px !important;
+    width: 120px !important;
+    text-align: right !important;
+}
+
+.transaction-total-column {
+    min-width: 120px !important;
+    width: 120px !important;
+    text-align: right !important;
+}
+
+/* Ensure table header cells maintain their width */
+.MuiTableCell-head {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

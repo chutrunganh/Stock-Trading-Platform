@@ -252,18 +252,18 @@ function Portfolio() {
                                     <Table>
                                         <TableHead>
                                             <TableRow>
-                                                <TableCell>Date</TableCell>
-                                                <TableCell>Symbol</TableCell>
-                                                <TableCell>Type</TableCell>
-                                                <TableCell align="right">Quantity</TableCell>
-                                                <TableCell align="right">Price</TableCell>
-                                                <TableCell align="right">Total</TableCell>
+                                                <TableCell className="transaction-date-column">Date</TableCell>
+                                                <TableCell className="transaction-symbol-column">Symbol</TableCell>
+                                                <TableCell className="transaction-type-column">Type</TableCell>
+                                                <TableCell className="transaction-quantity-column" align="right">Quantity</TableCell>
+                                                <TableCell className="transaction-price-column" align="right">Price</TableCell>
+                                                <TableCell className="transaction-total-column" align="right">Total</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
                                             {transactions.map((transaction) => (
                                                 <TableRow key={transaction.transaction_id}>
-                                                    <TableCell>
+                                                    <TableCell className="transaction-date-column">
                                                         {(() => {
                                                             const rawDate = transaction.transaction_date;
                                                             console.log('Raw date:', rawDate, 'Type:', typeof rawDate);
@@ -293,11 +293,11 @@ function Portfolio() {
                                                             return 'Invalid date';
                                                         })()}
                                                     </TableCell>
-                                                    <TableCell>{transaction.symbol}</TableCell>
-                                                    <TableCell>{transaction.transaction_type}</TableCell>
-                                                    <TableCell align="right">{transaction.quantity}</TableCell>
-                                                    <TableCell align="right">{formatCurrency(transaction.price)}</TableCell>
-                                                    <TableCell align="right">
+                                                    <TableCell className="transaction-symbol-column">{transaction.symbol}</TableCell>
+                                                    <TableCell className="transaction-type-column">{transaction.transaction_type}</TableCell>
+                                                    <TableCell className="transaction-quantity-column" align="right">{transaction.quantity}</TableCell>
+                                                    <TableCell className="transaction-price-column" align="right">{formatCurrency(transaction.price)}</TableCell>
+                                                    <TableCell className="transaction-total-column" align="right">
                                                         {formatCurrency(transaction.quantity * transaction.price)}
                                                     </TableCell>
                                                 </TableRow>
