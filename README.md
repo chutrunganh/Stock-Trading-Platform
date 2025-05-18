@@ -1,11 +1,9 @@
 > [!IMPORTANT]
 > This repository is still under development and does not yet reflect the final project.
 
+![MasterHead](docs/images/banner.png)
+
 <!-- PROJECT LOGO -->
-<br />
-<div align="center">
-    <img src="docs\images\logo.png" alt="Logo" width="250">
-</div>
 
 <br />
 
@@ -261,7 +259,7 @@ Don't forget to give the project a star! Thanks again!
 
 For the success of this project, I want a special thanks to:
 
-- **Project supervisor**: MSc. Bùi Trọng Tùng, Ngoc, Dr. Đỗ Bá Lâm
+- **Project supervisor**: MSc. Bùi Trọng Tùng, Dr. Đỗ Bá Lâm
 - **Team members**:
 
   | Name | Student ID |

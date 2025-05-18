@@ -1,23 +1,107 @@
 /**
  * @file roleBasedAccessControlMiddleware.js
- * @param {*} requiredRole the role that is required to access the route
- * 
- * @description This middleware checks if the user has the required role to access a specific route.
- * Usage example of this middleware in a route:
- * router.delete("/user/:id", authorizeRole('admin'), deleteUser); // Only access with admin role can access this route
+ * @description Simple RBAC middleware focusing on admin dashboard access and trading session control
  */
 
-// ALWAYS have next() in the last line of the middleware function to pass control to the next 
-// middleware or route handler (except for error handling middleware).
+import { AppError } from './errorHandlerMiddleware.js';
 
-const authorizeRole = (requiredRole) => {
-    return (req, res, next) => {
-      const userRole = req.user.role; // Assume `req.user` is populated after authentication
-      if (userRole !== requiredRole) {
-        return res.status(403).json({ message: 'Access denied' });
-      }
-      next(); //ALWAYS have next() in the last line of the middleware function to pass control to the next middleware or the controller
-    };
-  };
+// Define roles
+const ROLE_HIERARCHY = {
+  ADMIN: 'admin',    // Can access admin dashboard and control trading sessions
+  USER: 'user'       // Regular user access
+};
 
-export default authorizeRole;
+// Current active roles
+const VALID_ROLES = [
+  ROLE_HIERARCHY.ADMIN,
+  ROLE_HIERARCHY.USER
+];
+
+// Simple permissions matrix
+const ROLE_PERMISSIONS = {
+  [ROLE_HIERARCHY.ADMIN]: {
+    canAccessAdminDashboard: true,
+    canControlTradingSession: true
+  },
+  [ROLE_HIERARCHY.USER]: {
+    canAccessAdminDashboard: false,
+    canControlTradingSession: false
+  }
+};
+
+// Validate role
+const validateRole = (role) => {
+  if (!role || typeof role !== 'string') {
+    throw new AppError('Invalid role format', 400);
+  }
+  
+  const normalizedRole = role.toLowerCase();
+  if (!VALID_ROLES.includes(normalizedRole)) {
+    throw new AppError(`Invalid role. Must be one of: ${VALID_ROLES.join(', ')}`, 400);
+  }
+  
+  return normalizedRole;
+};
+
+/**
+ * Check if user has required permission
+ * @param {string} userRole - The user's role
+ * @param {string} permission - The required permission
+ * @returns {boolean}
+ */
+const hasPermission = (userRole, permission) => {
+  // Admin has all permissions
+  if (userRole === ROLE_HIERARCHY.ADMIN) return true;
+  
+  // Check specific permission for other roles
+  return ROLE_PERMISSIONS[userRole]?.[permission] || false;
+};
+
+/**
+ * Middleware to check if user has admin access
+ */
+const requireAdminRole = (req, res, next) => {
+  try {
+    if (!req.user) {
+      throw new AppError('Authentication required', 401);
+    }
+
+    const validatedRole = validateRole(req.user.role);
+    
+    if (!hasPermission(validatedRole, 'canAccessAdminDashboard')) {
+      throw new AppError('Admin access required', 403);
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Middleware to check if user can control trading session
+ */
+const requireTradingSessionControl = (req, res, next) => {
+  try {
+    if (!req.user) {
+      throw new AppError('Authentication required', 401);
+    }
+
+    const validatedRole = validateRole(req.user.role);
+    
+    if (!hasPermission(validatedRole, 'canControlTradingSession')) {
+      throw new AppError('You do not have permission to control trading sessions', 403);
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { 
+  requireAdminRole,
+  requireTradingSessionControl,
+  ROLE_HIERARCHY,
+  VALID_ROLES
+};

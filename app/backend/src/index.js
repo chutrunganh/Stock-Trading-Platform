@@ -38,10 +38,9 @@ import stockRoutes from './routes/stockRoutes.js';
 import portfolioRoutes from './routes/portfolioRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 
-;
-
 // --- Middlewares ---
 import errorHandling from './middlewares/errorHandlerMiddleware.js';
+import { sanitizeResponse } from './middlewares/responseSanitizationMiddleware.js';
 
 import { initializeAdminUser, initializeNormalUser } from './utils/initUserUtil.js';
 
@@ -149,6 +148,9 @@ app.disable('x-powered-by');
 
 // --- Middleware Configuration ---
 app.use(express.json()); // Parse JSON request bodies
+
+// Apply response sanitization middleware globally
+app.use(sanitizeResponse);
 
 // --- CORS Configuration --
 // Configure CORS with support for SSE

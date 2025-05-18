@@ -20,7 +20,7 @@
 
 .MuiTableHead-root .MuiTableCell-root {
   font-weight: bold !important;
-  border-bottom: 2px solid #000000 !important;
+  border-bottom: 3px solid #000000 !important;
 }
 
 /* Make price cells bold */
