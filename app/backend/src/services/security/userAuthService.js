@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 const SALT_ROUNDS = 10; // Cost factor for bcrypt
 import pool from '../../config/dbConnect.js';
 import User from '../../models/userModel.js';
+import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { verifyOtpService } from './otpService.js';
 import OTP from '../../models/otpModel.js';
@@ -19,8 +20,6 @@ dotenv.config({ path: '../../.env' }); // Adjust based on relative depth
  * 
  * @param {*} identifier - the email or username of the user to be logged in
  * @param {*} password - the password of the user typed in the login form
- * @param {*} visitorId - the visitor ID for device recognition
- * @param {*} confidenceScore - the confidence score for device recognition provided by fingerprintJS dependency
  * @returns 
  */
 export const loginUserService = async (identifier, password, visitorId = null, confidenceScore = 0) => {

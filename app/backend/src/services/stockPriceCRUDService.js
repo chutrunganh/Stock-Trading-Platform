@@ -1,6 +1,45 @@
 import pool from '../config/dbConnect.js';
 import StockPrices from '../models/stockPriceModel.js';
 
+// Get all stock prices
+export const getAllStockPricesService = async () => {
+    try {
+        const query = `
+            SELECT sp.*, s.symbol 
+            FROM stockprices sp
+            JOIN stocks s ON sp.stock_id = s.stock_id
+            ORDER BY sp.date DESC`;
+        const result = await pool.query(query);
+        return result.rows;
+    } catch (error) {
+        console.error('Error getting all stock prices:', error.message);
+        throw error;
+    }
+};
+
+// Get stock prices by stock ID
+export const getStockPricesByStockIdService = async (stockId) => {
+    try {
+        console.log('Getting stock prices for stock ID:', stockId);
+        const query = `
+            SELECT sp.*, s.symbol 
+            FROM stockprices sp
+            JOIN stocks s ON sp.stock_id = s.stock_id
+            WHERE sp.stock_id = $1
+            ORDER BY sp.date DESC`;
+        const result = await pool.query(query, [stockId]);
+        
+        if (result.rows.length === 0) {
+            return null;
+        }
+        
+        return result.rows;
+    } catch (error) {
+        console.error('Error getting stock prices by ID:', error.message);
+        throw error;
+    }
+};
+
 // Add a new stock price to the stockprices table
 export const createStockPriceService = async (stockpriceData) => {
     const {stock_id, date, open_price, high_price, low_price, close_price, volume} = stockpriceData;

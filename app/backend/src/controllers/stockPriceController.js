@@ -1,7 +1,7 @@
 import {createStockPriceService,
     getAllStockPricesService,
     getStockPricesByStockIdService,
-} from '../services/stockPriceService.js';
+} from '../services/stockPriceCRUDService.js';
 
 const handleResponse = (res, status, message, data = null) => {
     return res.status(status).json({

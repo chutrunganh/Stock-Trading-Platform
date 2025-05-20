@@ -51,6 +51,7 @@ The project is built with the following technologies:
   <img src="docs/images/express.png" alt="Express" width="60" height="60">
   <img src="docs/images/Yarn-Light.svg" alt="Yarn" width="60" height="60">
   <img src="docs/images/PostgreSQL-Light.svg" alt="PostgreSQL" width="60" height="60">
+  <img src="docs/images/node_mailer.png" alt="PostgreSQL" width="60" height="60">
 </div>
 
 <strong>Frontend:</strong>
@@ -58,6 +59,7 @@ The project is built with the following technologies:
   <img src="docs/images/React-Light.svg" alt="React" width="60" height="60">
   <img src="docs/images/Vite-Light.svg" alt="Vite" width="60" height="60">
   <img src="docs/images/mui.png" alt="Material UI" width="60" height="60">
+  <img src="docs/images/apex_chart.png" alt="Apex ChartChart" width="60" height="60">
 </div>
 
 <strong>Deployment:</strong>
@@ -281,7 +283,13 @@ The project is built with the following technologies:
 </table>
 
 
-*Status:🟢: Done  |  🟡: Partially done or no need	 |  🔴: Not implement yet*
+Status Explanation:
+
+- 🟢 **Done**: Mitigation measures have been implemented to the best of our knowledge. (Note: This does not guarantee complete immunity from the attack.)
+
+- 🟡 **Partially Done / Not Applicable**: The measure is either partially implemented or deemed unnecessary for this website.
+
+- 🔴 **Not Implemented**: No mitigation has been applied yet.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

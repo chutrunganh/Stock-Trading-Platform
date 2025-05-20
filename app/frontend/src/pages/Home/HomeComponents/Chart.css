@@ -15,7 +15,7 @@
 
 .header-chart {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 18px;
 }
@@ -28,6 +28,32 @@
   margin-left: 2px;
   letter-spacing: 0.5px;
   text-shadow: 0 1px 0 #fffbe6;
+}
+
+.stock-details {
+  margin-top: 8px;
+  padding-left: 2px;
+}
+
+.company-full-name {
+  font-size: 1.2em;
+  color: #333;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.stock-info {
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.stock-description {
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 8px;
+  line-height: 1.4;
+  max-width: 600px;
 }
 
 .chart-stats-row {

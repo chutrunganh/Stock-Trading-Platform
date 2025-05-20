@@ -1,111 +1,88 @@
-
-import React, { useEffect, useRef, useState } from 'react';
-
+import React, { useEffect, useState } from 'react';
 import './Chart.css';
 import ReactApexChart from 'react-apexcharts';
 import candleStickIcon from '../../../assets/images/candle-stick.png';
 import lineIcon from '../../../assets/images/chart.png';
 import { NavLink } from 'react-router-dom';
+import { getStockPriceHistory, getStockDetails } from '../../../api/stockPrice';
+import { CircularProgress } from '@mui/material';
 
-
-function ChartExample({ row }) {
+function Chart({ selectedStock }) {
   const [chartType, setChartType] = useState('candlestick');
+  const [stockData, setStockData] = useState(null);
+  const [stockDetails, setStockDetails] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Prepare series for each chart type
-  const candlestickSeries = [
-    {
-      name: 'Price',
-      type: 'candlestick',
-      data: [
-        { x: 'May 1', y: [100, 120, 90, 110] },
-        { x: 'May 2', y: [110, 130, 105, 120] },
-        { x: 'May 3', y: [120, 140, 115, 130] },
-        { x: 'May 4', y: [130, 135, 120, 125] },
-        { x: 'May 5', y: [125, 145, 110, 140] },
-        { x: 'May 6', y: [140, 150, 130, 135] },
-        { x: 'May 7', y: [135, 155, 120, 150] },
-        { x: 'May 8', y: [150, 170, 140, 160] },
-        { x: 'May 9', y: [160, 180, 150, 170] },
-        { x: 'May 10', y: [170, 175, 160, 165] },
-        { x: 'May 11', y: [165, 185, 155, 180] },
-        { x: 'May 12', y: [180, 200, 170, 190] },
-        { x: 'May 13', y: [190, 210, 180, 200] },
-        { x: 'May 14', y: [200, 220, 195, 210] },
-        { x: 'May 15', y: [210, 230, 200, 220] },
-      ]
-    },
-    {
-      name: 'Volume',
-      type: 'bar',
-      data: [
-        { x: 'May 1', y: 100 },
-        { x: 'May 2', y: 120 },
-        { x: 'May 3', y: 150 },
-        { x: 'May 4', y: 130 },
-        { x: 'May 5', y: 1700 },
-        { x: 'May 6', y: 2000 },
-        { x: 'May 7', y: 2500 },
-        { x: 'May 8', y: 3000 },
-        { x: 'May 9', y: 3500 },
-        { x: 'May 10', y: 4000 },
-        { x: 'May 11', y: 4500 },
-        { x: 'May 12', y: 5000 },
-        { x: 'May 13', y: 5500 },
-        { x: 'May 14', y: 6000 },
-        { x: 'May 15', y: 6500 },
-      ],
-      color: '#a259f7', // purple
-    }
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!selectedStock) return;
+      
+      setLoading(true);
+      setError(null);
+      try {
+        console.log('Selected stock:', selectedStock); // Debug log
+        
+        // Fetch stock details and price history in parallel
+        const [details, priceHistory] = await Promise.all([
+          getStockDetails(selectedStock.Symbol),
+          getStockPriceHistory(selectedStock.id || selectedStock.stock_id)
+        ]);
 
-  // For line chart, use a single series with y as a number (not array)
-  const lineSeries = [
-    {
-      name: 'Price',
-      type: 'line',
-      data: [
-        { x: 'May 1', y: 110 },
-        { x: 'May 2', y: 120 },
-        { x: 'May 3', y: 130 },
-        { x: 'May 4', y: 125 },
-        { x: 'May 5', y: 140 },
-        { x: 'May 6', y: 135 },
-        { x: 'May 7', y: 150 },
-        { x: 'May 8', y: 160 },
-        { x: 'May 9', y: 170 },
-        { x: 'May 10', y: 165 },
-        { x: 'May 11', y: 180 },
-        { x: 'May 12', y: 190 },
-        { x: 'May 13', y: 200 },
-        { x: 'May 14', y: 210 },
-        { x: 'May 15', y: 220 },
-      ]
-    },
-    {
-      name: 'Volume',
-      type: 'bar',
-      data: [
-        { x: 'May 1', y: 100 },
-        { x: 'May 2', y: 120 },
-        { x: 'May 3', y: 150 },
-        { x: 'May 4', y: 130 },
-        { x: 'May 5', y: 1700 },
-        { x: 'May 6', y: 2000 },
-        { x: 'May 7', y: 2500 },
-        { x: 'May 8', y: 3000 },
-        { x: 'May 9', y: 3500 },
-        { x: 'May 10', y: 4000 },
-        { x: 'May 11', y: 4500 },
-        { x: 'May 12', y: 5000 },
-        { x: 'May 13', y: 5500 },
-        { x: 'May 14', y: 6000 },
-        { x: 'May 15', y: 6500 },
-      ],
-      color: '#a259f7', // purple
-    }
-  ];
+        console.log('Stock details:', details); // Debug log
+        console.log('Price history:', priceHistory); // Debug log
 
-  const series = chartType === 'candlestick' ? candlestickSeries : lineSeries;
+        setStockDetails(details);
+        
+        // Transform price history data for the chart
+        const transformedData = priceHistory.map(price => ({
+          x: new Date(price.date).toLocaleDateString(),
+          y: [price.open_price, price.high_price, price.low_price, price.close_price]
+        }));
+
+        const volumeData = priceHistory.map(price => ({
+          x: new Date(price.date).toLocaleDateString(),
+          y: price.volume
+        }));
+
+        setStockData({
+          candlestick: [
+            {
+              name: 'Price',
+              type: 'candlestick',
+              data: transformedData
+            },
+            {
+              name: 'Volume',
+              type: 'bar',
+              data: volumeData,
+              color: '#a259f7'
+            }
+          ],
+          line: [
+            {
+              name: 'Price',
+              type: 'line',
+              data: transformedData.map(d => ({ x: d.x, y: d.y[3] })) // Use closing price for line chart
+            },
+            {
+              name: 'Volume',
+              type: 'bar',
+              data: volumeData,
+              color: '#a259f7'
+            }
+          ]
+        });
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching stock data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [selectedStock]);
 
   const options = {
     chart: {
@@ -116,92 +93,122 @@ function ChartExample({ row }) {
       },
     },
     xaxis: {
-      type: 'date',
+      type: 'category',
       labels: {
         style: {colors: '#FF5722'},
       },
     },
-    yaxis: 
-      [
-        { seriesName: 'Price',
-          axisTicks: {show: true},
-          axisBorder: {show: true,},
-          title: {text: "Price"},
-          labels: {style: {colors: '#FF5722'},},
-        }, 
-        { opposite: true,
-          seriesName: 'Volume',
-          axisTicks: {show: true},
-          axisBorder: {show: true,},
-          title: {text: "Volume"},
-          labels: {style: {colors: '#FF5722'},},
+    yaxis: [
+      {
+        seriesName: 'Price',
+        axisTicks: {show: true},
+        axisBorder: {show: true},
+        title: {text: "Price"},
+        labels: {style: {colors: '#FF5722'}},
+        tooltip: {
+          enabled: true
         }
-      ],
-    tooltip: {
-      x: {
-        format: 'dd/MM/yy',
       },
+      {
+        opposite: true,
+        seriesName: 'Volume',
+        axisTicks: {show: true},
+        axisBorder: {show: true},
+        title: {text: "Volume"},
+        labels: {style: {colors: '#FF5722'}},
+      }
+    ],
+    tooltip: {
+      enabled: true,
+      theme: 'dark',
+      style: {
+        fontSize: '12px',
+        fontFamily: undefined
+      },
+      x: {
+        show: true,
+        format: 'dd MMM yyyy',
+      },
+      y: {
+        formatter: undefined,
+      }
     },
     stroke: {
       curve: 'smooth',
       width: 3,
       colors: '#0090ff',
-    },
-    
+    }
   };
+
+  if (!selectedStock) {
+    return (
+      <div className="show-chart" style={{ textAlign: 'center', padding: '2rem' }}>
+        <h2>Select a stock from the table to view its chart</h2>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="show-chart" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem' }}>
+        <CircularProgress />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="show-chart" style={{ textAlign: 'center', padding: '2rem', color: 'red' }}>
+        <h2>Error loading chart data</h2>
+        <p>{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="show-chart">
       <div className="header-chart" style={{ display: 'flex', alignItems: 'center', marginBottom: '10px', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <h2 className='company-name'>Example</h2>
-          <div className="chart-stats-row" style={{ display: 'flex', gap: '40px', marginTop: '4px', marginLeft: '10px' }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontWeight: 500, fontSize: '20px' }}>May 29</div>
-              <div style={{ fontSize: '11px', color: '#888', letterSpacing: '1px' }}>UPCOMING EARNINGS</div>
+          <h2 className='company-name'>{selectedStock.Symbol}</h2>
+          {stockDetails && (
+            <div className="stock-details">
+              <p className="company-full-name">{stockDetails.company_name}</p>
+              <p className="stock-info">Industry: {stockDetails.industry}</p>
+              <p className="stock-description">{stockDetails.description}</p>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontWeight: 500, fontSize: '20px' }}>2.97</div>
-              <div style={{ fontSize: '11px', color: '#888', letterSpacing: '1px' }}>EPS</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontWeight: 500, fontSize: '20px' }}>3.32T</div>
-              <div style={{ fontSize: '11px', color: '#888', letterSpacing: '1px' }}>MARKET CAP</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontWeight: 500, fontSize: '20px' }}>0.03%</div>
-              <div style={{ fontSize: '11px', color: '#888', letterSpacing: '1px' }}>DIV YIELD</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontWeight: 500, fontSize: '20px' }}>46.04</div>
-              <div style={{ fontSize: '11px', color: '#888', letterSpacing: '1px' }}>P/E</div>
-            </div>
-          </div>
+          )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <button className={`button1${chartType === 'candlestick' ? ' active' : ''}`} onClick={() => setChartType('candlestick')}>
+          <button 
+            className={`button1${chartType === 'candlestick' ? ' active' : ''}`} 
+            onClick={() => setChartType('candlestick')}
+          >
             <img src={candleStickIcon} alt="Candlestick Chart" style={{ width: '32px', height: '32px' }} />
           </button>
           <div className="button-separator"></div>
-          <button className={`button2${chartType === 'line' ? ' active' : ''}`} onClick={() => setChartType('line')}>
+          <button 
+            className={`button2${chartType === 'line' ? ' active' : ''}`} 
+            onClick={() => setChartType('line')}
+          >
             <img src={lineIcon} alt="Line Chart" style={{ width: '32px', height: '32px' }} />
           </button>
         </div>
       </div>
-      <ReactApexChart
-        options={options}
-        series={series}
-        type={chartType === 'candlestick' ? 'candlestick' : 'line'}
-        height={350}
-      />
+      {stockData && (
+        <ReactApexChart
+          options={options}
+          series={stockData[chartType]}
+          type={chartType === 'candlestick' ? 'candlestick' : 'line'}
+          height={350}
+        />
+      )}
       <div style={{ display: 'flex', justifyContent: 'end'}}>
-        <NavLink to="/trade">
-          <button className="trade-button" >Trade</button>
+        <NavLink to={`/trade?symbol=${selectedStock.Symbol}`}>
+          <button className="trade-button">Trade</button>
         </NavLink>
       </div>
-      <></>
     </div>
   );
 }
 
-export default ChartExample;
+export default Chart;

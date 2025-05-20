@@ -183,6 +183,7 @@ const processOrderBookData = (stocks, buyOrders, sellOrders, recentTransactions)
 
     // Format data for frontend
     return {
+      stock_id: stock.stock_id,
       symbol: stock.symbol,
       company_name: stock.company_name,
       ref: stock.reference_price || 0,

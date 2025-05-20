@@ -138,9 +138,14 @@ const OrderBookTableHeader = () => (
 );
 
 // Memoized row component for performance
-const OrderBookTableRow = memo(({ row, columns }) => {
+const OrderBookTableRow = memo(({ row, columns, onRowClick, selectedSymbol }) => {
   return (
-    <TableRow hover tabIndex={-1}>
+    <TableRow 
+      hover 
+      tabIndex={-1} 
+      onClick={() => onRowClick?.(row)}
+      sx={{ cursor: 'pointer', backgroundColor: row.Symbol === selectedSymbol ? 'rgba(240, 164, 0, 0.1)' : 'inherit' }}
+    >
       {columns.map(({ id, align, format }) => {
         const value = row[id];
         const isSymbolColumn = id === 'Symbol';
@@ -176,10 +181,10 @@ const OrderBookTableRow = memo(({ row, columns }) => {
   );
 }, (prevProps, nextProps) => {
   // Only re-render if the relevant data has changed
-  const { row: prevRow } = prevProps;
-  const { row: nextRow } = nextProps;
+  const { row: prevRow, selectedSymbol: prevSelected } = prevProps;
+  const { row: nextRow, selectedSymbol: nextSelected } = nextProps;
 
-  if (prevRow.Symbol !== nextRow.Symbol) return false;
+  if (prevRow.Symbol !== nextRow.Symbol || prevSelected !== nextSelected) return false;
 
   const fieldsToCompare = [
     'bid_prc1', 'bid_vol1', 'bid_prc2', 'bid_vol2',
@@ -190,7 +195,7 @@ const OrderBookTableRow = memo(({ row, columns }) => {
   return !fieldsToCompare.some(field => prevRow[field] !== nextRow[field]);
 });
 
-function Tables() {
+function Tables({ onStockSelect = () => {}, selectedSymbol = null }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [orderBookData, setOrderBookData] = useState([]);
@@ -244,6 +249,8 @@ function Tables() {
       
       // Create the row data object (no frontend aggregation needed)
       const finalData = {
+        id: stockData.stock_id || stockData.id, // Support both field names
+        stock_id: stockData.stock_id || stockData.id, // Support both field names
         Symbol: stockData.symbol,
         ref: refPrice,
         ceil: ceilPrice,
@@ -492,6 +499,13 @@ function Tables() {
     setPage(0);
   };
 
+  // Handle row click with null check
+  const handleRowClick = (row) => {
+    if (typeof onStockSelect === 'function') {
+      onStockSelect(row);
+    }
+  };
+
   // Display loading state or error
   if (loading) {
     return (
@@ -554,6 +568,8 @@ function Tables() {
                   key={row.Symbol} 
                   row={row} 
                   columns={columns} 
+                  onRowClick={handleRowClick}
+                  selectedSymbol={selectedSymbol}
                 />
               ))
             ) : (
