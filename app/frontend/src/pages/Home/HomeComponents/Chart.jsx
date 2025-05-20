@@ -5,7 +5,7 @@ import candleStickIcon from '../../../assets/images/candle-stick.png';
 import lineIcon from '../../../assets/images/chart.png';
 import { NavLink } from 'react-router-dom';
 import { getStockPriceHistory, getStockDetails } from '../../../api/stockPrice';
-import { CircularProgress } from '@mui/material';
+import { CircularProgress, ToggleButtonGroup, ToggleButton } from '@mui/material';
 
 function Chart({ selectedStock }) {
   const [chartType, setChartType] = useState('candlestick');
@@ -179,19 +179,22 @@ function Chart({ selectedStock }) {
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <button 
-            className={`button1${chartType === 'candlestick' ? ' active' : ''}`} 
-            onClick={() => setChartType('candlestick')}
+          <ToggleButtonGroup
+            value={chartType}
+            exclusive
+            onChange={(e, newType) => newType && setChartType(newType)}
+            size="small"
+            className="chart-toggle-group"
           >
-            <img src={candleStickIcon} alt="Candlestick Chart" style={{ width: '32px', height: '32px' }} />
-          </button>
-          <div className="button-separator"></div>
-          <button 
-            className={`button2${chartType === 'line' ? ' active' : ''}`} 
-            onClick={() => setChartType('line')}
-          >
-            <img src={lineIcon} alt="Line Chart" style={{ width: '32px', height: '32px' }} />
-          </button>
+            <ToggleButton value="candlestick" className="chart-toggle-btn">
+              <img src={candleStickIcon} alt="Candlestick Chart" style={{ width: '24px', height: '24px', marginRight: 6 }} />
+              Candlestick
+            </ToggleButton>
+            <ToggleButton value="line" className="chart-toggle-btn">
+              <img src={lineIcon} alt="Line Chart" style={{ width: '24px', height: '24px', marginRight: 6 }} />
+              Line
+            </ToggleButton>
+          </ToggleButtonGroup>
         </div>
       </div>
       {stockData && (

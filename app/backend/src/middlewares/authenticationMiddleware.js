@@ -69,7 +69,7 @@ const authMiddleware = (req, res, next) => {
       });
     }
     
-    log.error('[Token Debug] Token verification failed:', error.message);
+    log.error(`[Token Debug] Token verification failed: ${error.message}`);
     return res.status(401).json({
       status: 401,
       message: 'Not authorized, token failed verification',

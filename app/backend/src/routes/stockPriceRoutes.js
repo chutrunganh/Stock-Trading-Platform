@@ -13,6 +13,7 @@ router.get("/admin/stockPrice", authMiddleware, requireAdminRole, getAllStockPri
 router.post("/admin/stockPrice/:id", authMiddleware, requireAdminRole, createStockPrice);
 
 // User routes - require authentication only
-router.get("/stockPrice/:id", authMiddleware, getStockPriceById);
+// Public route - no authentication required
+router.get("/stockPrice/:id", getStockPriceById);
 
 export default router;

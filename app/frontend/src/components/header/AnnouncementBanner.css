@@ -1,6 +1,6 @@
 .announcement-banner {
   width: 100%;
-  background: #121314;
+  background: #18191a;
   color: #f0b90b;
   display: flex;
   align-items: center;
@@ -31,7 +31,7 @@
   display: inline-block;
   white-space: nowrap;
   padding-left: 100%;
-  animation: announcement-scroll 48s linear infinite;
+  animation: announcement-scroll 38s linear infinite;
   font-weight: 300;
   color: #fff;
   text-shadow: 0 0 2px #f0b90b, 0 0 8px #232323;
@@ -39,7 +39,7 @@
   letter-spacing: 0.5px;
 }
 
-.company-name {
+.banner-company-name {
   color: #f0b90b;
   font-weight: bold;
   font-size: 1.15em;
