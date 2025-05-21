@@ -46,12 +46,14 @@ Brief introduction
 The project is built with the following technologies:
 
 <strong>Backend:</strong>
-<div style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px;">
+<div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center; margin-bottom: 20px;">
   <img src="docs/images/NodeJS-Light.svg" alt="NodeJS" width="60" height="60">
   <img src="docs/images/express.png" alt="Express" width="60" height="60">
   <img src="docs/images/Yarn-Light.svg" alt="Yarn" width="60" height="60">
   <img src="docs/images/PostgreSQL-Light.svg" alt="PostgreSQL" width="60" height="60">
-  <img src="docs/images/node_mailer.png" alt="PostgreSQL" width="60" height="60">
+  <img src="docs/images/node_mailer.png" alt="NodeMailer" width="60" height="60">
+  <img src="docs/images/jwt.png" alt="Json Web Token" height="55">
+  <img src="docs/images/passport.png" alt="Passport" height="45">
 </div>
 
 <strong>Frontend:</strong>

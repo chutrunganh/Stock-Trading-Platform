@@ -69,9 +69,13 @@ const PUBLIC_ENDPOINTS = [
   '/register',
   '/forgot-password',
   '/reset-password',
+  '/refresh-token',  // Add refresh-token to public endpoints
+  '/profile',        // Add profile to public endpoints for initial check
   '/auth/google',
   '/orders/orderBook',  // Order book should be publicly viewable
-  '/orders/orderBook/stream'  // Order book stream should also be public
+  '/orders/orderBook/stream',  // Order book stream should also be public
+  '/stockPrice/',  // Stock prices should be publicly viewable
+  '/stocks/'  // Stock information should be publicly viewable
 ];
 
 // Request interceptor for logging token info

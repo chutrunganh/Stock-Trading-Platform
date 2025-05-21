@@ -18,13 +18,24 @@ export const AuthProvider = ({ children }) => {
   // Check authentication status by calling backend
   const checkAuth = async () => {
     try {
+      console.log('[Auth Debug] Checking authentication status...');
       const response = await getUserProfile();
       if (response?.data?.user) {
+        console.log('[Auth Debug] User authenticated:', response.data.user.username || response.data.user.email);
         setUser(response.data.user);
         setIsAuthenticated(true);
         return true;
+      } else {
+        console.log('[Auth Debug] Authentication check failed: Invalid response format');
+        // Clear any invalid tokens that might be stored
+        localStorage.removeItem('userId');
+        localStorage.removeItem('authToken');
       }
-    } catch {
+    } catch (err) {
+      console.error('[Auth Debug] Authentication check failed:', err.message);
+      // Clear tokens on auth failure
+      localStorage.removeItem('userId');
+      localStorage.removeItem('authToken');
       setUser(null);
       setIsAuthenticated(false);
     }
@@ -36,8 +47,10 @@ export const AuthProvider = ({ children }) => {
     if (!isAuthenticated) {
       setUser(null);
       setIsAuthenticated(false);
-      // Remove userId from localStorage
+      // Clear all auth-related storage
       localStorage.removeItem('userId');
+      localStorage.removeItem('shouldCheckAuth');
+      localStorage.removeItem('authToken');
       return;
     }
 
@@ -78,9 +91,10 @@ export const AuthProvider = ({ children }) => {
       setUser(credentials.user);
       setIsAuthenticated(true);
       
-      // Store userId in localStorage for order match notifications
+      // Store userId and auth check flag in localStorage
       if (credentials.user.id) {
         localStorage.setItem('userId', credentials.user.id);
+        localStorage.setItem('shouldCheckAuth', 'true');
       }
       
       // Notify any listeners of auth state change
@@ -147,15 +161,45 @@ export const AuthProvider = ({ children }) => {
 
   // Set up global auth handlers and cleanup
   React.useEffect(() => {
+    // Initialize auth handlers but don't check auth automatically
     window.AuthRefresh = refresh;
     window.AuthLogout = logout;
-    window.AuthContext = { isAuthenticated, setIsAuthenticated };
+    window.AuthContext = { 
+      isAuthenticated, 
+      setIsAuthenticated,
+      checkAuth // Expose checkAuth so it can be called explicitly when needed
+    };
     
-    // Add browser close event listener
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    // Add browser close event listener only if authenticated
+    if (isAuthenticated) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }
     
-    // Check authentication status on mount
-    checkAuth();
+    // Skip automatic auth check on initial load
+    const shouldCheckAuth = localStorage.getItem('shouldCheckAuth') === 'true';
+    if (shouldCheckAuth) {
+      checkAuth().then(() => {
+        localStorage.removeItem('shouldCheckAuth');
+      });
+    }
+
+    return () => {
+      window.AuthRefresh = null;
+      window.AuthLogout = null;
+      window.AuthContext = null;
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+    
+    // Check for valid storage values and not just any values
+    if ((storedUserId && storedUserId !== "undefined" && storedUserId !== "null") || 
+        (storedToken && storedToken !== "undefined" && storedToken !== "null")) {
+      console.log('[Auth Debug] Found valid stored credentials, checking authentication...');
+      checkAuth();
+    } else {
+      // Clean up any invalid values that might be in storage
+      localStorage.removeItem('userId');
+      localStorage.removeItem('authToken');
+    }
     
     return () => {
       window.AuthRefresh = null;
