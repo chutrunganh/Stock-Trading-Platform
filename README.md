@@ -110,7 +110,7 @@ The web will be available at:
 ## Option 2: Building from Source
 
 > [!NOTE]
-> Prerequisites: We assume that you have Node.js, Yarn installed on your system.
+> Prerequisites: We assume that you have **Node.js**, **Yarn** installed on your system.
 
 If you're interested in exploring the code and running the project manually, follow these steps:
 
@@ -122,16 +122,16 @@ If you're interested in exploring the code and running the project manually, fol
 
 2. **Set up environment variables**
 
-  Create a .env file in the project root by copying the template from .env.example, then fill in the required values by your own credentials. 
+    Create a .env file in the project root by copying the template from .env.example, then fill in the required values by your own credentials. 
 
 3. **Set up the database**
 
-  You have two options:
+    You have two options:
 
-- **Option 1**: Install PostgreSQL manually via the their official website.
-- **Option 2**: Use our Docker setup to run only the database (In this case, you need to command out our backend and frontend services inside the docker-compose file to run the database only). Then run `docker-compose up` to start the database.
+    - **Option 1**: Install PostgreSQL manually via the their official website.
+    - **Option 2**: Use our Docker setup to run only the database (In this case, you need to command out our backend and frontend services inside the docker-compose file to run the database only). Then run `docker-compose up` to start the database.
 
-For detailed instructions on database setup, including configuration variables and solutions to common issues, we highly recommend taking a quick look at our [Database Setup Guide](docs/setupInstructions/setupDatabase.md).
+    For detailed instructions on database setup, including configuration variables and solutions to common issues, we highly recommend taking a quick look at our [Database Setup Guide](docs/setupInstructions/setupDatabase.md).
 
 
 4. **Start the backend**
