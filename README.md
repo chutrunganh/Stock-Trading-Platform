@@ -37,9 +37,9 @@
 
 # 📝Overview 
 
-Title: Soict Stock Trading Platform
+Soict Stock Trading Platform is a full-stack web application that simulates a real-world stock trading environment. Designed for beginners and educational purposes, it allows users to practice trading stocks, manage portfolios, and learn about market dynamics in a safe, risk-free setting. 
 
-Brief introduction
+For the security concern, we have implemented some measures by our best knowledge to mitigate common vulnerabilities and attacks. For more details, refer to the [Security Checklist](#-security-checklist) section.
 
 ## 🛠️ Technology Stack
 
@@ -84,10 +84,88 @@ The project is built with the following technologies:
 
 # 🚀 Installation & Setup
 
+## Option 1: Using Docker
+
+If you just want to **quickly try out the app** without diving into the code, we’ve got you covered with a `docker-compose` setup. Follow these steps:
+
+1. Download the [`docker-compose.yml`](docker-compose.yml) file.
+2. Create a `.env` file in the same directory as the docker-compose file, following the template in [`env.example`](env.example), replace the values with your own credentials.
+3. Start Docker on your machine.
+4. Run the following command in the directory containing `docker-compose.yml`:
+
+```bash
+docker-compose up
+```
+This will pull the latest images for the backend, frontend, and database from Dockerhub then build and run them in containers.
+
+
+The web will be available at:
+
+- Frontend: http://localhost:5173
+
+- Backend API: http://localhost:3000
+
+- pgAdmin (UI management tool for PostgreSQL): http://localhost:5050
+
+## Option 2: Building from Source
+
+> [!NOTE]
+> Prerequisites: We assume that you have Node.js, Yarn installed on your system.
+
+If you're interested in exploring the code and running the project manually, follow these steps:
+
+1. **Clone the repo and navigate to the project directory**
+   ```bash
+    git clone https://github.com/chutrunganh/Stock-Trading-Platform.git
+    cd Stock-Trading-Platform
+    ```
+
+2. **Set up environment variables**
+
+  Create a .env file in the project root by copying the template from .env.example, then fill in the required values by your own credentials. 
+
+3. **Set up the database**
+
+  You have two options:
+
+- **Option 1**: Install PostgreSQL manually via the their official website.
+- **Option 2**: Use our Docker setup to run only the database (In this case, you need to command out our backend and frontend services inside the docker-compose file to run the database only). Then run `docker-compose up` to start the database.
+
+For detailed instructions on database setup, including configuration variables and solutions to common issues, we highly recommend taking a quick look at our [Database Setup Guide](docs/setupInstructions/setupDatabase.md).
+
+
+4. **Start the backend**
+    ```bash
+    cd app/backend
+    yarn install # Install dependencies
+    yarn start
+    ```
+5. **Start the frontend**
+    ```bash
+    cd app/frontend
+    yarn install # Install dependencies
+    yarn dev
+    ```
+
+6. **Open your browser and navigate** to `http://localhost:5173` to see the web in action.
+
+
+> [!TIP]
+> When you start the backend, it will automatically connect to the database and seed some initial data. However, for stock prices, it only seeds data for one day, so the chart may not display fully as shown in the demo due to insufficient historical data. To populate the database with realistic stock prices, we provide a Python script that fetches real-world stock data and inserts it into the database. You can find the script in `app/backend/src/utils/seedStockPrice`. Please refer to [this guide](app\backend\src\utils\seedStockPrice\README.md) for instructions on how to run it.
+
+## Optional: Package the web with Docker
+
+If you want to package the app with your source code changes to Docker images, update the `docker-compose.yml` file:
+
+1. In the backend and frontend service sections, under the `build` section, comment out the `image` lines (which pull from Docker Hub).
+
+2. Then, uncomment the `context` and `dockerfile` lines.
+
+This will build the Docker images directly from the source code in the backend and frontend directories.
+
 # 🏗️ Project Structure
 
 # 🔐 Security Checklist
-
 
 <table border=2>
   <thead>
