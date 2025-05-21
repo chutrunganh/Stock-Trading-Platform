@@ -211,7 +211,6 @@ function Tutorial() {
             </div>
         </div>
     );
-
 }
 
 export default Tutorial;

@@ -260,7 +260,26 @@ function Chart({ selectedStock }) {
         format: 'dd MMM yyyy',
       },
       y: {
-        formatter: undefined,
+        formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+          try {
+            if (chartType === 'line') {
+              // For line chart, show the closing price
+              return `Close: ${value}`;
+            } else if (chartType === 'candlestick') {
+              // For candlestick chart, show OHLC
+              const ohlc = w.globals.initialSeries[seriesIndex].data[dataPointIndex].y;
+              return (
+                `<div>Open: ${ohlc[0]}</div>` +
+                `<div>High: ${ohlc[1]}</div>` +
+                `<div>Low: ${ohlc[2]}</div>` +
+                `<div>Close: ${ohlc[3]}</div>`
+              );
+            }
+          } catch (error) {
+            console.error('Tooltip error:', error);
+            return 'Data not available';
+          }
+        }
       }
     },
     stroke: {

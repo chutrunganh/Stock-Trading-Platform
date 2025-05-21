@@ -1,8 +1,12 @@
 .tutorial-container {
-    max-width: 1200px;
+    position: relative;
+    width: 100%;
+    max-width: 1600px;
     margin: 0 auto;
-    padding: 2rem;
-    color: #e0e0e0;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .tutorial-title {
@@ -19,6 +23,10 @@
     display: flex;
     flex-direction: column;
     gap: 3rem;
+    margin: 0 220px;
+    flex: 1;
+    position: relative;
+    z-index: 1;
 }
 
 .tutorial-section {
@@ -429,4 +437,57 @@
     .params-grid {
         grid-template-columns: 1fr;
     }
+}
+
+/* Style cho các ô hình chữ nhật bên cạnh */
+.side-rectangle {
+    position: fixed;
+    width: 200px;
+    height: 535px;
+    background-color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: monospace;
+    color: #666;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 0;
+}
+
+.left-rectangle {
+    left: max(calc((100% - 1600px) / 2 + 10px), 10px);
+}
+
+.right-rectangle {
+    right: max(calc((100% - 1600px) / 2 + 10px), 10px);
+}
+
+/* Media query cho màn hình nhỏ hơn */
+@media (max-width: 1200px) {
+    .tutorial-sections {
+        margin: 0 160px;
+    }
+    
+    .side-rectangle {
+        width: 150px;
+    }
+}
+
+/* Media query cho màn hình mobile */
+@media (max-width: 768px) {
+    .side-rectangle {
+        display: none; /* Ẩn các ô bên cạnh trên mobile */
+    }
+    
+    .tutorial-sections {
+        margin: 0;
+    }
+}
+
+/* Đảm bảo responsive cho các ô hình ảnh */
+.tutorial-section img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
 }
