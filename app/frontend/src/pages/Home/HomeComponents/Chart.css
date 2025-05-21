@@ -1,3 +1,10 @@
+:root {
+  --chart-up-color: #26a69a;
+  --chart-down-color: #ef5350;
+  --chart-volume-up-color: rgba(38, 166, 154, 0.5);
+  --chart-volume-down-color: rgba(239, 83, 80, 0.5);
+}
+
 /* Chart Section Styles */
 .show-chart {
   background: #fff;
@@ -199,4 +206,23 @@
 .chart-toggle-btn:hover {
   background: #fffbe6 !important;
   color: #222 !important;
+}
+
+/* Chart colors */
+.apexcharts-candlestick-upward {
+  fill: var(--chart-up-color);
+  stroke: var(--chart-up-color);
+}
+
+.apexcharts-candlestick-downward {
+  fill: var(--chart-down-color);
+  stroke: var(--chart-down-color);
+}
+
+.apexcharts-bar-upward {
+  fill: var(--chart-volume-up-color);
+}
+
+.apexcharts-bar-downward {
+  fill: var(--chart-volume-down-color);
 }
