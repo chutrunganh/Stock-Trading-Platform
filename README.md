@@ -2,7 +2,7 @@
 > This repository is still under development and does not yet reflect the final project.
 
 <div style="text-align: center;">
-  <img src="docs/images/banner.png" alt="Banner" style="max-width: 70%; height: auto;">
+  <img src="docs/images/banner.png" alt="Banner" style="max-width: 60%; height: auto;">
 </div>
 
 <!-- PROJECT LOGO -->
@@ -82,10 +82,13 @@ The project is built with the following technologies:
 
 # 📖 Features
 
+> [!NOTE]  
+> Be patient! It may take a while to load all the demo `gif` images of this Feature section.
+
 ⚡Quick look ⚡:
 
 <div align="center">
-   <img src="docs/images/Demo.gif" alt="Demo"  style="max-width: 80%; height: auto;">
+   <img src="docs/images/Demo_compress.gif" alt="Demo"  style="max-width: 80%; height: auto;">
 </div >
 
 Our application offers some key features:
@@ -94,7 +97,7 @@ Our application offers some key features:
 
 
   <div align="center">
-    <img src="docs/images/LoginDemo.gif" alt="Login Demo"  style="max-width: 60%; height: auto;">
+    <img src="docs/images/LoginDemo_compress.gif" alt="Login Demo"  style="max-width: 60%; height: auto;">
   </div >
 
 
@@ -102,7 +105,7 @@ Our application offers some key features:
 - **View Stock board**: Browse a real-time stock list with live price updates. Click on any stock to view detailed info, including price history shown in candlestick and line charts.
 
   <div align="center">
-    <img src="docs/images/ChartDemo.gif" alt="Chart Demo"  style="max-width: 60%; height: auto;">
+    <img src="docs/images/ChartDemo_compress.gif" alt="Chart Demo"  style="max-width: 60%; height: auto;">
   </div >
 
 - **Tutorial**: Step-by-step guide to help new users navigate the app and understand basic stock trading concepts.
@@ -114,19 +117,19 @@ Our application offers some key features:
 - **Trading**:  Place buy/sell orders with support for both **market** and **limit** order types.
 
   <div align="center">
-    <img src="docs/images/TradeDemo.gif" alt="Trade Demo"  style="max-width: 60%; height: auto;">
+    <img src="docs/images/TradeDemo_compress.gif" alt="Trade Demo"  style="max-width: 60%; height: auto;">
   </div >
 
 - **Portfolio**: Track your portfolio including available balance, estimated total value, the stocks you own, view transaction history and add funds to your account.
 
    <div align="center">
-    <img src="docs/images/PortfolioDemo.gif" alt="Portfolio Demo"  style="max-width: 60%; height: auto;">
+    <img src="docs/images/PortfolioDemo_compress.gif" alt="Portfolio Demo"  style="max-width: 60%; height: auto;">
   </div >
 
 - **Admin page** (for admin account only): Start or end a trading session.
 
   <div align="center">
-    <img src="docs/images/AdminDemo.gif" alt="Admin Demo"  style="max-width: 60%; height: auto;">
+    <img src="docs/images/AdminDemo_compress.gif" alt="Admin Demo"  style="max-width: 60%; height: auto;">
   </div >
 
  
