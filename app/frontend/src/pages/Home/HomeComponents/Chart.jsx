@@ -262,9 +262,12 @@ function Chart({ selectedStock }) {
       y: {
         formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
           try {
+            if (seriesIndex === 1) { // Volume series
+              return `Volume: ${value}`;
+            }
             if (chartType === 'line') {
-              // For line chart, show the closing price
-              return `Close: ${value}`;
+              // For line chart, show the price value directly
+              return `Price: ${value.toFixed(2)}`;
             } else if (chartType === 'candlestick') {
               // For candlestick chart, show OHLC
               const ohlc = w.globals.initialSeries[seriesIndex].data[dataPointIndex].y;

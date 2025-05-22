@@ -6,7 +6,7 @@ dotenv.config({ path: '../../.env' }); // Load environment variables
 
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'default-access-secret';
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'default-refresh-secret';
-const ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || '1m';  // Default 1 minute for testing
+const ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || '0.5m';  // Default 1 minute for testing
 const REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
 
 // Store active refresh tokens in memory

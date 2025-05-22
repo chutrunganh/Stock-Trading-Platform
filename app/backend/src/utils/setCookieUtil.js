@@ -22,48 +22,61 @@ export function setAuthCookies(res, accessToken, refreshToken) {
     type: 'session cookies - will expire when browser closes'
   });
 
-  // First clear any existing cookies
-  res.clearCookie('accessToken', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict'
-  });
-  
-  res.clearCookie('refreshToken', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict'
-  });
-  
-  // Parse JWT expiration times for logging purposes
-  try {
-    // Decode tokens to get their actual expiration times
-    const accessDecoded = JSON.parse(Buffer.from(accessToken.split('.')[1], 'base64').toString());
-    const refreshDecoded = JSON.parse(Buffer.from(refreshToken.split('.')[1], 'base64').toString());
-    
-    console.log('Setting new cookies with token expiration times:', {
-      accessTokenExp: new Date(accessDecoded.exp * 1000).toISOString(),
-      refreshTokenExp: new Date(refreshDecoded.exp * 1000).toISOString(),
-      operation: 'Cleared old cookies and setting new ones'
+  if (accessToken) {
+    // Clear and set new access token cookie
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
     });
-  } catch (error) {
-    console.warn('Could not parse token expiration times');
+
+    // Parse JWT expiration time for logging
+    try {
+      const accessDecoded = JSON.parse(Buffer.from(accessToken.split('.')[1], 'base64').toString());
+      console.log('Setting new access token cookie with expiration time:', {
+        accessTokenExp: new Date(accessDecoded.exp * 1000).toISOString(),
+        operation: 'Cleared old access token cookie and setting new one'
+      });
+    } catch (error) {
+      console.warn('Could not parse access token expiration time');
+    }
+
+    // Set new access token cookie
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      expires: false, // Session cookie - expires when browser closes
+      sameSite: 'strict',
+    });
   }
-  
-  // Set new cookies
-  res.cookie('accessToken', accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    expires: false, // Session cookie - expires when browser closes
-    sameSite: 'strict',
-  });
-  
-  res.cookie('refreshToken', refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    expires: false, // Session cookie - expires when browser closes
-    sameSite: 'strict',
-  });
+
+  if (refreshToken) {
+    // Clear and set new refresh token cookie
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    });
+
+    // Parse JWT expiration time for logging
+    try {
+      const refreshDecoded = JSON.parse(Buffer.from(refreshToken.split('.')[1], 'base64').toString());
+      console.log('Setting new refresh token cookie with expiration time:', {
+        refreshTokenExp: new Date(refreshDecoded.exp * 1000).toISOString(),
+        operation: 'Cleared old refresh token cookie and setting new one'
+      });
+    } catch (error) {
+      console.warn('Could not parse refresh token expiration time');
+    }
+
+    // Set new refresh token cookie
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      expires: false, // Session cookie - expires when browser closes
+      sameSite: 'strict',
+    });
+  }
 }
 
 
