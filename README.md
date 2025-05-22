@@ -94,7 +94,6 @@ Our application offers some key features:
 
 
 
-
 - **View Stock board**: View stock list with real-time price updates of order, you can click on any stock to view its detailed information, price history in form of candlestick chart, annd line chart.
 
 - **Tutorial**: A tutorial page to help you understand how to use the app and learn about stock trading.
