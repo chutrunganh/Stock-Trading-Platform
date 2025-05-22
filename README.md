@@ -90,18 +90,46 @@ The project is built with the following technologies:
 
 Our application offers some key features:
 
-- **User Authentication**: Registration new user, login using credentials (username/email and password) or using your Google account. After provide te credentail, you will receive an OTP code to your email as two-factor authentication (2FA), you can tick "Remember this device" to skip OTP next time login. We also have Forgrt password feature, you can reset your password by providing your email and receiving an OTP code to verify your identity.
+- **User Authentication**:  Register or log in using email/username and password or using your Google account. Two-factor authentication (2FA) via OTP sent to your email is required on login. Optionally, you can select "Remember this device" to skip OTP next time. Includes "Forgot password" feature with OTP-based password reset.
+
+
+  <div align="center">
+    <img src="docs/images/LoginDemo.gif" alt="Login Demo"  style="max-width: 60%; height: auto;">
+  </div >
 
 
 
-- **View Stock board**: View stock list with real-time price updates of order, you can click on any stock to view its detailed information, price history in form of candlestick chart, annd line chart.
+- **View Stock board**: Browse a real-time stock list with live price updates. Click on any stock to view detailed info, including price history shown in candlestick and line charts.
 
-- **Tutorial**: A tutorial page to help you understand how to use the app and learn about stock trading.
+  <div align="center">
+    <img src="docs/images/ChartDemo.gif" alt="Chart Demo"  style="max-width: 60%; height: auto;">
+  </div >
 
-- **Trading**: Place buy/sell orders with limit and market orders. 
+- **Tutorial**: Step-by-step guide to help new users navigate the app and understand basic stock trading concepts.
 
-- **Portfolio**: View your portfolio withbalance, estimate total value, list of stockes you own, transaction history, and add funding to your account.
+  <div align="center">
+    <img src="docs/images/TutorialDemo.gif" alt="Tutorial Demo"  style="max-width: 60%; height: auto;">
+  </div >
 
+- **Trading**:  Place buy/sell orders with support for both **market** and **limit** order types.
+
+  <div align="center">
+    <img src="docs/images/TradeDemo.gif" alt="Trade Demo"  style="max-width: 60%; height: auto;">
+  </div >
+
+- **Portfolio**: Track your portfolio including available balance, estimated total value, the stocks you own, view transaction history and add funds to your account.
+
+   <div align="center">
+    <img src="docs/images/PortfolioDemo.gif" alt="Portfolio Demo"  style="max-width: 60%; height: auto;">
+  </div >
+
+- **Admin page** (for admin account only): Start or end a trading session.
+
+  <div align="center">
+    <img src="docs/images/AdminDemo.gif" alt="Admin Demo"  style="max-width: 60%; height: auto;">
+  </div >
+
+ 
 
 # 🚀 Installation & Setup
 
