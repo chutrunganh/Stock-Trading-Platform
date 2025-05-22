@@ -90,7 +90,8 @@ The project is built with the following technologies:
 
 Our application offers some key features:
 
-- **User Authentication**: Registration new user, login using credentials (username/email and password) or using your Google account. After provide te credentail, you will receive an OTP code to your email as two-factor authentication (2FA), you can tick "Remember this device" to skip OTP next time login.
+- **User Authentication**: Registration new user, login using credentials (username/email and password) or using your Google account. After provide te credentail, you will receive an OTP code to your email as two-factor authentication (2FA), you can tick "Remember this device" to skip OTP next time login. We also have Forgrt password feature, you can reset your password by providing your email and receiving an OTP code to verify your identity.
+
 
 
 
