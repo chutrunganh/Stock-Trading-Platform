@@ -23,11 +23,11 @@
     <a href=""><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="#-usage-and-demo">Usage</a>
+    <a href="#-features">Features</a>
     ·
     <a href="">Report Bug</a>
     ·
-    <a href="">Request Feature</a>
+    <a href="">Request New Feature</a>
   </p>
 </div>
 
@@ -80,7 +80,28 @@ The project is built with the following technologies:
 <br>
 
 
-# 📖 Usage and Demo
+# 📖 Features
+
+⚡Quick look ⚡:
+
+<div align="center">
+   <img src="docs/images/Demo.gif" alt="Demo"  style="max-width: 80%; height: auto;">
+</div >
+
+Our application offers some key features:
+
+- **User Authentication**: Registration new user, login using credentials (username/email and password) or using your Google account. After provide te credentail, you will receive an OTP code to your email as two-factor authentication (2FA), you can tick "Remember this device" to skip OTP next time login.
+
+
+
+- **View Stock board**: View stock list with real-time price updates of order, you can click on any stock to view its detailed information, price history in form of candlestick chart, annd line chart.
+
+- **Tutorial**: A tutorial page to help you understand how to use the app and learn about stock trading.
+
+- **Trading**: Place buy/sell orders with limit and market orders. 
+
+- **Portfolio**: View your portfolio withbalance, estimate total value, list of stockes you own, transaction history, and add funding to your account.
+
 
 # 🚀 Installation & Setup
 
