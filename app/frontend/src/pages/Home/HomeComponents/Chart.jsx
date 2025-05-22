@@ -257,31 +257,68 @@ function Chart({ selectedStock }) {
       },
       x: {
         show: true,
-        format: 'dd MMM yyyy',
+        format: 'dd MMM yyyy HH:mm',
       },
-      y: {
-        formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
-          try {
-            if (seriesIndex === 1) { // Volume series
-              return `Volume: ${value}`;
-            }
-            if (chartType === 'line') {
-              // For line chart, show the price value directly
-              return `Price: ${value.toFixed(2)}`;
-            } else if (chartType === 'candlestick') {
-              // For candlestick chart, show OHLC
-              const ohlc = w.globals.initialSeries[seriesIndex].data[dataPointIndex].y;
-              return (
-                `<div>Open: ${ohlc[0]}</div>` +
-                `<div>High: ${ohlc[1]}</div>` +
-                `<div>Low: ${ohlc[2]}</div>` +
-                `<div>Close: ${ohlc[3]}</div>`
-              );
-            }
-          } catch (error) {
-            console.error('Tooltip error:', error);
-            return 'Data not available';
+      custom: function({ series, seriesIndex, dataPointIndex, w }) {
+        try {
+          const data = w.globals.initialSeries[seriesIndex].data[dataPointIndex];
+          
+          if (seriesIndex === 1) { // Volume series
+            return `
+              <div class="custom-tooltip">
+                <div class="tooltip-date">${new Date(data.x).toLocaleString()}</div>
+                <div class="tooltip-volume">
+                  Volume: ${new Intl.NumberFormat().format(data.y)}
+                </div>
+              </div>
+            `;
           }
+
+          if (chartType === 'line') {
+            const price = parseFloat(data.y).toFixed(2);
+            const prevPrice = dataPointIndex > 0 
+              ? parseFloat(w.globals.initialSeries[seriesIndex].data[dataPointIndex - 1].y).toFixed(2)
+              : price;
+            const priceChange = (price - prevPrice).toFixed(2);
+            const priceChangePercent = ((priceChange / prevPrice) * 100).toFixed(2);
+            const priceColor = priceChange >= 0 ? 'var(--chart-up-color)' : 'var(--chart-down-color)';
+            
+            return `
+              <div class="custom-tooltip">
+                <div class="tooltip-date">${new Date(data.x).toLocaleString()}</div>
+                <div class="tooltip-price" style="color: ${priceColor}">
+                  Price: $${price}
+                </div>
+                <div class="tooltip-change" style="color: ${priceColor}">
+                  Change: ${priceChange >= 0 ? '+' : ''}${priceChange} (${priceChangePercent}%)
+                </div>
+              </div>
+            `;
+          } else if (chartType === 'candlestick') {
+            const ohlc = data.y;
+            const [open, high, low, close] = ohlc.map(val => parseFloat(val).toFixed(2));
+            const change = (close - open).toFixed(2);
+            const changePercent = ((change / open) * 100).toFixed(2);
+            const priceColor = close >= open ? 'var(--chart-up-color)' : 'var(--chart-down-color)';
+            
+            return `
+              <div class="custom-tooltip">
+                <div class="tooltip-date">${new Date(data.x).toLocaleString()}</div>
+                <div class="tooltip-ohlc">
+                  <div style="color: ${priceColor}">Open: $${open}</div>
+                  <div style="color: var(--chart-up-color)">High: $${high}</div>
+                  <div style="color: var(--chart-down-color)">Low: $${low}</div>
+                  <div style="color: ${priceColor}">Close: $${close}</div>
+                </div>
+                <div class="tooltip-change" style="color: ${priceColor}">
+                  Change: ${change >= 0 ? '+' : ''}${change} (${changePercent}%)
+                </div>
+              </div>
+            `;
+          }
+        } catch (error) {
+          console.error('Tooltip error:', error);
+          return '<div class="custom-tooltip">Data not available</div>';
         }
       }
     },
