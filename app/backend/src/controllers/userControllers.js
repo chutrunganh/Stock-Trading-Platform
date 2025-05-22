@@ -328,22 +328,21 @@ export const refreshToken = async (req, res, _next) => {
     
     console.log('Generating new access token with verified refresh token');
     
-    const { accessToken } = refreshAccessTokenService(refreshToken);
+    const { accessToken } = await refreshAccessTokenService(refreshToken);
+    
+    if (!accessToken) {
+      throw new Error('Failed to generate new access token');
+    }
     
     console.log('Token refresh successful:', {
       newAccessTokenExists: !!accessToken,
       newAccessTokenLength: accessToken?.length
     });
     
-    // Set only the new access token cookie
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 15 * 60 * 1000 // 15 minutes in milliseconds
-    });
+    // Set the new access token cookie with proper configuration
+    setAuthCookies(res, accessToken, null); // Only set the new access token, keep existing refresh token
     
-    handleResponse(res, 200, 'Token refreshed', { accessToken });
+    handleResponse(res, 200, 'Token refreshed successfully', { accessToken });
   } catch (error) {
     console.error('Token refresh failed:', error.message);
     handleResponse(res, 401, error.message || 'Invalid or expired refresh token');
