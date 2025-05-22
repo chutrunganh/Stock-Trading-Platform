@@ -93,11 +93,6 @@ Our application offers some key features:
 - **User Authentication**: Registration new user, login using credentials (username/email and password) or using your Google account. After provide te credentail, you will receive an OTP code to your email as two-factor authentication (2FA), you can tick "Remember this device" to skip OTP next time login.
 
 
-
-https://github.com/user-attachments/assets/98c55c42-c03f-40a0-a671-15bdf5f340e7
-
-
-
 - **View Stock board**: View stock list with real-time price updates of order, you can click on any stock to view its detailed information, price history in form of candlestick chart, annd line chart.
 
 - **Tutorial**: A tutorial page to help you understand how to use the app and learn about stock trading.
