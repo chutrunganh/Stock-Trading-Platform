@@ -83,7 +83,7 @@ The project is built with the following technologies:
 # 📖 Features
 
 > [!NOTE]  
-> Be patient! It may take a while to load all the demo `gif` images of this Feature section.
+> Be patient! It may take a while (~2 minutes) to load all the demo `gif` images of this Feature section.
 
 ⚡Quick look ⚡:
 
@@ -99,6 +99,8 @@ Our application offers some key features:
   <div align="center">
     <img src="docs/images/LoginDemo_compress.gif" alt="Login Demo"  style="max-width: 60%; height: auto;">
   </div >
+
+  *Captcha (Cloudflare Turnstile) is disabled by default during the development stage. To enable it, set the environment variable in `.env` to `product`*
 
 
 
