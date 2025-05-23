@@ -21,16 +21,16 @@ const getTokenTimeInfo = (decoded) => {
 const authMiddleware = (req, res, next) => {
   let token;
   
-  // Get token from cookie
-  if (req.cookies && req.cookies.accessToken) {
-    token = req.cookies.accessToken;
-    log.info('[Token Debug] Token source: Cookie');
-  } 
-  // Or from Authorization header (for API clients that don't use cookies)
-  else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+  // Check for Bearer token in Authorization header first
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
-    log.info('[Token Debug] Token source: Bearer header');
+  } 
+  // Then check for cookie if no Bearer token
+  else if (req.cookies && req.cookies.accessToken) {
+    token = req.cookies.accessToken;
   }
+  // Log token details for debugging
+  if (token) {  }
 
   if (!token) {
     log.warn('[Token Debug] No token provided');

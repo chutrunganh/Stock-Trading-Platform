@@ -254,6 +254,24 @@ const startServer = async () => {
       password: 'Test@123',
       role: 'user'
     });
+        await initializeNormalUser({
+      pool,
+      log,
+      constants: { INITIAL_CASH_BALANCE, SALT_ROUNDS },
+      email: 'aaa@gmail.com',
+      username: 'aaa',
+      password: '123456@Aa',
+      role: 'user'
+    });
+            await initializeNormalUser({
+      pool,
+      log,
+      constants: { INITIAL_CASH_BALANCE, SALT_ROUNDS },
+      email: 'abcd@gmail.com',
+      username: 'abcd',
+      password: '123456@Aa',
+      role: 'user'
+    });
     app.listen(port, () => {
       log.info(`Server is running on port ${port}`);
       log.info(`Environment: ${process.env.NODE_ENV || 'development'}`);

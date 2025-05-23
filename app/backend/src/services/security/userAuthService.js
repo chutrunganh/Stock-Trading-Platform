@@ -276,9 +276,9 @@ export const verifyLoginOtpService = async (identifier, otp, password, visitorId
     throw new Error('Invalid OTP');
   }
   try {
-    // Fetch the user by email
+    // Fetch the user by email, including their portfolio_id
     const userResult = await pool.query(
-      'SELECT id, username, email, role FROM users WHERE email = $1',
+      'SELECT u.id, u.username, u.email, u.role, p.portfolio_id FROM users u LEFT JOIN portfolios p ON u.id = p.user_id WHERE u.email = $1',
       [email]
     );
     const user = userResult.rows[0];
@@ -293,12 +293,13 @@ export const verifyLoginOtpService = async (identifier, otp, password, visitorId
         deviceWarning = rememberResult.message;
       }
     }
-    // Generate JWT tokens
+    // Generate JWT tokens with portfolio_id
     const { accessToken, refreshToken } = generateTokens({
       id: user.id,
       username: user.username,
       email: user.email,
       role: user.role,
+      portfolio_id: user.portfolio_id
     });
     // Delete the OTP after successful verification
     await OTP.deleteByEmail(email);

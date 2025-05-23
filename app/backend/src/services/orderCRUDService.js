@@ -37,21 +37,27 @@ export const createOrderService = async (orderData) => {
             timestamp: Date.now(), // Timestamp for order arrangement incase of limit orders with same price
         };
 
-    console.log('Creating order with information:', order);
+        console.log('Creating order with information:', order);
+        
+        // Store order in global.orders for ownership verification middleware
+        if (!global.orders) {
+            global.orders = new Map();
+        }
+        global.orders.set(order.id, order);
     
-    // Use the shared orderBook instance
-    // Incase it is a market order, execute it immediately
-    if (order.type === 'Market Buy' || order.type === 'Market Sell') {
-        orderBook.marketOrderMatching(order); // Perform matching for market orders
-    } else if (order.type === 'Limit Buy' || order.type === 'Limit Sell') {
-        // For limit orders, add them to the queue and perform matching
-        orderBook.limitOrderMatching(order); // This will handle both adding to queue and matching
-    }    
+        // Use the shared orderBook instance
+        // Incase it is a market order, execute it immediately
+        if (order.type === 'Market Buy' || order.type === 'Market Sell') {
+            orderBook.marketOrderMatching(order); // Perform matching for market orders
+        } else if (order.type === 'Limit Buy' || order.type === 'Limit Sell') {
+            // For limit orders, add them to the queue and perform matching
+            orderBook.limitOrderMatching(order); // This will handle both adding to queue and matching
+        }    
 
-    // DEBUGGING: Display the order book after matching
-    console.log('After matching, currently book:') 
-    orderBook.displayOrderBook();
-    return order;
+        // DEBUGGING: Display the order book after matching
+        console.log('After matching, currently book:') 
+        orderBook.displayOrderBook();
+        return order;
     
     } catch (error) {
         console.error('Error in createOrderService:', error);
@@ -66,6 +72,7 @@ export const createArtificialOrderService = async (orderData) => {
     const order = {
         id: `admin-${Date.now()}`, //unique ID prefixed with "admin" - for easier identification
         portfolioId: null, //admin does not have portfolioId
+        userId: null, // admin does not have userId for artificial orders
         stockId,
         volume: quantity,
         price,
@@ -74,6 +81,12 @@ export const createArtificialOrderService = async (orderData) => {
     };
 
     console.log('Admin creating artificial order:', order);
+    
+    // Store order in global.orders for ownership verification middleware
+    if (!global.orders) {
+        global.orders = new Map();
+    }
+    global.orders.set(order.id, order);
 
     // Add the order to the order book
     if (order.type === 'Market Buy' || order.type === 'Market Sell') {
@@ -94,10 +107,23 @@ export const getOrderByIdService = async (orderId) => {
     return allOrders.find(order => order.id === orderId) || null;
 };
 
+// Service to get all orders for a specific user
+export const getOrdersByUserIdService = async (userId) => {
+    // Use the shared orderBook instance
+    const allOrders = [...orderBook.limitBuyOrderQueue, ...orderBook.limitSellOrderQueue];
+    return allOrders.filter(order => order.userId === userId);
+};
+
 // Service to remove an order from the queue by ID (Cancel order)
 export const cancelOrderService = async (orderId) => {
     // Use the shared orderBook instance
     orderBook.removeOrderFromQuene(orderId);
+    
+    // Also remove from global.orders for ownership verification
+    if (global.orders) {
+        global.orders.delete(orderId);
+    }
+    
     console.log('After removing, currently book:') 
     orderBook.displayOrderBook();
 };

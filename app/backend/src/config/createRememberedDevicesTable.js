@@ -12,7 +12,7 @@ const createRememberedDevicesTable = async () => {
     const createTableQuery = `
       CREATE TABLE IF NOT EXISTS remembered_devices (
         id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         visitor_id VARCHAR(255) NOT NULL,
         confidence_score DECIMAL(4,3) DEFAULT 0,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

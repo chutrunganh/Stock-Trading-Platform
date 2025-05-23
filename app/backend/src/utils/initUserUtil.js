@@ -17,7 +17,7 @@ export async function initializeAdminUser({ pool, log, constants, email, usernam
         'INSERT INTO users (email, password, username, role) VALUES ($1, $2, $3, $4) RETURNING id',
         [email, hashedPassword, username, role]
       );
-      const adminId = adminResult.rows[0].id;
+      const adminId = adminResult.rows[0].id; // UUID string
       await pool.query(
         'INSERT INTO portfolios (user_id, cash_balance) VALUES ($1, $2)',
         [adminId, constants.INITIAL_CASH_BALANCE]
@@ -47,7 +47,7 @@ export async function initializeNormalUser({ pool, log, constants, email, userna
         'INSERT INTO users (email, password, username, role) VALUES ($1, $2, $3, $4) RETURNING id',
         [email, hashedPassword, username, role]
       );
-      const userId = userResult.rows[0].id;
+      const userId = userResult.rows[0].id; // UUID string
       await pool.query(
         'INSERT INTO portfolios (user_id, cash_balance) VALUES ($1, $2)',
         [userId, constants.INITIAL_CASH_BALANCE]

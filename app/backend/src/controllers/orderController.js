@@ -6,6 +6,7 @@ import {
     createOrderService,
     createArtificialOrderService, 
     getOrderByIdService, 
+    getOrdersByUserIdService,
     cancelOrderService
 } from '../services/orderCRUDService.js';
 import { emitOrderBookUpdate } from './orderBookController.js';
@@ -20,7 +21,8 @@ const handleResponse = (res, status, message, data = null) => {
 
 // Controller to create a new order
 export const createOrder = async (req, res, next) => {
-    const { userId, stockId, quantity, price, orderType } = req.body;
+    const { stockId, quantity, price, orderType } = req.body;
+    const userId = req.user.id;
     try {
         const newOrder = await createOrderService({ userId, stockId, quantity, price, orderType });
         handleResponse(res, 201, 'Order created successfully', newOrder);
@@ -54,6 +56,17 @@ export const getOrderById = async (req, res, next) => {
             return handleResponse(res, 404, 'Order not found');
         }
         handleResponse(res, 200, 'Order retrieved successfully', order);
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Controller to get all orders for the authenticated user
+export const getUserOrders = async (req, res, next) => {
+    const userId = req.user.id; // Get userId from authenticated session
+    try {
+        const orders = await getOrdersByUserIdService(userId);
+        handleResponse(res, 200, 'User orders retrieved successfully', orders);
     } catch (error) {
         next(error);
     }

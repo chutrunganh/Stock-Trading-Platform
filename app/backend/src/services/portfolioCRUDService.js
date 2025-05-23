@@ -6,12 +6,18 @@ import Transaction from '../models/transactionModel.js';
 // Create a new portfolio for a user
 export const createPortfolioForUserService = async (userId, client = pool) => {
     try {
+        // Validate UUID format
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(userId)) {
+            throw new Error('Invalid user ID format');
+        }
+
         const portfolioResult = await client.query(
             'INSERT INTO portfolios (user_id, cash_balance) VALUES ($1, $2) RETURNING portfolio_id',
             [userId, INITIAL_CASH_BALANCE]
         );
         
-        return portfolioResult.rows[0].portfolio_id;
+        return portfolioResult.rows[0].portfolio_id; // Returns UUID
     } catch (error) {
         console.error('Error creating portfolio:', error);
         throw new Error(`Failed to create portfolio: ${error.message}`);
@@ -21,6 +27,12 @@ export const createPortfolioForUserService = async (userId, client = pool) => {
 //get portfolio by user_id - specific user (for transaction buy/sell)
 export const getPortfolioByUserIdService = async (user_id) => {
     try {
+        // Validate UUID format
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(user_id)) {
+            throw new Error('Invalid user ID format');
+        }
+
         // First get the portfolio
         const portfolioResult = await pool.query(
             'SELECT * FROM portfolios WHERE user_id = $1',
@@ -65,6 +77,12 @@ export const getPortfolioByUserIdService = async (user_id) => {
 export const updatePortfolioService = async (portfolio_id, portfolioData) => {
     const { cash_balance } = portfolioData;
     try {
+        // Validate UUID format
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(portfolio_id)) {
+            throw new Error('Invalid portfolio ID format');
+        }
+
         const result = await pool.query('SELECT * FROM portfolios WHERE portfolio_id = $1', [portfolio_id]);
         if (!result.rows[0]) {
             throw new Error(`Portfolio with ID ${portfolio_id} not found`);
@@ -104,6 +122,12 @@ export const updatePortfolioService = async (portfolio_id, portfolioData) => {
 // Get portfolio holdings with current stock prices
 export const getPortfolioHoldingsService = async (userId) => {
     try {
+        // Validate UUID format
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(userId)) {
+            throw new Error('Invalid user ID format');
+        }
+
         const query = `
             SELECT 
                 h.holding_id,
@@ -138,6 +162,12 @@ export const getPortfolioHoldingsService = async (userId) => {
 // Get portfolio transactions
 export const getPortfolioTransactionsService = async (userId) => {
     try {
+        // Validate UUID format
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(userId)) {
+            throw new Error('Invalid user ID format');
+        }
+
         const query = `
             SELECT 
                 t.transaction_id,

@@ -11,7 +11,7 @@ const createPaymentTransactionsTable = async () => {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS payment_transactions (
                 id SERIAL PRIMARY KEY,
-                portfolio_id INTEGER NOT NULL REFERENCES portfolios(portfolio_id),
+                portfolio_id UUID NOT NULL REFERENCES portfolios(portfolio_id),
                 reference_number VARCHAR(255) NOT NULL UNIQUE,
                 vnd_amount DECIMAL(15,2) NOT NULL,
                 virtual_amount DECIMAL(15,2) NOT NULL,

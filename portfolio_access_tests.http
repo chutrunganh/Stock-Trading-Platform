@@ -1,0 +1,113 @@
+### Portfolio Access Control Tests
+### These tests verify that users can only access their own portfolios
+
+### Variables
+@baseUrl = http://localhost:3000/api
+@portfolioPath = {{baseUrl}}/portfolio
+
+### Example UUID values (replace with actual UUIDs from your login responses)
+@userAToken = your_jwt_token_here
+@userBToken = your_jwt_token_here  
+@userAPortfolioId = dbf86696-4e05-4416-87cb-fb9bfece948c
+@userBPortfolioId = 233c5130-7188-434d-882b-7bde87047420
+
+### Test 1: Login as User A
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+
+### Test 2: Login as User B  
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com", 
+  "password": "admin123"
+}
+
+### Test 3: Get User A's portfolio details (should work)
+GET {{portfolioPath}}/details
+Authorization: Bearer {{userAToken}}
+
+### Test 4: Get User B's portfolio details (should work)
+GET {{portfolioPath}}/details
+Authorization: Bearer {{userBToken}}
+
+### Test 5: Try to access User A's portfolio with User B's token (should fail with 403)
+GET {{portfolioPath}}/details
+Authorization: Bearer {{userBToken}}
+X-Portfolio-ID: {{userAPortfolioId}}
+
+### Test 6: Try to access User B's portfolio with User A's token (should fail with 403)
+GET {{portfolioPath}}/details
+Authorization: Bearer {{userAToken}}
+X-Portfolio-ID: {{userBPortfolioId}}
+
+### Test 7: Try to access with invalid UUID format (should fail with 400)
+GET {{portfolioPath}}/details
+Authorization: Bearer {{userAToken}}
+X-Portfolio-ID: invalid-uuid-format
+
+### Test 8: Try to access with non-existent UUID (should fail with 403)
+GET {{portfolioPath}}/details
+Authorization: Bearer {{userAToken}}
+X-Portfolio-ID: 12345678-1234-5678-9abc-123456789abc
+
+### Test 9: Try to access without authentication (should fail with 401)
+GET {{portfolioPath}}/details
+
+### Test 10: Try to access with expired token (should fail with 401)
+GET {{portfolioPath}}/details
+Authorization: Bearer expired.jwt.token
+
+### Test 11: Holdings access - User A accessing own holdings (should work)
+GET {{portfolioPath}}/holdings
+Authorization: Bearer {{userAToken}}
+
+### Test 12: Holdings access - User B trying to access User A's holdings (should fail with 403)
+GET {{portfolioPath}}/holdings
+Authorization: Bearer {{userBToken}}
+X-Portfolio-ID: {{userAPortfolioId}}
+
+### Test 13: Transactions access - User A accessing own transactions (should work)
+GET {{portfolioPath}}/transactions
+Authorization: Bearer {{userAToken}}
+
+### Test 14: Transactions access - User B trying to access User A's transactions (should fail with 403)
+GET {{portfolioPath}}/transactions
+Authorization: Bearer {{userBToken}}
+X-Portfolio-ID: {{userAPortfolioId}}
+
+### Test 15: SQL Injection attempt in header (should fail with 400)
+GET {{portfolioPath}}/details
+Authorization: Bearer {{userAToken}}
+X-Portfolio-ID: '; DROP TABLE portfolios; --
+
+### Test 16: XSS attempt in header (should fail with 400)
+GET {{portfolioPath}}/details
+Authorization: Bearer {{userAToken}}
+X-Portfolio-ID: <script>alert('xss')</script>
+
+### Test 17: Path traversal attempt (should fail with 400)
+GET {{portfolioPath}}/details
+Authorization: Bearer {{userAToken}}
+X-Portfolio-ID: ../../../etc/passwd
+
+### Test 18: Malformed UUID with extra characters (should fail with 400)
+GET {{portfolioPath}}/details
+Authorization: Bearer {{userAToken}}
+X-Portfolio-ID: 123e4567-e89b-12d3-a456-426614174000-invalid
+
+### Test 19: Empty portfolio ID header (should use user's own portfolio)
+GET {{portfolioPath}}/details
+Authorization: Bearer {{userAToken}}
+X-Portfolio-ID: 
+
+### Test 20: Very long string as portfolio ID (should fail with 400)
+GET {{portfolioPath}}/details
+Authorization: Bearer {{userAToken}}
+X-Portfolio-ID: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa 

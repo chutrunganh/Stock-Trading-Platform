@@ -10,7 +10,7 @@ const createTransactionTable = async () => {
     const queryText = `
     CREATE TABLE IF NOT EXISTS "transactions"(
       transaction_id SERIAL PRIMARY KEY,
-      portfolio_id INT NOT NULL,
+      portfolio_id UUID NOT NULL,
       stock_id INT NOT NULL,
       transaction_type VARCHAR(100) NOT NULL,
       quantity INT NOT NULL,

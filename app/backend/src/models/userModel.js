@@ -4,7 +4,7 @@
  */
 class User {
   constructor(userData) {
-    this.id = userData.id;
+    this.id = userData.id; // UUID string
     this.username = userData.username;
     this.email = userData.email;
     this.role = userData.role;
@@ -20,7 +20,7 @@ class User {
     if (!userData) return null;
     
     return {
-      id: userData.id,
+      id: userData.id, // UUID string
       username: userData.username,
       email: userData.email,
       role: userData.role,

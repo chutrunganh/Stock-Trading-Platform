@@ -13,7 +13,7 @@ const createHoldingTable = async () => {
     const queryText = `
     CREATE TABLE IF NOT EXISTS "holdings"(
         holding_id SERIAL PRIMARY KEY,
-        portfolio_id INT NOT NULL,
+        portfolio_id UUID NOT NULL,
         stock_id INT NOT NULL,
         quantity INT,
         average_price DECIMAL(10,2),

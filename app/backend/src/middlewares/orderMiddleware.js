@@ -92,13 +92,19 @@ const validateLimitOrderPrice = async (req, res, next) => {
  */
 const validateSellOrderQuantity = async (req, res, next) => {
     try {
-        const { stockId, quantity, orderType, userId } = req.body;
-
-        // Validate required fields
-        if (!stockId || !quantity || !orderType || !userId) {
+        const { stockId, quantity, orderType } = req.body;
+        const userId = req.user.id; // Get userId from the authenticated session        // Validate required fields from request body
+        if (!stockId || !quantity || !orderType) {
             return res.status(400).json({
                 message: 'Missing required fields for sell order validation.',
-                required: ['stockId', 'quantity', 'orderType', 'userId']
+                required: ['stockId', 'quantity', 'orderType']
+            });
+        }
+
+        // Validate that we have an authenticated user
+        if (!userId) {
+            return res.status(401).json({
+                message: 'Authentication required'
             });
         }
 
@@ -159,15 +165,21 @@ const validateSellOrderQuantity = async (req, res, next) => {
  * Middleware to validate if a portfolio has enough balance for a limit buy order
  * Skips validation for market buy orders as price is unknown in advance
  */
-const validateBuyOrderBalance = async (req, res, next) => {
-    try {
-        const { stockId, quantity, price, orderType, userId } = req.body;
+const validateBuyOrderBalance = async (req, res, next) => {    try {
+        const { stockId, quantity, price, orderType } = req.body;
+        const userId = req.user.id; // Get userId from authenticated session
+        
+        if (!userId) {
+            return res.status(401).json({
+                message: 'Authentication required'
+            });
+        }
 
-         // Validate required fields
-        if (!stockId || !quantity || !orderType || !userId) {
+        // Validate required fields
+        if (!stockId || !quantity || !orderType) {
             return res.status(400).json({
                 message: 'Missing required fields for buy order validation.',
-                required: ['stockId', 'quantity', 'orderType', 'userId']
+                required: ['stockId', 'quantity', 'orderType']
             });
         }
 

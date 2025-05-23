@@ -18,15 +18,19 @@ dotenv.config({ path: '../../.env' }); // Adjust based on relative depth
 
 
 /**
-
- *  * This function retrieves a user by their ID from the database. It returns the user object without sensitive data like password.
+ * This function retrieves a user by their ID from the database. It returns the user object without sensitive data like password.
  * If the user is not found, it throws an error.
  * 
- * @param {*} id - the id of the user to be retrieved
- * 
+ * @param {string} id - the UUID of the user to be retrieved
  */
 export const getUserByIdService = async (id) => {
   try {
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      throw new Error('Invalid user ID format');
+    }
+
     const result = await pool.query(
       'SELECT id, username, email, role, created_at FROM users WHERE id = $1',
       [id]
@@ -47,15 +51,20 @@ export const getUserByIdService = async (id) => {
  * This function updates a user's information in the database. It allows updating username, email, 
  * password, and role (can not update to 'admin' role through API).
  * 
- * @param {*} id - the id of the user to be updated
+ * @param {string} id - the UUID of the user to update
  * @param {*} userData - the user object containing the updated data
  * @returns - the updated user object without sensitive data
- * 
  */
 export const updateUserService = async (id, userData) => {
   const { username, email, password, role } = userData;
   
   try {
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      throw new Error('Invalid user ID format');
+    }
+
     // First check if user exists
     const user = await pool.query('SELECT id, role FROM users WHERE id = $1', [id]);
     if (!user.rows[0]) {

@@ -5,6 +5,12 @@ import { DEFAULT_HOLDING_QUANTITY, DEFAULT_HOLDING_COST } from '../config/consta
 // Service to create default holdings for a new portfolio
 export const createDefaultHoldingsForPortfolioService = async (portfolioId, client) => {
     try {
+        // Validate UUID format
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(portfolioId)) {
+            throw new Error('Invalid portfolio ID format');
+        }
+
         // Get all stock IDs from the stocks table
         const stocksResult = await client.query('SELECT stock_id FROM stocks'); // Corrected column name
         const stockIds = stocksResult.rows.map(stock => stock.stock_id); // Corrected property access

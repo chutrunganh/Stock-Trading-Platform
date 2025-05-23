@@ -1,0 +1,136 @@
+### Portfolio UUID Access Control Tests
+### These tests verify that users can only access their own portfolios using UUIDs
+
+### Variables
+@baseUrl = http://localhost:3000/api
+@portfolioPath = {{baseUrl}}/portfolio
+
+### JWT Tokens with embedded portfolio UUIDs
+### NOTE: These tokens expire! If you get 401 errors, login again to get fresh tokens
+@userAToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMjM2YTY3LTVlNWYtNGRlZS04NzU5LTQ3YTI2NGMyMzgwYSIsInVzZXJuYW1lIjoiYWFhIiwiZW1haWwiOiJhYWFAZ21haWwuY29tIiwicm9sZSI6InVzZXIiLCJwb3J0Zm9saW9faWQiOiJmZjA2NGE5YS1mMjA0LTRmZGItYjU2OC1iNmIzNmE3OGU4YjIiLCJ0eXBlIjoiYWNjZXNzIiwibG9naW5fYXQiOjE3NDc5ODM3OTg5MDgsImlhdCI6MTc0Nzk4Mzc5OCwiZXhwIjoxNzQ3OTg1NTk4fQ.bnscfgoH8iI8lg0YOFsxOFgRlhk2bVupBGcJlCnMyYs
+
+@userBToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjUxYTkxNjAzLWQxYTUtNDhlMC04NzBiLWYxNzI0NzhjOTU0YyIsInVzZXJuYW1lIjoiYWJjZCIsImVtYWlsIjoiYWJjZEBnbWFpbC5jb20iLCJyb2xlIjoidXNlciIsInBvcnRmb2xpb19pZCI6IjQ3YWI1NzYyLTMwNWMtNGQwYS04YTkyLTI5YTg4N2M2MWRiNSIsInR5cGUiOiJhY2Nlc3MiLCJsb2dpbl9hdCI6MTc0Nzk4MzgzNTc3NCwiaWF0IjoxNzQ3OTgzODM1LCJleHAiOjE3NDc5ODU2MzV9.02TUnEPa-2d8V81Jsx_3AHokJfSPZmPuJjJFZUbNAWw
+
+### Portfolio UUIDs (extracted from JWT tokens above)
+@userAPortfolioId = 113c049b-c4c8-40f4-a783-7e8613629532
+@userBPortfolioId = 47ab5762-305c-4d0a-8a92-29a887c61db5
+
+### Order IDs (REPLACE WITH ACTUAL IDs FROM ORDER CREATION RESPONSES)
+### Step 1: Run Test 5 and Test 6 to create orders
+### Step 2: Copy the order IDs from the responses
+### Step 3: Replace the placeholder values below with actual order IDs
+@userAOrderId = 1747983878339
+@userBOrderId = 1747983894366
+
+### ======================================
+### PORTFOLIO ACCESS CONTROL TESTS
+### ======================================
+
+### Test 1: User A accesses own portfolio details [Expected: 200 OK]
+GET {{portfolioPath}}/details
+Authorization: Bearer {{userAToken}}
+
+### Test 2: User B tries to access User A's portfolio [Expected: 403 Forbidden]
+GET {{portfolioPath}}/details
+Authorization: Bearer {{userBToken}}
+X-Portfolio-ID: {{userAPortfolioId}}
+
+### Test 3: Invalid UUID format in portfolio access [Expected: 400 Bad Request]
+GET {{portfolioPath}}/details
+Authorization: Bearer {{userAToken}}
+X-Portfolio-ID: invalid-uuid-format
+
+### Test 4: No authentication token [Expected: 401 Unauthorized]
+GET {{portfolioPath}}/details
+
+### ======================================
+### ORDER MANAGEMENT TESTS
+### ======================================
+
+### === ORDER CREATION TESTS ===
+
+### Test 5: User A creates valid limit buy order [Expected: 201 Created]
+POST {{baseUrl}}/orders/createOrder
+Authorization: Bearer {{userAToken}}
+Content-Type: application/json
+
+{
+  "stockId": 1,
+  "quantity": 10,
+  "price": 163,
+  "orderType": "Limit Buy"
+}
+
+### Test 6: User B creates valid limit buy order [Expected: 201 Created]
+POST {{baseUrl}}/orders/createOrder
+Authorization: Bearer {{userBToken}}
+Content-Type: application/json
+
+{
+  "stockId": 2,
+  "quantity": 5,
+  "price": 200,
+  "orderType": "Limit Buy"
+}
+
+### Test 7: Create order without authentication [Expected: 401 Unauthorized]
+POST {{baseUrl}}/orders/createOrder
+Content-Type: application/json
+
+{
+  "stockId": 1,
+  "quantity": 10,
+  "price": 100,
+  "orderType": "Limit Buy"
+}
+
+### Test 8: Create order with invalid data [Expected: 400 Bad Request]
+POST {{baseUrl}}/orders/createOrder
+Authorization: Bearer {{userAToken}}
+Content-Type: application/json
+
+{
+  "stockId": "invalid",
+  "quantity": -5,
+  "price": 0,
+  "orderType": "Invalid Order"
+}
+
+### === ORDER RETRIEVAL TESTS ===
+
+### Test 10: User A retrieves all their orders [Expected: 200 OK]
+GET {{baseUrl}}/orders/user
+Authorization: Bearer {{userAToken}}
+
+### === CROSS-USER ACCESS TESTS ===
+
+### Test 11: User B tries to access User A's order [Expected: 403 Forbidden]
+GET {{baseUrl}}/orders/{{userAOrderId}}
+Authorization: Bearer {{userBToken}}
+
+### Test 12: User B tries to cancel User A's order [Expected: 403 Forbidden]
+DELETE {{baseUrl}}/orders/cancelOrder/{{userAOrderId}}
+Authorization: Bearer {{userBToken}}
+
+### === UUID VALIDATION TESTS ===
+
+### Test 15: Access order with invalid UUID format [Expected: 403 Forbidden]
+GET {{baseUrl}}/orders/invalid-uuid-format
+Authorization: Bearer {{userAToken}}
+
+### Test 16: SQL injection in order ID [Expected: 403 Forbidden]
+GET {{baseUrl}}/orders/'; DROP TABLE orders; --
+Authorization: Bearer {{userAToken}}
+
+### Test 17: Cancel order with malformed UUID [Expected: 403 Forbidden]
+DELETE {{baseUrl}}/orders/cancelOrder/{{userAOrderId}}-invalid
+Authorization: Bearer {{userAToken}}
+
+### === AUTHENTICATION TESTS ===
+
+### Test 18: Access order without authentication [Expected: 401 Unauthorized]
+GET {{baseUrl}}/orders/{{userAOrderId}}
+
+### Test 19: Cancel order with invalid token [Expected: 401 Unauthorized]
+DELETE {{baseUrl}}/orders/cancelOrder/{{userAOrderId}}
+Authorization: Bearer invalid.jwt.token
