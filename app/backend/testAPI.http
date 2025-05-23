@@ -111,36 +111,36 @@ Cookie: jwt={{admin_jwt}}
 DELETE /api/admin/user/1
 Cookie: jwt={{admin_jwt}}
 
-### Test for creating a new buy order
-POST /api/createOrder
+### Test for creating a new buy order (IDOR-secure: userId extracted from JWT)
+POST /api/orders/createOrder
 Content-Type: application/json
+Cookie: jwt={{user_jwt}}
 
 {
-  "userId": 1,
   "stockId": 101,
   "quantity": 20,
   "price": 50,
   "orderType": "Limit Buy"
 }
 
-### Test for creating a new sell order
-POST /api/createOrder
+### Test for creating a new sell order (IDOR-secure: userId extracted from JWT)
+POST /api/orders/createOrder
 Content-Type: application/json
+Cookie: jwt={{user_jwt}}
 
 {
-  "userId": 2,
   "stockId": 101,
   "quantity": 20,
   "price": 5,
   "orderType": "Limit Sell"
 }
 
-### Test a market order
-POST /api/createOrder
+### Test a market order (IDOR-secure: userId extracted from JWT)
+POST /api/orders/createOrder
 Content-Type: application/json
+Cookie: jwt={{user_jwt}}
 
 {
-  "userId": 2,
   "stockId": 101,
   "quantity": 30,
   "price": 0,

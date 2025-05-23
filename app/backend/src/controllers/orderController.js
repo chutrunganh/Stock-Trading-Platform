@@ -20,7 +20,9 @@ const handleResponse = (res, status, message, data = null) => {
 
 // Controller to create a new order
 export const createOrder = async (req, res, next) => {
-    const { userId, stockId, quantity, price, orderType } = req.body;
+    // Extract userId from JWT token instead of request body for security (IDOR prevention)
+    const userId = req.user.id;
+    const { stockId, quantity, price, orderType } = req.body;
     try {
         const newOrder = await createOrderService({ userId, stockId, quantity, price, orderType });
         handleResponse(res, 201, 'Order created successfully', newOrder);
@@ -62,14 +64,20 @@ export const getOrderById = async (req, res, next) => {
 // Cancel an order by ID
 export const cancelOrder = async (req, res, next) => {
     const { orderId } = req.params;
+    // Extract requesting user ID from JWT token for ownership verification (IDOR prevention)
+    const requestingUserId = req.user.id;
+    
     try {
-        const order = await cancelOrderService(orderId);
-        if (!order) {
-            return handleResponse(res, 404, 'Order not found');
-        }
-        handleResponse(res, 200, 'Order removed successfully', order);
+        const order = await cancelOrderService(orderId, requestingUserId);
+        handleResponse(res, 200, 'Order cancelled successfully', order);
         await emitOrderBookUpdate();
     } catch (error) {
+        // Handle specific error cases for better user experience
+        if (error.message === 'Order not found') {
+            return handleResponse(res, 404, 'Order not found');
+        } else if (error.message === 'Unauthorized: You can only cancel your own orders') {
+            return handleResponse(res, 403, 'Forbidden: You can only cancel your own orders');
+        }
         next(error);
     }
 };

@@ -177,9 +177,7 @@ function Trade() {
                 setErrorMessage('You must be logged in to place an order');
                 setLoading(false);
                 return;
-            }
-
-            // First get the stock details to get the stock ID
+            }            // First get the stock details to get the stock ID
             const stockDetails = await getStockBySymbol(symbol.toUpperCase());
             if (!stockDetails || !stockDetails.id) {
                 setErrorMessage(`Could not find stock with symbol ${symbol}`);
@@ -187,8 +185,9 @@ function Trade() {
                 return;
             }
 
+            // Note: userId is no longer sent in request body for security (IDOR prevention)
+            // The backend extracts userId from the JWT token instead
             const orderData = {
-                userId: user.id,  // Use user.id from auth context
                 stockId: stockDetails.id,
                 quantity: parseInt(quantity),
                 price: orderType === 'limit' ? parseFloat(limitPrice) : null,

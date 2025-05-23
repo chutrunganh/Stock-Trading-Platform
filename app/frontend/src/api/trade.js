@@ -25,8 +25,8 @@ export const getStockBySymbol = async (symbol) => {
 
 /**
  * Create a new order (buy or sell)
+ * Note: userId is extracted from JWT token by the backend for security (IDOR prevention)
  * @param {Object} orderData - The order data
- * @param {string} orderData.userId - The user's ID
  * @param {string} orderData.stockId - The stock's ID
  * @param {number} orderData.quantity - The quantity of stocks to buy/sell
  * @param {number} orderData.price - The price per stock (for limit orders)

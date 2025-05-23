@@ -92,13 +92,15 @@ const validateLimitOrderPrice = async (req, res, next) => {
  */
 const validateSellOrderQuantity = async (req, res, next) => {
     try {
-        const { stockId, quantity, orderType, userId } = req.body;
+        const { stockId, quantity, orderType } = req.body;
+        // Extract userId from JWT token instead of request body for security (IDOR prevention)
+        const userId = req.user.id;
 
         // Validate required fields
-        if (!stockId || !quantity || !orderType || !userId) {
+        if (!stockId || !quantity || !orderType) {
             return res.status(400).json({
                 message: 'Missing required fields for sell order validation.',
-                required: ['stockId', 'quantity', 'orderType', 'userId']
+                required: ['stockId', 'quantity', 'orderType']
             });
         }
 
@@ -161,13 +163,15 @@ const validateSellOrderQuantity = async (req, res, next) => {
  */
 const validateBuyOrderBalance = async (req, res, next) => {
     try {
-        const { stockId, quantity, price, orderType, userId } = req.body;
+        const { stockId, quantity, price, orderType } = req.body;
+        // Extract userId from JWT token instead of request body for security (IDOR prevention)
+        const userId = req.user.id;
 
          // Validate required fields
-        if (!stockId || !quantity || !orderType || !userId) {
+        if (!stockId || !quantity || !orderType) {
             return res.status(400).json({
                 message: 'Missing required fields for buy order validation.',
-                required: ['stockId', 'quantity', 'orderType', 'userId']
+                required: ['stockId', 'quantity', 'orderType']
             });
         }
 

@@ -4,9 +4,8 @@
  */
 
 import express from 'express';
-import { registerUser, getAllUsers, getUserById, updateUser, deleteUser, loginUser, googleAuth, googleAuthCallback, sendLoginOtpController, forgotPasswordController, resetPasswordController, logoutUser, refreshToken } from '../controllers/userControllers.js';
-import { validateUser, validateUserUpdate, validateLogin } from '../middlewares/userValidationMiddleware.js';
-import { requireAdminRole } from '../middlewares/roleBasedAccessControlMiddleware.js';
+import { registerUser, loginUser, googleAuth, googleAuthCallback, sendLoginOtpController, forgotPasswordController, resetPasswordController, logoutUser, refreshToken } from '../controllers/userControllers.js';
+import { validateUser, validateLogin } from '../middlewares/userValidationMiddleware.js';
 import authMiddleware, { refreshTokenMiddleware } from '../middlewares/authenticationMiddleware.js';
 
 const router = express.Router();
@@ -36,11 +35,5 @@ router.get("/profile", authMiddleware, (req, res) => {
     }
   });
 });
-
-// Admin-only routes
-router.get("/users", authMiddleware, requireAdminRole, getAllUsers);
-router.get("/users/:id", authMiddleware, requireAdminRole, getUserById);
-router.put("/users/:id", authMiddleware, requireAdminRole, validateUserUpdate, updateUser);
-router.delete("/users/:id", authMiddleware, requireAdminRole, deleteUser);
 
 export default router;
