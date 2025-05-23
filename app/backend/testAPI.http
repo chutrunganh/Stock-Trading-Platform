@@ -220,4 +220,64 @@ Authorization: Bearer N3RTU0OUNCLNHVJBEX9CJMIW4OSM4MQ1KLHFYYVV56UBLH5WXODPPA2FSK
 ### Send OTP to email
 // OTP endpoints removed
 
- 
+### 5. IDOR Protection Tests
+
+### Test 1: Try to access another user's portfolio using user1's token
+### Should return 403 Forbidden
+GET /api/portfolio/c9ba9167-d4ba-48cb-acc1-1e2d568df647
+Cookie: jwt="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkyNjAyMGZhLTIzMWUtNDI3OS04ZDAyLTljN2MxY2VjY2EzZCIsInVzZXJuYW1lIjoidXNlcjEiLCJlbWFpbCI6InVzZXIxQHN0b2NrbWFya2V0LmNvbSIsInJvbGUiOiJ1c2VyIiwidHlwZSI6ImFjY2VzcyIsImxvZ2luX2F0IjoxNzQ4MDEzMjUwMjUyLCJpYXQiOjE3NDgwMTMyNTAsImV4cCI6MTc0ODAxNDE1MH0.aXiLJ9CVwsD4vsqnk3ULgxlMKpXQ3MXR-Rot7DLf2MU"
+
+### Test 2: Try to access another user's transaction history using user1's token
+### Should return 403 Forbidden
+GET /api/transactions/history/{{portfolioId_of_user2}}
+Cookie: jwt={{user_jwt}}
+
+### Test 3: Try to modify another user's portfolio using user1's token
+### Should return 403 Forbidden
+PUT /api/portfolio/{{portfolioId_of_user2}}
+Content-Type: application/json
+Cookie: jwt={{user_jwt}}
+
+{
+  "cash_balance": 1000000
+}
+
+### Test 4: Try to create an order for another user's portfolio
+### Should return 403 Forbidden
+POST /api/createOrder
+Content-Type: application/json
+Cookie: jwt={{user_jwt}}
+
+{
+  "portfolioId": "{{portfolioId_of_user2}}",
+  "stockId": 101,
+  "quantity": 20,
+  "price": 50,
+  "orderType": "Limit Buy"
+}
+
+### Test 5: Try to view remembered devices of another user
+### Should return 403 Forbidden
+GET /api/security/remembered-devices/{{user2_id}}
+Cookie: jwt={{user_jwt}}
+
+### Test 6: Positive test - User accessing their own portfolio
+### Should return 200 OK
+GET /api/portfolio/{{portfolioId_of_user1}}
+Cookie: jwt={{user_jwt}}
+
+### Test 7: Admin should be able to access any portfolio
+### Should return 200 OK
+GET /api/admin/portfolio/{{portfolioId_of_user1}}
+Cookie: jwt={{admin_jwt}}
+
+### Test 8: Admin should be able to access any transaction history
+### Should return 200 OK
+GET /api/admin/transactions/history/{{portfolioId_of_user1}}
+Cookie: jwt={{admin_jwt}}
+
+### Variables for IDOR tests (Update these with actual UUIDs after running registration)
+@portfolioId_of_user1=00000000-0000-0000-0000-000000000001
+@portfolioId_of_user2=00000000-0000-0000-0000-000000000002
+@user2_id=00000000-0000-0000-0000-000000000003
+

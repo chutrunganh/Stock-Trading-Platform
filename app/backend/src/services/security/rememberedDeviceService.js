@@ -15,7 +15,7 @@ import pool from '../../config/dbConnect.js';
  * - Lower scores will require 2FA regardless of device status
  */
 
-const REMEMBER_DEVICE_MINUTES = 1; // Changed from days to minutes for testing
+const REMEMBER_DEVICE_MINUTES = 15; // Changed from days to minutes for testing
 const MIN_CONFIDENCE_SCORE = 0.01; // Minimum confidence score to trust the fingerprint - lowered to allow most devices
 
 export const rememberDeviceService = async (userId, visitorId, confidenceScore = 0) => {

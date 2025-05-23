@@ -2,7 +2,6 @@ import bcrypt from 'bcrypt';
 const SALT_ROUNDS = 10; // Cost factor for bcrypt
 import pool from '../../config/dbConnect.js';
 import User from '../../models/userModel.js';
-import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { verifyOtpService } from './otpService.js';
 import OTP from '../../models/otpModel.js';
