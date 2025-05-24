@@ -116,7 +116,7 @@ Our application offers some key features:
     <img src="docs/images/TutorialDemo.gif" alt="Tutorial Demo"  style="max-width: 60%; height: auto;">
   </div >
 
-- **Trading**:  Place buy/sell orders with support for both **market** and **limit** order types.
+- **Trading**:  Place buy/sell orders with support for both **market** and **limit** order types. You will get a notification at the home page when your order iss matched.
 
   <div align="center">
     <img src="docs/images/TradeDemo_compress.gif" alt="Trade Demo"  style="max-width: 60%; height: auto;">
