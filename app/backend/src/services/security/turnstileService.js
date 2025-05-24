@@ -13,10 +13,10 @@ const VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
  */
 export async function verifyTurnstileToken(token, remoteip) {
   if (!TURNSTILE_SECRET_KEY) {
-    throw new Error('TURNSTILE_SECRET_KEY is not set in environment variables');
+    return next(new Error('TURNSTILE_SECRET_KEY is not set in environment variables'));
   }
   if (!token) {
-    throw new Error('No Turnstile token provided');
+    return next(new Error('No Turnstile token provided'));
   }
   try {
     const payload = {

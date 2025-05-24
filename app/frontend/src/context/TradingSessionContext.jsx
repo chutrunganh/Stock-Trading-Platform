@@ -69,7 +69,7 @@ export function TradingSessionProvider({ children }) {
 export function useTradingSession() {
     const context = useContext(TradingSessionContext);
     if (!context) {
-        throw new Error('useTradingSession must be used within a TradingSessionProvider');
+        return next(new Error('useTradingSession must be used within a TradingSessionProvider'));
     }
     return context;
 }

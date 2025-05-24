@@ -21,7 +21,7 @@ export const createOrderService = async (orderData) => {
         const portfolioResult = await pool.query(portfolioQuery, [userId]);
         
         if (portfolioResult.rows.length === 0) {
-            throw new Error(`No portfolio found for user ID: ${userId}`);
+            return next(new Error(`No portfolio found for user ID: ${userId}`));
         }
         
         const portfolioId = portfolioResult.rows[0].portfolio_id;
@@ -55,7 +55,7 @@ export const createOrderService = async (orderData) => {
     
     } catch (error) {
         console.error('Error in createOrderService:', error);
-        throw error;
+        return next(error);
     }
 };
 

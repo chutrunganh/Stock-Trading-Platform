@@ -32,7 +32,7 @@ export const createDefaultHoldingsForPortfolioService = async (portfolioId, clie
     } catch (error) {
         console.error(`Error creating default holdings for portfolio ${portfolioId}:`, error.message);
         // Re-throw the error to be caught by the transaction handler in userCRUDService
-        throw new Error(`Failed to create default holdings: ${error.message}`);
+        return next(new Error(`Failed to create default holdings: ${error.message}`));
     }
 };
 
@@ -45,7 +45,7 @@ export const updateHoldingService = async (portfolioId, stockId, quantity, price
         );
 
         if (!currentHolding.rows[0]) {
-            throw new Error(`No holding found for portfolio ${portfolioId} and stock ${stockId}`);
+            return next(new Error(`No holding found for portfolio ${portfolioId} and stock ${stockId}`));
         }
 
         let { quantity: currentQty, average_price: currentAvgPrice } = currentHolding.rows[0];
@@ -58,7 +58,7 @@ export const updateHoldingService = async (portfolioId, stockId, quantity, price
             // For selling, reduce quantity and keep same average price
             newQuantity = currentQty - quantity;
             if (newQuantity < 0) {
-                throw new Error('Insufficient shares to sell');
+                return next(new Error('Insufficient shares to sell'));
             }
             newAveragePrice = currentAvgPrice; // Average price doesn't change when selling
         }
@@ -72,7 +72,7 @@ export const updateHoldingService = async (portfolioId, stockId, quantity, price
         return Holdings.getHoldings(result.rows[0]);
     } catch (error) {
         console.error('Error updating holding:', error);
-        throw error;
+        return next(error);
     }
 };
 
@@ -84,11 +84,11 @@ export const getHoldingByPortfolioAndStockService = async (portfolioId, stockId,
             [portfolioId, stockId]
         );
         if (!result.rows[0]) {
-            throw new Error(`No holding found for portfolio ${portfolioId} and stock ${stockId}`);
+            return next(new Error(`No holding found for portfolio ${portfolioId} and stock ${stockId}`));
         }
         return Holdings.getHoldings(result.rows[0]);
     } catch (error) {
         console.error('Error getting holding:', error);
-        throw error;
+        return next(error);
     }
 };

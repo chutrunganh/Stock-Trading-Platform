@@ -7,7 +7,7 @@ export const registerUser = async (userData) => {
     return response.data;
   } catch (error) {
     console.error('Error during registration:', error);
-    throw error;
+    return next(error);
   }
 };
 
@@ -31,7 +31,7 @@ export const loginUser = async ({ identifier, password, turnstileToken, otp, vis
     return response.data;
   } catch (error) {
     console.error('Error during login:', error);
-    throw error;
+    return next(error);
   }
 };
 
@@ -42,7 +42,7 @@ export const requestPasswordReset = async (email) => {
     return response.data;
   } catch (error) {
     console.error('Error during password reset request:', error);
-    throw error;
+    return next(error);
   }
 };
 
@@ -55,7 +55,7 @@ export const getUserProfile = async () => {
     return response.data;
   } catch (error) {
     console.error('Error fetching user profile:', error);
-    throw error;
+    return next(error);
   }
 };
 
@@ -66,7 +66,7 @@ export const sendLoginOtp = async (identifier) => {
     return response.data;
   } catch (error) {
     console.error('Error sending login OTP:', error);
-    throw error;
+    return next(error);
   }
 };
 
@@ -77,7 +77,7 @@ export const verifyLoginOtp = async ({ identifier, otp }) => {
     return response.data;
   } catch (error) {
     console.error('Error verifying login OTP:', error);
-    throw error;
+    return next(error);
   }
 };
 
@@ -88,7 +88,7 @@ export const resetPassword = async ({ email, otp, newPassword }) => {
     return response.data;
   } catch (error) {
     console.error('Error during password reset:', error);
-    throw error;
+    return next(error);
   }
 };
 
@@ -99,7 +99,7 @@ export const logoutUser = async () => {
     return response.data;
   } catch (error) {
     console.error('Error during logout:', error);
-    throw error;
+    return next(error);
   }
 };
 
@@ -120,6 +120,6 @@ export const refreshToken = async () => {
     };
   } catch (error) {
     console.error('Error refreshing token:', error);
-    throw error;
+    return next(error);
   }
 };

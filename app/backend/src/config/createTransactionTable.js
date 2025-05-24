@@ -34,7 +34,7 @@ const createTransactionTable = async () => {
     }
     catch(error){
         log.error('Error occurs when creating transaction table:', error.message);
-        throw new Error(error.message);
+        return next(new Error(error.message));
     }
 };
 

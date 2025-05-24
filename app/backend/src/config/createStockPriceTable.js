@@ -46,7 +46,7 @@ const createStockPriceTable = async () => {
     }
     catch(error){
         console.error('\nError occurs when creating StockPrices table:', error.message);
-        throw new Error(error.message);
+        return next(new Error(error.message));
     }
 };
 

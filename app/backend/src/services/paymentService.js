@@ -23,7 +23,7 @@ export const verifyPayment = async (referenceNumber, portfolioId) => {
         );
 
         if (existingTransaction.rows.length > 0) {
-            throw new Error('This payment has already been processed');
+            return next(new Error('This payment has already been processed'));
         }
 
         // Get current portfolio balance
@@ -48,7 +48,7 @@ export const verifyPayment = async (referenceNumber, portfolioId) => {
         log.info('Sepay API response:', sepayResponse.data);
 
         if (!sepayResponse.data.transactions?.length) {
-            throw new Error('No transaction found with this reference number');
+            return next(new Error('No transaction found with this reference number'));
         }
 
         // Find incoming transaction (looking for amount_in > 0)
@@ -57,7 +57,7 @@ export const verifyPayment = async (referenceNumber, portfolioId) => {
         );
 
         if (!incomingTransaction) {
-            throw new Error('No incoming payment found with this reference number');
+            return next(new Error('No incoming payment found with this reference number'));
         }
 
         const vndAmount = parseFloat(incomingTransaction.amount_in);
@@ -101,7 +101,7 @@ export const verifyPayment = async (referenceNumber, portfolioId) => {
     } catch (error) {
         await client.query('ROLLBACK');
         log.error('Payment verification error:', error);
-        throw error;
+        return next(error);
     } finally {
         client.release();
     }

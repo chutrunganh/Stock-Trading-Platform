@@ -61,10 +61,8 @@ async function manageStock() {
     const endDate = await promptUser('Enter end date (YYYY-MM-DD) or press Enter for today: ');
     
     // Check if stock already exists in our database
-    let stockExists = false;
     try {
       const existingStock = await getStockBySymbolService(symbol);
-      stockExists = true;
       console.log('Stock already exists in database with the following details:');
       console.log(`Symbol: ${existingStock.symbol}`);
       console.log(`Company Name: ${existingStock.company_name}`);
@@ -87,7 +85,7 @@ async function manageStock() {
         console.log(`Stock ${symbol} doesn't exist in our database. Checking if it exists in real life...`);
         await fetchPriceData(symbol, startDate, endDate, false);
       } else {
-        throw error;
+        return next(error);
       }
     }
     
@@ -139,7 +137,7 @@ async function fetchPriceData(symbol, startDate, endDate, updateInfo) {
     }
   } catch (error) {
     console.error('Error fetching stock data:', error.message);
-    throw error;
+    return next(error);
   }
 }
 

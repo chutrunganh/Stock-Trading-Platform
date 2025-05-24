@@ -24,7 +24,7 @@ export const createTransactionService = async (transactionData) => {
     }
     catch(error) {
         console.error('Error:', error.message);
-        throw new Error(error.message);
+        return next(new Error(error.message));
     }
 };
 
@@ -37,6 +37,6 @@ export const getTransactionsByPortfolioIdService = async (portfolioId) => {
     }
     catch(error){
         console.error('Error:', error.message);
-        throw new Error(error.message);
+        return next(new Error(error.message));
     }
 };

@@ -127,7 +127,7 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       const errorMessage = err.response?.data?.error || err.message || 'Registration failed';
       setError(errorMessage);
-      throw new Error(errorMessage);
+      return next(new Error(errorMessage));
     } finally {
       setLoading(false);
     }
@@ -189,24 +189,6 @@ export const AuthProvider = ({ children }) => {
       window.AuthContext = null;
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-    
-    // Check for valid storage values and not just any values
-    if ((storedUserId && storedUserId !== "undefined" && storedUserId !== "null") || 
-        (storedToken && storedToken !== "undefined" && storedToken !== "null")) {
-      console.log('[Auth Debug] Found valid stored credentials, checking authentication...');
-      checkAuth();
-    } else {
-      // Clean up any invalid values that might be in storage
-      localStorage.removeItem('userId');
-      localStorage.removeItem('authToken');
-    }
-    
-    return () => {
-      window.AuthRefresh = null;
-      window.AuthLogout = null;
-      window.AuthContext = null;
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
   }, [isAuthenticated]);
 
   const value = {
@@ -232,7 +214,7 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    return next(new Error('useAuth must be used within an AuthProvider'));
   }
   return context;
 };

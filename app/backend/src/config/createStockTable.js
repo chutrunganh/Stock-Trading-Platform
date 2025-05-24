@@ -40,7 +40,7 @@ const createStockTable = async () => {
     }
     catch(error){
         log.error('Error occurs when creating stock table:', error);
-        throw new Error(error.message);
+        return next(new Error(error.message));
     }
 };
 

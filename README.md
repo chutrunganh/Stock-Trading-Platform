@@ -424,12 +424,12 @@ You can take an additional step to securely expose your Docker services to the i
     </tr>
     <tr>
       <td rowspan="2">7. Security Testing</td>
-      <td>🟡 Code review with automated tools</td>
-      <td>Scan with <code>Qodana</code> from Jetbrains. All critical warning have been fixed, still some high and moderate warnings left.</td>
+      <td>🟢 Code review with automated tools</td>
+      <td>Scan with <code>Qodana</code> from Jetbrains. All <code>Critical</code>, <code>High</code> level warning have been fixed, still some <code>Moderate</code> warnings left.</td>
     </tr>
     <tr>
-      <td>🟡 Penetration testing with tools</td>
-      <td>Using ZAP Proxy</td>
+      <td>🟢 Penetration testing with tools</td>
+      <td>Using ZAP Proxy. No <code>High</code> level alerts, only alerts at <code>Medium</code>, <code>Low</code> and <code>Informational</code> level left.</td>
     </tr>
     <tr>
       <td rowspan="4">8. Bonus</td>
@@ -469,7 +469,14 @@ Status Explanation:
   <img src="docs\images\QodanaResult.png" alt="Code review" style="max-width: 60%; height: auto;">
 </div>
 
-All warning at `critical` level have been fixed. There are still some `high` and `medium` level warnings we can not fix yet due to time constraints. 
+All warning at `Critical`, `High` level have been fixed. There are still some `Medium` level warnings left we can not fix yet due to time constraints. 
+
+## Code penetration testing with ZAP
+
+<div align='center'>
+  <img src="docs\images\ZAP_result.png" alt="Code penetration testing" style="max-width: 60%; height: auto;">
+</div>
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

@@ -16,10 +16,10 @@ export const getStockBySymbol = async (symbol) => {
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      throw new Error(`Stock ${symbol} not found`);
+      return next(new Error(`Stock ${symbol} not found`));
     }
     console.error('Error fetching stock details:', error);
-    throw new Error('Failed to fetch stock details. Please try again.');
+    return next(new Error('Failed to fetch stock details. Please try again.'));
   }
 };
 
@@ -44,7 +44,7 @@ export const createOrder = async (orderData) => {
     return response.data;
   } catch (error) {
     console.error('Error creating order:', error);
-    throw error;
+    return next(error);
   }
 };
 
@@ -59,7 +59,7 @@ export const cancelOrder = async (orderId) => {
     return response.data;
   } catch (error) {
     console.error('Error canceling order:', error);
-    throw error;
+    return next(error);
   }
 };
 

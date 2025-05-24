@@ -14,7 +14,7 @@ export const createStockService = async (stockData) => {
     }
     catch (error) {
         console.error('Error when create stock:', error.message);
-        throw new Error(error.message);
+        return next(new Error(error.message));
     }
 };
 
@@ -30,7 +30,7 @@ export const getStockBySymbolService = async (symbol) => {
         //console.log('Query result:', result.rows); // Debug log
         
         if (!result.rows[0]) { //no stock found
-            throw new Error(`Stock with symbol ${symbol} does not exist`);
+            return next(new Error(`Stock with symbol ${symbol} does not exist`));
         }
         
         const stock = {
@@ -42,7 +42,7 @@ export const getStockBySymbolService = async (symbol) => {
         return stock;
     }
     catch (error) {
-        throw error;
+        return next(error);
     }
 };
 
@@ -52,12 +52,12 @@ export const getAllStockService = async () => {
             'SELECT * FROM stocks'
         );
         if (!result.rows[0]) { //no stock found
-            throw new Error('No stocks found');
+            return next(new Error('No stocks found'));
         }
         return result.rows.map(row => Stocks.getStocks(row));
     }
     catch (error) {
-        throw error;
+        return next(error);
     }
 };
 
@@ -69,11 +69,11 @@ export const getAllStockService = async () => {
 //             [industry]
 //         );
 //         if (!result.rows[0]) { //no stock found
-//             throw new Error('This industry does not exist');
+//             return next(new Error('This industry does not exist'));
 //         }
 //         return result.rows;
 //     }
 //     catch (error) {
-//         throw error;
+//         return next(error);
 //     }
 // };

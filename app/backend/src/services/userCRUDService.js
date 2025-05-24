@@ -33,12 +33,12 @@ export const getUserByIdService = async (id) => {
     );
     
     if (!result.rows[0]) {
-      throw new Error('User not found');
+      return next(new Error('User not found'));
     }
     
     return User.getSafeUser(result.rows[0]);
   } catch (error) {
-    throw error;
+    return next(error);
   }
 };
 
@@ -59,7 +59,7 @@ export const updateUserService = async (id, userData) => {
     // First check if user exists
     const user = await pool.query('SELECT id, role FROM users WHERE id = $1', [id]);
     if (!user.rows[0]) {
-      throw new Error('User not found');
+      return next(new Error('User not found'));
     }
     
     // Build the query dynamically based on what fields were provided
@@ -107,7 +107,7 @@ export const updateUserService = async (id, userData) => {
     const result = await pool.query(queryText, queryParams);
     return User.getSafeUser(result.rows[0]);
   } catch (error) {
-    throw error;
+    return next(error);
   }
 };
 
@@ -127,7 +127,7 @@ export const getUserByEmailService = async (email) => {
     );
     return result.rows[0] || null;
   } catch (error) {
-    throw error;
+    return next(error);
   }
 };
 
@@ -139,7 +139,7 @@ export const getUserByUsernameService = async (username) => {
     );
     return result.rows[0] || null;
   } catch (error) {
-    throw error;
+    return next(error);
   }
 };
 

@@ -23,7 +23,7 @@ export const activateTradingSession = async () => {
         // await emitOrderBookUpdate();
     } catch (error) {
         log.error('Error starting trading session:', error);
-        throw error;
+        return next(error);
     }
 };
 
@@ -46,7 +46,7 @@ export const deactivateTradingSession = async () => {
     } catch (error) {
         await client.query('ROLLBACK');
         log.error('Error in deactivating trading session:', error);
-        throw error;
+        return next(error);
     } finally {
         client.release();
     }

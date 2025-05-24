@@ -23,7 +23,7 @@ const createRememberedDevicesTable = async () => {
     log.info('Remembered devices table created successfully with confidence score support');
   } catch (error) {
     log.error('Error handling remembered devices table:', error);
-    throw error;
+    return next(error);
   }
 };
 

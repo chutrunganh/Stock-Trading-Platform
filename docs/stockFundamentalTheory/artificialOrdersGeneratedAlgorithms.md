@@ -72,7 +72,7 @@ const getAvailableStocksAndPrices = async () => {
         return stocksWithPrices;
     } catch (error) {
         console.error('Error fetching stocks and prices:', error.message);
-        throw error;
+        return next(error);
     }
 };
 ```

@@ -21,7 +21,7 @@ const createPaymentTransactionsTable = async () => {
         log.info('Payment transactions table created successfully');
     } catch (error) {
         log.error('Error creating payment transactions table:', error);
-        throw error;
+        return next(error);
     }
 };
 

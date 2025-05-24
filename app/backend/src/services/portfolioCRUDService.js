@@ -14,7 +14,7 @@ export const createPortfolioForUserService = async (userId, client = pool) => {
         return portfolioResult.rows[0].portfolio_id;
     } catch (error) {
         console.error('Error creating portfolio:', error);
-        throw new Error(`Failed to create portfolio: ${error.message}`);
+        return next(new Error(`Failed to create portfolio: ${error.message}`));
     }
 };
 
@@ -28,7 +28,7 @@ export const getPortfolioByUserIdService = async (user_id) => {
         );
         
         if (!portfolioResult.rows[0]) {
-            throw new Error('This user does not have any portfolio');
+            return next(new Error('This user does not have any portfolio'));
         }
 
         // Calculate total holdings value
@@ -57,7 +57,7 @@ export const getPortfolioByUserIdService = async (user_id) => {
 
         return Portfolio.getPortfolio(portfolio);
     } catch (error) {
-        throw error;
+        return next(error);
     }
 };
 
@@ -67,7 +67,7 @@ export const updatePortfolioService = async (portfolio_id, portfolioData) => {
     try {
         const result = await pool.query('SELECT * FROM portfolios WHERE portfolio_id = $1', [portfolio_id]);
         if (!result.rows[0]) {
-            throw new Error(`Portfolio with ID ${portfolio_id} not found`);
+            return next(new Error(`Portfolio with ID ${portfolio_id} not found`));
         }
 
         let queryText = 'UPDATE portfolios SET ';
@@ -77,7 +77,7 @@ export const updatePortfolioService = async (portfolio_id, portfolioData) => {
         if (cash_balance !== undefined) {
             const cashBalanceNum = Number(parseFloat(cash_balance).toFixed(2));
             if (cashBalanceNum < 0) {
-                throw new Error('Cash balance can not be negative');
+                return next(new Error('Cash balance can not be negative'));
             }
             queryParams.push(cashBalanceNum);
             updates.push(`cash_balance = $${queryParams.length}`);
@@ -97,7 +97,7 @@ export const updatePortfolioService = async (portfolio_id, portfolioData) => {
     
     } catch (error) {
         console.error(`Error updating portfolio with ID ${portfolio_id}:`, error.message);
-        throw error;
+        return next(error);
     }
 };
 
@@ -131,7 +131,7 @@ export const getPortfolioHoldingsService = async (userId) => {
         const result = await pool.query(query, [userId]);
         return result.rows;
     } catch (error) {
-        throw error;
+        return next(error);
     }
 };
 
@@ -174,6 +174,6 @@ export const getPortfolioTransactionsService = async (userId) => {
         
         return transformedTransactions;
     } catch (error) {
-        throw error;
+        return next(error);
     }
 };

@@ -95,7 +95,7 @@ const createUserTable = async () => {
   } 
   catch (error) {
     log.error('Error creating user table:', error);
-    throw new Error(error.message);
+    return next(new Error(error.message));
   }
 };
 

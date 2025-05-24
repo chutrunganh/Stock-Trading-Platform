@@ -52,12 +52,12 @@ export const cancelOrderService = async (orderId, requestingUserId) => {
     const orderToCancel = allOrders.find(order => order.id === orderId);
     
     if (!orderToCancel) {
-        throw new Error('Order not found');
+        return next(new Error('Order not found'));
     }
     
     // Verify that the requesting user owns this order (IDOR prevention)
     if (orderToCancel.userId !== requestingUserId) {
-        throw new Error('Unauthorized: You can only cancel your own orders');
+        return next(new Error('Unauthorized: You can only cancel your own orders'));
     }
     
     orderBook.removeOrderFromQuene(orderId);

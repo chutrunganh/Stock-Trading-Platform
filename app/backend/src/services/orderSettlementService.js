@@ -15,8 +15,7 @@ export const settleMatchedOrder = async (matchedOrder) => {
         sellerPortfolioId,
         stockId,
         quantity,
-        price,
-        matchType // 'limit' or 'market'
+        price
     } = matchedOrder;
 
     const client = await pool.connect();
@@ -95,7 +94,7 @@ export const settleMatchedOrder = async (matchedOrder) => {
     } catch (error) {
         await client.query('ROLLBACK');
         console.error('Error settling matched order:', error);
-        throw new Error(`Failed to settle matched order: ${error.message}`);
+        return next(new Error(`Failed to settle matched order: ${error.message}`));
     } finally {
         client.release();
     }

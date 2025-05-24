@@ -259,7 +259,7 @@ function Chart({ selectedStock }) {
         show: true,
         format: 'dd MMM yyyy HH:mm',
       },
-      custom: function({ series, seriesIndex, dataPointIndex, w }) {
+      custom: function({ _series, seriesIndex, dataPointIndex, w }) {
         try {
           const data = w.globals.initialSeries[seriesIndex].data[dataPointIndex];
           

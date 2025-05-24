@@ -30,7 +30,7 @@ const createPortfolioTable = async () => {
     }
     catch(error){
         log.error('\nError occurs when creating portfolios table:', error);
-        throw new Error(error.message);
+        return next(new Error(error.message));
     }
 };
 
