@@ -410,8 +410,8 @@ You can take an additional step to securely expose your Docker services to the i
       <td>Use <code>Cloudflare Tunnels</code> to public web service and get free SSL</td>
     </tr>
     <tr>
-      <td>🔴 Mitigation of DoS attacks</td>
-      <td>Requests pass through Cloudflare proxy. Still need rate-limiting and monitoring.</td>
+      <td>🟡 Mitigation of DoS attacks</td>
+      <td>Requests pass through Cloudflare proxy when using Cloudflare Tunnel. Configure rate-limiting on Cloudflare WAF.</td>
     </tr>
     <tr>
       <td>🟢 Secure storage and management of sensitive values</td>
