@@ -73,13 +73,13 @@ export const createArtificialOrderService = async (orderData) => {
         timestamp: Date.now(),
     };
 
-    console.log('Admin creating artificial order:', order);
+    //console.log('Admin creating artificial order:', order);
 
     // Add the order to the order book
     if (order.type === 'Market Buy' || order.type === 'Market Sell') {
         orderBook.marketOrderMatching(order);
     } else if (order.type === 'Limit Buy' || order.type === 'Limit Sell') {
-        orderBook.addOrderToQuene(order);
+        //orderBook.addOrderToQuene(order);
         orderBook.limitOrderMatching(order);
     }
 
@@ -95,25 +95,9 @@ export const getOrderByIdService = async (orderId) => {
 };
 
 // Service to remove an order from the queue by ID (Cancel order)
-// Now includes ownership verification to prevent IDOR attacks
-export const cancelOrderService = async (orderId, requestingUserId) => {
-    // First, find the order to verify ownership
-    const allOrders = [...orderBook.limitBuyOrderQueue, ...orderBook.limitSellOrderQueue];
-    const orderToCancel = allOrders.find(order => order.id === orderId);
-    
-    if (!orderToCancel) {
-        throw new Error('Order not found');
-    }
-    
-    // Verify that the requesting user owns this order (IDOR prevention)
-    if (orderToCancel.userId !== requestingUserId) {
-        throw new Error('Unauthorized: You can only cancel your own orders');
-    }
-    
-    // Use the shared orderBook instance to remove the order
+export const cancelOrderService = async (orderId) => {
+    // Use the shared orderBook instance
     orderBook.removeOrderFromQuene(orderId);
     console.log('After removing, currently book:') 
     orderBook.displayOrderBook();
-    
-    return orderToCancel;
 };

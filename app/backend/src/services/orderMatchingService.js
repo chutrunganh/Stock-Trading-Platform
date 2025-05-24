@@ -34,23 +34,31 @@ export class OrderBook {
   // Match market orders with the best available limit orders
   async marketOrderMatching(order) {
     if (order.type === "Market Buy") {
-      // Execute immediately with the best available sell prices
-      while (order.volume > 0 && this.limitSellOrderQueue.length > 0) {
-        const sellOrder = this.limitSellOrderQueue[0];
+      // Filter sell orders for the specific stock and keep them sorted by price (lowest first)
+      const relevantSellOrders = this.limitSellOrderQueue.filter(
+        so => so.stockId === order.stockId
+      );
+      // The global queue is already sorted by price (a.price - b.price),
+      // so filtering maintains this order for the specific stock.
+
+      let sellOrderIndex = 0;
+      while (order.volume > 0 && sellOrderIndex < relevantSellOrders.length) {
+        const sellOrder = relevantSellOrders[sellOrderIndex]; // Best-priced sell order for THIS stock
+
         const matchedQuantity = Math.min(order.volume, sellOrder.volume);
-        const matchedPrice = sellOrder.price;
+        const matchedPrice = sellOrder.price; // Price from sellOrder of the same stock
 
         // Update volumes
         order.volume -= matchedQuantity;
-        sellOrder.volume -= matchedQuantity;
+        sellOrder.volume -= matchedQuantity; // This modifies the actual order object
 
         // Settle the matched order
         await settleMatchedOrder({
           buyerPortfolioId: order.portfolioId,
           sellerPortfolioId: sellOrder.portfolioId,
-          stockId: order.stockId,
+          stockId: order.stockId, // This is the stockId of the incoming market order
           quantity: matchedQuantity,
-          price: matchedPrice,
+          price: matchedPrice,    // This is now the price from a sellOrder of the same stock
           matchType: 'market',
           buyerUserId: order.userId,
           sellerUserId: sellOrder.userId
@@ -65,22 +73,43 @@ export class OrderBook {
           sellerUserId: sellOrder.userId
         };
 
-        // Remove completed sell order
+        // Remove completed sell order from the original global queue
         if (sellOrder.volume === 0) {
-          this.limitSellOrderQueue.shift();
+          this.limitSellOrderQueue = this.limitSellOrderQueue.filter(o => o.id !== sellOrder.id);
+          // No need to increment sellOrderIndex here as the relevantSellOrders array is not modified in place for the loop
+          // but we should effectively process the "next" one if we were iterating over a live-modified list.
+          // Since relevantSellOrders is a snapshot, we just let the loop pick the next after this one.
+          // However, to be safe and simple, if we remove, we might re-filter or adjust index.
+          // A simpler way is to remove from global and then the loop continues on static relevantSellOrders
+          // and if sellOrder.volume became 0, it won't be picked again if it was still in relevantSellOrders.
+          // The current logic is that sellOrder object's volume is updated.
+          // If it's 0, we remove it from global. The local relevantSellOrders still has it but its volume is 0.
+          // It's better to also remove/skip from relevantSellOrders.
+          relevantSellOrders.splice(sellOrderIndex, 1); // Remove from the temporary filtered list
+          // Do not increment sellOrderIndex because splice shifts elements
+        } else {
+          sellOrderIndex++; // Move to the next relevant sell order
         }
       }
 
     } else if (order.type === "Market Sell") {
-      // Execute immediately with the best available buy prices
-      while (order.volume > 0 && this.limitBuyOrderQueue.length > 0) {
-        const buyOrder = this.limitBuyOrderQueue[0];
+      // Filter buy orders for the specific stock and keep them sorted by price (highest first)
+      const relevantBuyOrders = this.limitBuyOrderQueue.filter(
+        bo => bo.stockId === order.stockId
+      );
+      // The global queue is sorted by price (b.price - a.price for buys),
+      // filtering maintains this order for the specific stock.
+      
+      let buyOrderIndex = 0;
+      while (order.volume > 0 && buyOrderIndex < relevantBuyOrders.length) {
+        const buyOrder = relevantBuyOrders[buyOrderIndex]; // Best-priced buy order for THIS stock
+
         const matchedQuantity = Math.min(order.volume, buyOrder.volume);
-        const matchedPrice = buyOrder.price;
+        const matchedPrice = buyOrder.price; // Price from buyOrder of the same stock
 
         // Update volumes
         order.volume -= matchedQuantity;
-        buyOrder.volume -= matchedQuantity;
+        buyOrder.volume -= matchedQuantity; // Modifies the actual order object
 
         // Settle the matched order
         await settleMatchedOrder({
@@ -88,7 +117,7 @@ export class OrderBook {
           sellerPortfolioId: order.portfolioId,
           stockId: order.stockId,
           quantity: matchedQuantity,
-          price: matchedPrice,
+          price: matchedPrice, // Price from buyOrder of the same stock
           matchType: 'market',
           buyerUserId: buyOrder.userId,
           sellerUserId: order.userId
@@ -103,9 +132,13 @@ export class OrderBook {
           sellerUserId: order.userId
         };
 
-        // Remove completed buy order
+        // Remove completed buy order from the original global queue
         if (buyOrder.volume === 0) {
-          this.limitBuyOrderQueue.shift();
+          this.limitBuyOrderQueue = this.limitBuyOrderQueue.filter(o => o.id !== buyOrder.id);
+          relevantBuyOrders.splice(buyOrderIndex, 1); // Remove from the temporary filtered list
+          // Do not increment buyOrderIndex
+        } else {
+          buyOrderIndex++; // Move to the next relevant buy order
         }
       }
     }
@@ -133,12 +166,16 @@ export class OrderBook {
     // Try to match the order immediately
     if (order.type === "Limit Buy") {
       let matchOccurred = false;
-      
-      while (this.limitSellOrderQueue.length > 0) {
-        const sellOrder = this.limitSellOrderQueue[0];
-        if (order.price >= sellOrder.price) {
+      const relevantSellOrders = this.limitSellOrderQueue.filter(
+        so => so.stockId === order.stockId
+      ); // Filter for the same stock
+
+      let sellOrderIndex = 0;
+      while (sellOrderIndex < relevantSellOrders.length && order.volume > 0) {
+        const sellOrder = relevantSellOrders[sellOrderIndex];
+        if (order.price >= sellOrder.price) { // Price condition for limit buy
           const matchedQuantity = Math.min(order.volume, sellOrder.volume);
-          const matchedPrice = sellOrder.price;
+          const matchedPrice = sellOrder.price; // Matched at the sell order's price
 
           console.log(`[Match] Buy match found: ${matchedQuantity} @ ${matchedPrice} (Stock ${order.stockId})`);
           matchOccurred = true;
@@ -153,7 +190,7 @@ export class OrderBook {
             sellerPortfolioId: sellOrder.portfolioId,
             stockId: order.stockId,
             quantity: matchedQuantity,
-            price: matchedPrice,
+            price: matchedPrice, // Use sellOrder's price
             matchType: 'limit',
             buyerUserId: order.userId,
             sellerUserId: sellOrder.userId
@@ -175,36 +212,51 @@ export class OrderBook {
             volume: matchedQuantity,
             buyerUserId: order.userId,
             sellerUserId: sellOrder.userId
-          }).catch(console.error);
+          });
 
-          // Remove completed sell order
+          // Remove completed sell order from global queue
           if (sellOrder.volume === 0) {
-            this.limitSellOrderQueue.shift();
+            this.limitSellOrderQueue = this.limitSellOrderQueue.filter(o => o.id !== sellOrder.id);
+            relevantSellOrders.splice(sellOrderIndex, 1);
+            // Do not increment index
+          } else {
+            sellOrderIndex++;
           }
 
           // If buy order is filled, remove it from queue
           if (order.volume === 0) {
             this.limitBuyOrderQueue = this.limitBuyOrderQueue.filter(o => o.id !== order.id);
-            break;
+            break; 
           }
         } else {
+          // Sell order price is too high, no more matches possible for this buy order against sorted sell orders
           break;
         }
       }
       
-      // If no match occurred, emit an update to show the new order
-      if (!matchOccurred) {
-        console.log(`[Order] No match found for buy order, emitting update`);
+      if (!matchOccurred && order.volume > 0) { // if order still has volume and no match, it was added to queue earlier
+        console.log(`[Order] No immediate match found for buy order ${order.id}, emitting update for new order in book`);
         await emitOrderBookUpdate();
+      } else if (matchOccurred && order.volume === 0) {
+         console.log(`[Order] Buy order ${order.id} fully matched and filled.`);
+      } else if (matchOccurred && order.volume > 0) {
+         console.log(`[Order] Buy order ${order.id} partially matched, remaining volume added to book.`);
+         // Order was already added by addOrderToQuene, its volume is now updated.
+         await emitOrderBookUpdate();
       }
+
     } else if (order.type === "Limit Sell") {
       let matchOccurred = false;
-      
-      while (this.limitBuyOrderQueue.length > 0) {
-        const buyOrder = this.limitBuyOrderQueue[0];
-        if (buyOrder.price >= order.price) {
+      const relevantBuyOrders = this.limitBuyOrderQueue.filter(
+        bo => bo.stockId === order.stockId
+      ); // Filter for the same stock
+
+      let buyOrderIndex = 0;
+      while (buyOrderIndex < relevantBuyOrders.length && order.volume > 0) {
+        const buyOrder = relevantBuyOrders[buyOrderIndex];
+        if (buyOrder.price >= order.price) { // Price condition for limit sell
           const matchedQuantity = Math.min(order.volume, buyOrder.volume);
-          const matchedPrice = buyOrder.price;
+          const matchedPrice = buyOrder.price; // Matched at the buy order's price
 
           console.log(`[Match] Sell match found: ${matchedQuantity} @ ${matchedPrice} (Stock ${order.stockId})`);
           matchOccurred = true;
@@ -219,7 +271,7 @@ export class OrderBook {
             sellerPortfolioId: order.portfolioId,
             stockId: order.stockId,
             quantity: matchedQuantity,
-            price: matchedPrice,
+            price: matchedPrice, // Use buyOrder's price
             matchType: 'limit',
             buyerUserId: buyOrder.userId,
             sellerUserId: order.userId
@@ -241,11 +293,15 @@ export class OrderBook {
             volume: matchedQuantity,
             buyerUserId: buyOrder.userId,
             sellerUserId: order.userId
-          }).catch(console.error);
+          });
 
-          // Remove completed buy order
+          // Remove completed buy order from global queue
           if (buyOrder.volume === 0) {
-            this.limitBuyOrderQueue.shift();
+            this.limitBuyOrderQueue = this.limitBuyOrderQueue.filter(o => o.id !== buyOrder.id);
+            relevantBuyOrders.splice(buyOrderIndex, 1);
+            // Do not increment index
+          } else {
+            buyOrderIndex++;
           }
 
           // If sell order is filled, remove it from queue
@@ -254,14 +310,19 @@ export class OrderBook {
             break;
           }
         } else {
+          // Buy order price is too low, no more matches possible for this sell order against sorted buy orders
           break;
         }
       }
-      
-      // If no match occurred, emit an update to show the new order
-      if (!matchOccurred) {
-        console.log(`[Order] No match found for sell order, emitting update`);
+
+      if (!matchOccurred && order.volume > 0) { // if order still has volume and no match
+        console.log(`[Order] No immediate match found for sell order ${order.id}, emitting update for new order in book`);
         await emitOrderBookUpdate();
+      } else if (matchOccurred && order.volume === 0) {
+         console.log(`[Order] Sell order ${order.id} fully matched and filled.`);
+      } else if (matchOccurred && order.volume > 0) {
+         console.log(`[Order] Sell order ${order.id} partially matched, remaining volume added to book.`);
+         await emitOrderBookUpdate();
       }
     }
   }
@@ -305,7 +366,7 @@ export class OrderBook {
           volume: matchQuantity,
           buyerUserId: buyOrder.userId,
           sellerUserId: sellOrder.userId
-        }).catch(console.error);
+        });
 
         // Process the match (update holdings, etc.)
         this.processMatch(buyOrder, sellOrder, matchQuantity, matchPrice);

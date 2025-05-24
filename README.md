@@ -183,7 +183,16 @@ If you're interested in exploring the code and running the project manually, fol
     You have two options:
 
     - **Option 1**: Install PostgreSQL manually via the their official website.
-    - **Option 2**: Use our Docker setup to run only the database (In this case, you need to command out our backend and frontend services inside the docker-compose file to run the database only). Then run `docker-compose up` to start the database.
+
+    - **Option 2**: Use our Docker setup to run only the database. In this case, you need to command out our backend and frontend services inside the docker-compose file to run the database only. 
+    
+    
+    In both case, please recheck variables in the `.env` to make sure that:
+    - `DB_HOST` is `localhost`, not `postgres`
+    - `BE_URL` is `http://localhost:3000`, not a domain name
+    - `FE_URL` is `http://localhost:5173`, not a domain name
+      
+    Then run `docker-compose up` to start the database.
 
     For detailed instructions on database setup, including configuration variables and solutions to common issues, we highly recommend taking a quick look at our [Database Setup Guide](docs/setupInstructions/setupDatabase.md).
 
@@ -207,15 +216,37 @@ If you're interested in exploring the code and running the project manually, fol
 > [!TIP]
 > When you start the backend, it will automatically connect to the database and seed some initial data. However, for stock prices, it only seeds data for one day, so the chart may not display fully as shown in the demo due to insufficient historical data. To populate the database with realistic stock prices, we provide a Python script that fetches real-world stock data and inserts it into the database. You can find the script in `app/backend/src/utils/seedStockPrice`. Please refer to [this guide](app\backend\src\utils\seedStockPrice\README.md) for instructions on how to run it.
 
-## Optional: Package the web with Docker
+## Optional: Package the web with Docker 🐳
 
-If you want to package the app with your source code changes to Docker images, update the `docker-compose.yml` file:
+If you want to package the whole application with your source code changes to Docker images, update the `docker-compose.yml` file:
 
-1. In the backend and frontend service sections, under the `build` section, comment out the `image` lines (which pull from Docker Hub).
+1. Uncommen the backend and frontend service, then under the `build` section, comment out the `image` lines (which pull from Docker Hub).
 
 2. Then, uncomment the `context` and `dockerfile` lines.
 
-This will build the Docker images directly from the source code in the backend and frontend directories.
+3. Check again the `.env` file, pay attention to these variables:
+
+| Variable  | Description                                                                                                                      | Example Value                                         |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `DB_HOST` | Must be set to `postgres`, **not** `localhost`                                                                                   | `postgres`                                            |
+| `BE_URL`  | Backend URL. Use: <br> - `http://localhost:3000` if running locally <br> - `YOUR_DOMAIN_NAME` if exposing via Cloudflare Tunnel  | `http://localhost:3000` or `https://soictstock.io.vn` |
+| `FE_URL`  | Frontend URL. Use: <br> - `http://localhost:5173` if running locally <br> - `YOUR_DOMAIN_NAME` if exposing via Cloudflare Tunnel | `http://localhost:5173` or `https://soictstock.io.vn` |
+
+
+> [!NOTE]
+> Make sure FE_URL and BE_URL are set correspondingly, depending on whether you're running locally or using a public domain.
+
+
+This will build the Docker images directly from the source code in the `./app/backend` and `./app/frontend` directories, which already contains the `Dockerfile`. This will run 4 services:
+
+- Backend
+- Frontend + Nginx as a proxy
+- Postgres SQL
+- Pgadmin
+
+Access te webpage at: `http://localhost:5173`.
+
+You can take an additional step to securely expose your Docker services to the internet using Cloudflare Tunnel (formerly Argo Tunnel). To do this, register a tunnel and link it to the domain name you specify in the `BE_URL` and `FE_URL` variables in your `.env` file. Then, follow the official instructions on the Cloudflare website to run the tunnel and make your services publicly accessible. The webpage now can be access via `https://soictstock.io.vn`.
 
 # 🏗️ Project Structure
 
