@@ -4,13 +4,16 @@ FROM node:23-alpine AS build
 WORKDIR /app
 
 # Copy package.json and yarn.lock
-COPY package.json yarn.lock ./
+COPY app/frontend/package.json app/frontend/yarn.lock ./
+
+# Copy .env file for Vite environment variables
+COPY .env .env
 
 # Install dependencies
 RUN yarn install --frozen-lockfile
 
-# Copy the rest of the application code
-COPY . .
+# Copy the rest of the frontend application code
+COPY app/frontend/. .
 
 # Build the application
 RUN yarn build
@@ -22,7 +25,7 @@ FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Copy the custom Nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY app/frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80
 EXPOSE 80
