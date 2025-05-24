@@ -378,17 +378,23 @@ You can take an additional step to securely expose your Docker services to the i
       </td>
     </tr>
     <tr>
-      <td>🔴 Prevention of path traversal</td>
-      <td>Implement access control to avoid IDOR (e.g., user A accessing user B's resources).</td>
+      <td>🟢 Prevention of path traversal</td>
+      <td>
+      Prevent IDOR (Insecure Direct Object Reference) by :
+        <ul>
+          <li>Using `UUID` instead of auto-incrementing IDs for sensitive data fields.
+          <li>With routes that require IDs, we use middleware to check if the ID clients provide is match to the ID that is decoded from their access tokens.
+        </ul>
+      </td>
     </tr>
     <tr>
-      <td>🟡 File upload restriction</td>
-      <td>No file upload functionality in current app version.</td>
+      <td>🟢 File upload restriction</td>
+      <td>No file upload functionality in current app version so no need to implement this</td>
     </tr>
     <tr>
       <td rowspan="3">5. Sensitive Information Leakage</td>
-      <td>🔴 Minimization of sensitive information leakage about servers, software, and applications</td>
-      <td></td>
+      <td>🟡 Minimization of sensitive information leakage about servers, software, and applications</td>
+      <td>Checkout our <a href="app\frontend\nginx.conf"><code>nginx.conf</code></a> file for more details on security headers and configurations to minimize information leakage.</td>
     </tr>
     <tr>
       <td>🟢  Minimization of sensitive information leakage in response</td>
@@ -419,11 +425,11 @@ You can take an additional step to securely expose your Docker services to the i
     <tr>
       <td rowspan="2">7. Security Testing</td>
       <td>🟡 Code review with automated tools</td>
-      <td>Scan with <code>Qodana</code> from Jetbrains. All critical warning have been fixed</td>
+      <td>Scan with <code>Qodana</code> from Jetbrains. All critical warning have been fixed, still some high and moderate warnings left.</td>
     </tr>
     <tr>
-      <td>🔴 Penetration testing with tools</td>
-      <td>To be done using ZAP Proxy, RAF DAS, Nikto.</td>
+      <td>🟡 Penetration testing with tools</td>
+      <td>Using ZAP Proxy</td>
     </tr>
     <tr>
       <td rowspan="4">8. Bonus</td>
@@ -437,8 +443,8 @@ You can take an additional step to securely expose your Docker services to the i
       <td>Track user IPs, detect unfamiliar devices/browsers.</td>
     </tr>
     <tr>
-      <td>🔴 Advanced HTTP flood prevention</td>
-      <td>Use Cloudflare CDN to absorb excessive traffic.</td>
+      <td>🟡 Advanced HTTP flood prevention</td>
+      <td>Configure the Cloudflare WAF (Web Application Firewall) for the domain, see in the docs</td>
     </tr>
     <tr>
       <td>🟢 Single Sign-On (SSO)</td>
@@ -452,9 +458,18 @@ Status Explanation:
 
 - 🟢 **Done**: Mitigation measures have been implemented to the best of our knowledge. (Note: This does not guarantee complete immunity from the attack.)
 
-- 🟡 **Partially Done / Not Applicable**: The measure is either partially implemented or deemed unnecessary for this website.
+- 🟡 **Partially Done / Not Applicable**: The measure is either just propose ideas, partially implemented  and have not been fully tested or validated yet.
 
 - 🔴 **Not Implemented**: No mitigation has been applied yet.
+
+
+## Code review with Qodana
+
+<div align='center'>
+  <img src="docs\images\QodanaResult.png" alt="Code review" style="max-width: 60%; height: auto;">
+</div>
+
+All warning at `critical` level have been fixed. There are still some `high` and `medium` level warnings we can not fix yet due to time constraints. 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
