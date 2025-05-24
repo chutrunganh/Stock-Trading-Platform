@@ -98,7 +98,7 @@ web_modules/
 *.sw?
 
 # Dev documentation
-docs/techStack
+#docs/techStack
 
 # dotenv files (uncomment if needed)
 .env
