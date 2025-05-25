@@ -127,7 +127,7 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       const errorMessage = err.response?.data?.error || err.message || 'Registration failed';
       setError(errorMessage);
-      return next(new Error(errorMessage));
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -214,7 +214,7 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    return next(new Error('useAuth must be used within an AuthProvider'));
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };

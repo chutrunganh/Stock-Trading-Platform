@@ -31,7 +31,7 @@ const createHoldingTable = async () => {
     }
     catch(error){
         log.error('\nError occurs when creating holdings table:', error.message);
-        return next(new Error(error.message));
+        throw new Error(error.message);
     }
 };
 

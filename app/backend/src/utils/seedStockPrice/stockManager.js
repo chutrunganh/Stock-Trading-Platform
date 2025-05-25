@@ -85,7 +85,7 @@ async function manageStock() {
         console.log(`Stock ${symbol} doesn't exist in our database. Checking if it exists in real life...`);
         await fetchPriceData(symbol, startDate, endDate, false);
       } else {
-        return next(error);
+        throw error;
       }
     }
     
@@ -137,7 +137,7 @@ async function fetchPriceData(symbol, startDate, endDate, updateInfo) {
     }
   } catch (error) {
     console.error('Error fetching stock data:', error.message);
-    return next(error);
+    throw error;
   }
 }
 

@@ -32,12 +32,12 @@ const ROLE_PERMISSIONS = {
 // Validate role
 const validateRole = (role) => {
   if (!role || typeof role !== 'string') {
-    return next(new AppError('Invalid role format', 400));
+    throw new AppError('Invalid role format', 400);
   }
   
   const normalizedRole = role.toLowerCase();
   if (!VALID_ROLES.includes(normalizedRole)) {
-    return next(new AppError(`Invalid role. Must be one of: ${VALID_ROLES.join(', ')}`, 400));
+    throw new AppError(`Invalid role. Must be one of: ${VALID_ROLES.join(', ')}`, 400);
   }
   
   return normalizedRole;
@@ -63,13 +63,13 @@ const hasPermission = (userRole, permission) => {
 const requireAdminRole = (req, res, next) => {
   try {
     if (!req.user) {
-      return next(new AppError('Authentication required', 401));
+      throw new AppError('Authentication required', 401);
     }
 
     const validatedRole = validateRole(req.user.role);
     
     if (!hasPermission(validatedRole, 'canAccessAdminDashboard')) {
-      return next(new AppError('Admin access required', 403));
+      throw new AppError('Admin access required', 403);
     }
 
     next();
@@ -84,13 +84,13 @@ const requireAdminRole = (req, res, next) => {
 const requireTradingSessionControl = (req, res, next) => {
   try {
     if (!req.user) {
-      return next(new AppError('Authentication required', 401));
+      throw new AppError('Authentication required', 401);
     }
 
     const validatedRole = validateRole(req.user.role);
     
     if (!hasPermission(validatedRole, 'canControlTradingSession')) {
-      return next(new AppError('You do not have permission to control trading sessions', 403));
+      throw new AppError('You do not have permission to control trading sessions', 403);
     }
 
     next();

@@ -14,7 +14,7 @@ export const getTradingSessionStatus = async () => {
     return response.data;
   } catch (error) {
     console.error('Error getting trading session status:', error);
-    return next(error);
+    throw error;
   }
 };
 
@@ -28,7 +28,7 @@ export const startTradingSession = async () => {
     return response.data;
   } catch (error) {
     console.error('Error starting trading session:', error);
-    return next(error);
+    throw error;
   }
 };
 
@@ -42,6 +42,6 @@ export const stopTradingSession = async () => {
     return response.data;
   } catch (error) {
     console.error('Error stopping trading session:', error);
-    return next(error);
+    throw error;
   }
 }; 

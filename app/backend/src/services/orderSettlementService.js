@@ -94,7 +94,7 @@ export const settleMatchedOrder = async (matchedOrder) => {
     } catch (error) {
         await client.query('ROLLBACK');
         console.error('Error settling matched order:', error);
-        return next(new Error(`Failed to settle matched order: ${error.message}`));
+        throw new Error(`Failed to settle matched order: ${error.message}`);
     } finally {
         client.release();
     }

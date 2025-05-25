@@ -13,7 +13,7 @@ export const getOrderBookData = async () => {
     return response.data;
   } catch (error) {
     console.error('Error fetching order book data:', error);
-    return next(new Error('Failed to fetch order book data. Please try again.'));
+    throw new Error('Failed to fetch order book data. Please try again.');
   }
 };
 

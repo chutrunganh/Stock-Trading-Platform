@@ -59,7 +59,7 @@ export function generateTokens(payload) {
 export function verifyAccessToken(token) {
   try {
     const decoded = jwt.verify(token, ACCESS_SECRET);
-    if (decoded.type !== 'access') return next(new Error('Not an access token'));
+    if (decoded.type !== 'access') throw new Error('Not an access token');
     return decoded;
   } catch (err) {
     log.error('Access token verification failed', { error: err });
@@ -75,14 +75,14 @@ export function verifyAccessToken(token) {
 export function verifyRefreshToken(token) {
   try {
     const decoded = jwt.verify(token, REFRESH_SECRET);
-    if (decoded.type !== 'refresh') return next(new Error('Not a refresh token'));
+    if (decoded.type !== 'refresh') throw new Error('Not a refresh token');
     
     // Check if this refresh token is in our active tokens store
     const storedToken = activeRefreshTokens.get(decoded.id);
     if (!storedToken || storedToken !== token) {
       log.warn(`[Token Storage] Token not found or mismatch for user ID: ${decoded.id}`);
       logTokenStorage('VERIFY FAIL');
-      return next(new Error('Refresh token not found or revoked'));
+      throw new Error('Refresh token not found or revoked');
     }
     
     log.info(`[Token Storage] Valid refresh token found for user ID: ${decoded.id}`);

@@ -42,7 +42,7 @@ export const loginUserService = async (identifier, password, visitorId = null, c
     const isPasswordValid = await bcrypt.compare(password, hashedPassword);     
     // If user does not exist or password is incorrect, return a user-friendly error message
     if (!user || !isPasswordValid) {
-      return next(new Error('The username/email or password you entered is incorrect'));
+      throw new Error('The username/email or password you entered is incorrect');
     }
 
     // Check if device is remembered (skip 2FA)
@@ -75,7 +75,7 @@ export const loginUserService = async (identifier, password, visitorId = null, c
       message: 'Please complete 2FA verification'
     };
   } catch (error) {
-    return next(error);
+    throw error;
   }
 };
 
@@ -106,7 +106,7 @@ export const createUserService = async (userData) => {
     // Validate password policy
     const { valid, errors } = validatePassword(password, username);
     if (!valid) {
-      return next(new Error(errors.join(' ')));
+      throw new Error(errors.join(' '));
     }
     // Hash the password before storing it
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
@@ -128,14 +128,14 @@ export const createUserService = async (userData) => {
       return User.getSafeUser(userResult.rows[0]);
     } catch (error) {
       await client.query('ROLLBACK');
-      return next(error);
+      throw error;
     } finally {
       client.release();
     }
   } catch (error) {
     // More detailed error logging
     console.error('Full error details:', error);
-    return next(new Error(`Error creating user: ${error.message}`));
+    throw new Error(`Error creating user: ${error.message}`);
   }
 };
 
@@ -201,12 +201,12 @@ export const findOrCreateGoogleUserService = async (userData) => {
       return { user: User.getSafeUser(user), ...tokens };
     } catch (error) {
       await client.query('ROLLBACK');
-      return next(error);
+      throw error;
     } finally {
       client.release();
     }
   } catch (error) {
-    return next(new Error(`Error during Google authentication: ${error.message}`));
+    throw new Error(`Error during Google authentication: ${error.message}`);
   }
 };
 
@@ -225,12 +225,12 @@ export const resetPasswordService = async (email, otp, newPassword) => {
     const userResult = await pool.query('SELECT username FROM users WHERE email = $1', [normalizedEmail]);
     const user = userResult.rows[0];
     if (!user) {
-      return next(new Error('User not found'));
+      throw new Error('User not found');
     }
     // Validate the new password using the same policy as registration
     const { valid, errors } = validatePassword(newPassword, user.username);
     if (!valid) {
-      return next(new Error(errors.join(' ')));
+      throw new Error(errors.join(' '));
     }
     // Verify OTP first
     await verifyOtpService(email, otp);
@@ -242,14 +242,14 @@ export const resetPasswordService = async (email, otp, newPassword) => {
       [hashedPassword, normalizedEmail]
     );
     if (result.rowCount === 0) {
-      return next(new Error('Failed to update password'));
+      throw new Error('Failed to update password');
     }
     // Delete the OTP after successful password reset
     await OTP.deleteByEmail(normalizedEmail);
     return { message: 'Password reset successfully' };
   } catch (error) {
     console.error('Error in resetPasswordService:', error.message);
-    return next(new Error(error.message || 'Failed to reset password'));
+    throw new Error(error.message || 'Failed to reset password');
   }
 };
 
@@ -267,14 +267,14 @@ export const verifyLoginOtpService = async (identifier, otp, password, visitorId
     const userResult = await pool.query('SELECT email FROM users WHERE username = $1', [identifier]);
     const user = userResult.rows[0];
     if (!user || !user.email) {
-      return next(new Error('User not found'));
+      throw new Error('User not found');
     }
     email = user.email;
   }
   // Then, check OTP
   const isValidOtp = await verifyOtpService(email, otp);
   if (!isValidOtp) {
-    return next(new Error('Invalid OTP'));
+    throw new Error('Invalid OTP');
   }
   try {
     // Fetch the user by email
@@ -284,7 +284,7 @@ export const verifyLoginOtpService = async (identifier, otp, password, visitorId
     );
     const user = userResult.rows[0];
     if (!user) {
-      return next(new Error('User not found'));
+      throw new Error('User not found');
     }
     // If rememberDevice is true and visitorId is provided, remember this device
     let deviceWarning = null;
@@ -310,7 +310,7 @@ export const verifyLoginOtpService = async (identifier, otp, password, visitorId
     return result;
   } catch (error) {
     console.error('Error in verifyLoginOtpService:', error.message);
-    return next(error);
+    throw error;
   }
 };
 
@@ -333,6 +333,6 @@ export const refreshAccessTokenService = async (refreshToken) => {
     const { accessToken } = refreshTokens(refreshToken);
     return { accessToken };
   } catch (error) {
-    return next(new Error('Invalid or expired refresh token'));
+    throw new Error('Invalid or expired refresh token');
   }
 };

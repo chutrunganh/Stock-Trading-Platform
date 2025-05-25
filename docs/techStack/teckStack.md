@@ -66,7 +66,7 @@ export const loginUserService = async (email, password) => {
 
     // If user does not exist or password is incorrect, return the same error message
     if (!user || !isPasswordValid) {
-      return next(new Error('Invalid email or password'));
+      throw new Error('Invalid email or password');
     }
 ```
 
@@ -436,12 +436,12 @@ export const findOrCreateGoogleUserService = async (userData) => {
       };
     } catch (error) {
       await client.query('ROLLBACK');
-      return next(error);
+      throw error;
     } finally {
       client.release();
     }
   } catch (error) {
-    return next(new Error(`Error during Google authentication: ${error.message}`));
+    throw new Error(`Error during Google authentication: ${error.message}`);
   }
 };
 ```
@@ -723,7 +723,7 @@ export const verifyPayment = async (referenceNumber, portfolioId) => {
         );
 
         if (existingTransaction.rows.length > 0) {
-            return next(new Error('This payment has already been processed'));
+            throw new Error('This payment has already been processed');
         }
 
         // Get current portfolio balance
@@ -745,7 +745,7 @@ export const verifyPayment = async (referenceNumber, portfolioId) => {
         log.info('Sepay API response:', sepayResponse.data);
 
         if (!sepayResponse.data.transactions?.length) {
-            return next(new Error('No transaction found with this reference number'));
+            throw new Error('No transaction found with this reference number');
         }
 
         // Find incoming transaction (looking for amount_in > 0)
@@ -754,7 +754,7 @@ export const verifyPayment = async (referenceNumber, portfolioId) => {
         );
 
         if (!incomingTransaction) {
-            return next(new Error('No incoming payment found with this reference number'));
+            throw new Error('No incoming payment found with this reference number');
         }
 
         const vndAmount = parseFloat(incomingTransaction.amount_in);
@@ -787,7 +787,7 @@ export const verifyPayment = async (referenceNumber, portfolioId) => {
     } catch (error) {
         await client.query('ROLLBACK');
         log.error('Payment verification error:', error);
-        return next(error);
+        throw error;
     } finally {
         client.release();
     }

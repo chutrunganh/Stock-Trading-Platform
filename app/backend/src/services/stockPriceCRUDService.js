@@ -13,7 +13,7 @@ export const getAllStockPricesService = async () => {
         return result.rows;
     } catch (error) {
         console.error('Error getting all stock prices:', error.message);
-        return next(error);
+        throw error;
     }
 };
 
@@ -36,7 +36,7 @@ export const getStockPricesByStockIdService = async (stockId) => {
         return result.rows;
     } catch (error) {
         console.error('Error getting stock prices by ID:', error.message);
-        return next(error);
+        throw error;
     }
 };
 
@@ -53,7 +53,7 @@ export const createStockPriceService = async (stockpriceData) => {
     }
     catch(error){
         console.error('Error when create stock price:', error.message);
-        return next(new Error(error.message));
+        throw new Error(error.message);
     }
 };
 
@@ -64,12 +64,12 @@ export const getLatestStockPriceByStockIdService = async (stockId) => {
         const result = await pool.query(query, [stockId]);
 
         if (!result.rows[0]) {
-            return next(new Error('This stock does not have any price history'));
+            throw new Error('This stock does not have any price history');
         }
 
         return result.rows[0];
     } catch (error) {
-        return next(error);
+        throw error;
     }
 };
 
@@ -92,7 +92,7 @@ export const getAllStocksWithLatestPricesService = async () => {
         const result = await pool.query(query);
         return result.rows;
     } catch (error) {
-        return next(error);
+        throw error;
     }
 };
 
@@ -170,7 +170,7 @@ export const recordSessionPricesService = async (client = pool) => {
         // Rollback in case of error
         await client.query('ROLLBACK');
         console.error('Error recording session prices:', error);
-        return next(error);
+        throw error;
     }
 };
 

@@ -101,7 +101,7 @@ async function resolveEmailFromIdentifier(identifier) {
   if (!identifier.includes('@')) {
     const user = await getUserByUsernameService(identifier);
     if (!user || !user.email) {
-      return next(new Error('User not found'));
+      throw new Error('User not found');
     }
     return user.email;
   }
@@ -331,7 +331,7 @@ export const refreshToken = async (req, res, _next) => {
     const { accessToken } = await refreshAccessTokenService(refreshToken);
     
     if (!accessToken) {
-      return next(new Error('Failed to generate new access token'));
+      throw new Error('Failed to generate new access token');
     }
     
     console.log('Token refresh successful:', {

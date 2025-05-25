@@ -26,7 +26,7 @@ async function getEtherealTransporter() {
 export const sendOtpService = async (email) => {
   try {
     if (!email) {
-      return next(new Error('Email is required'));
+      throw new Error('Email is required');
     }
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -78,7 +78,7 @@ export const sendOtpService = async (email) => {
     return { message: 'OTP sent successfully', previewUrl: nodemailer.getTestMessageUrl(info) };
   } catch (error) {
     console.error('Error in sendOtpService:', error.message);
-    return next(new Error('Failed to send OTP. Please try again.'));
+    throw new Error('Failed to send OTP. Please try again.');
   }
 };
 
@@ -89,21 +89,21 @@ export const verifyOtpService = async (email, otp) => {
     console.log('Verifying OTP:', { email: normalizedEmail, receivedOtp: otp, otpData });
     if (!otpData) {
       console.error('OTP not found for email:', normalizedEmail);
-      return next(new Error('OTP not found or expired. Please request a new OTP.'));
+      throw new Error('OTP not found or expired. Please request a new OTP.');
     }
     const { otp: storedOtp, otp_expiration: otpExpiration } = otpData;
     if (storedOtp !== otp) {
       console.error('Incorrect OTP:', { receivedOtp: otp, storedOtp });
-      return next(new Error('Incorrect OTP. Please check and try again.'));
+      throw new Error('Incorrect OTP. Please check and try again.');
     }
     if (Date.now() > otpExpiration) {
       console.error('OTP expired:', { now: Date.now(), otpExpiration });
-      return next(new Error('OTP has expired. Please request a new OTP.'));
+      throw new Error('OTP has expired. Please request a new OTP.');
     }
     // Do not delete the OTP here; it will be deleted after the password is reset
     return { message: 'OTP verified successfully' };
   } catch (error) {
     console.error('Error in verifyOtpService:', error.message);
-    return next(new Error(error.message || 'Failed to verify OTP'));
+    throw new Error(error.message || 'Failed to verify OTP');
   }
 };
