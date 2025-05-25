@@ -250,6 +250,78 @@ You can take an additional step to securely expose your Docker services to the i
 
 # 🏗️ Project Structure
 
+## Overall Structure
+
+```plaintext
+Stock-Trading-Platform/
+├── app/
+│   ├── backend/        
+│   │   ├── src/              # Source code for the backend
+│   │   │── package.json      # Backend dependencies
+│   │   └── Dockerfile        # Dockerfile for backend
+│   │
+│   └── frontend/             # Source code for the frontend
+│       ├── src/              # Source code for the frontend
+│       │── package.json      # Frontend dependencies
+│       ├── vite.config.js    # Vite configuration file
+│       ├── nginx.conf        # Nginx configuration file
+│       └── Dockerfile        # Dockerfile for frontend
+│
+├── docs/
+│   ├── design/                 # Detail system design documents
+│   ├── reports/                # Project reports
+│   ├── setupInstructions/      # Setup instructions for the project
+│   ├── techStack/              # All the technologies used, details guide configuring them.
+│   └── stockFundementalThoery/ # Some financial terminology, mechanism of order matching, etc.
+│
+├── .env                # Environment variables (not committed to GitHub)
+├── .env.example        # Example environment variables file (serve as a template)
+└── docker-compose.yml  # Run the whole app with Docker
+```
+
+# Deployment Architecture
+
+```plaintext
+                            ┌────────────────────────────┐
+                            │    🌐 Public Internet      │
+                            └────────────┬───────────────┘
+                                         │
+                                         ▼
+                          ┌─────────────────────────────┐
+                          │   🌩️ Cloudflare Proxy Edge  │
+                          └────────────┬────────────────┘
+                                       │  (Tunnel)
+                                       ▼
+               ┌──────────────────────────────────────────────────┐
+               │          🖥️ Local Machine (Docker Host)          │
+               │  (All services isolated inside Docker network)   │
+               │                                                  │
+               │  ┌──────────────────────────────────────────┐    │
+               │  │  🛡️ cloudflared (Cloudflare Tunnel)      │    │
+               │  │  - Forwards to frontend:5173 (Nginx)     │    │
+               │  └────────────┬─────────────────────────────┘    │
+               │               │                                  │
+               │               │                                  │
+               │      ┌────────┴───────────┐                      │
+               │      │   frontend         │                      │
+               │      │   (Nginx 5173:80)  │                      │
+               │      └────────┬───────────┘                      │
+               │               │                                  │
+               │               │                                  │
+               │        ┌──────┴───────────┐   ┌────────────────┐ │
+               │        │  backend         │───┤  postgres      │ │
+               │        │(Node 3000:3000)  │   │  (DB 5432:5432)│ │
+               │        └──────────────────┘   └──────┬─────────┘ │
+               │                                      │           │
+               │                                ┌─────┴───────┐   │
+               │                                │  pgAdmin    │   │    
+               │                                │ (UI 5050:80)│   │    
+               │                                └─────────────┘   │     
+               └──────────────────────────────────────────────────┘
+```
+
+**Format: $HOST_PORT:$CONTAINER_PORT*
+
 # 🔐 Security Checklist
 
 <table border=2>
