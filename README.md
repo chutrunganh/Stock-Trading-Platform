@@ -77,8 +77,11 @@ The project is built with the following technologies:
   <img src="docs/images/zap.png" alt="OWASP ZAP"  height="60">
 </div>
 
+
+
 <br>
 
+*For more details explanaction and implementation of the technologies used in this project, please refer to our [techStack_1](docs\techStack\techStack_1.md), [techStack_2](docs\techStack\techStack_2.md)*
 
 # 📖 Features
 
