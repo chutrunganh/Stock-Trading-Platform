@@ -81,7 +81,7 @@ The project is built with the following technologies:
 
 <br>
 
-*For more details explanaction and implementation of the technologies used in this project, please refer to our [techStack_1](docs\techStack\techStack_1.md), [techStack_2](docs\techStack\techStack_2.md)*
+*For more details explanaction and implementation of the technologies used in this project, please refer to our [techStack_1](docs/techStack/techStack_1.md), [techStack_2](docs/techStack/techStack_2.md)*
 
 # 📖 Features
 
@@ -138,7 +138,7 @@ Our application offers some key features:
   </div >
 
 > [!NOTE]
-> Some features of the website require third-party services such as Google SSO, Recaptcha with Cloudflare Turnstile, QR code banking payments via Sepay, and remote access through Cloudflare Tunnel. These services may become unavailable after the project is made public, as we plan to delete the associated accounts or projects for security and resource reasons. However, we provide [detailed instructions 1](docs\techStack\techStack_1.md), [detailed instructions 2](docs\techStack\techStack_2.md) so you can reconfigure these services using your own keys or tokens.
+> Some features of the website require third-party services such as Google SSO, Recaptcha with Cloudflare Turnstile, QR code banking payments via Sepay, and remote access through Cloudflare Tunnel. These services may become unavailable after the project is made public, as we plan to delete the associated accounts or projects for security and resource reasons. However, we provide [detailed instructions 1](docs/techStack/techStack_1.md), [detailed instructions 2](docs/techStack/techStack_2.md) so you can reconfigure these services using your own keys or tokens.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -220,7 +220,7 @@ If you're interested in exploring the code and running the project manually, fol
 
 
 > [!TIP]
-> When you start the backend, it will automatically connect to the database and seed some initial data. However, for stock prices, it only seeds data for one day, so the chart may not display fully as shown in the demo due to insufficient historical data. To populate the database with realistic stock prices, we provide a Python script that fetches real-world stock data and inserts it into the database. You can find the script in `app/backend/src/utils/seedStockPrice`. Please refer to [this guide](app\backend\src\utils\seedStockPrice\README.md) for instructions on how to run it.
+> When you start the backend, it will automatically connect to the database and seed some initial data. However, for stock prices, it only seeds data for one day, so the chart may not display fully as shown in the demo due to insufficient historical data. To populate the database with realistic stock prices, we provide a Python script that fetches real-world stock data and inserts it into the database. You can find the script in `app/backend/src/utils/seedStockPrice`. Please refer to [this guide](app/backend/src/utils/seedStockPrice/README.md) for instructions on how to run it.
 
 ## Optional: Package the web with Docker 🐳
 
@@ -353,24 +353,24 @@ Stock-Trading-Platform/
             <li> At least 1 uppercase letter, 1 number, and 1 special character (<code>@$!%*?&</code>)
             <li> Must not contain 3 or more consecutive characters from the username.
         </ul>
-        Refer to <a href="app\backend\src\utils\passwordUtil.js"><code>passwordUtils.js</code></a>  for implementations. <br>
+        Refer to <a href="app/backend/src/utils/passwordUtil.js"><code>passwordUtils.js</code></a>  for implementations. <br>
         <i>This password policy is a simplified version from
         <a href="https://www.vndirect.com.vn/tin_vndirect/thong-bao-thay-doi-mat-khau-giao-dich-dinh-ky/" target="_blank">VNDIRECT Securities JSC</a>.</i>
       </td>
     </tr>
     <tr>
       <td>🟢 Secure password storage</td>
-      <td>Use <code>bcrypt</code> for salting + slow hashing when storing passwords. Refer to <a href="app\backend\src\services\security\userAuthService.js"><code>userAuthService.js</code></a>  for implementations.
+      <td>Use <code>bcrypt</code> for salting + slow hashing when storing passwords. Refer to <a href="app/backend/src/services/security/userAuthService.js"><code>userAuthService.js</code></a>  for implementations.
       </td>
     </tr>
     <tr>
       <td>🟢 Prevention of password guessing</td>
-      <td>Use CAPTCHA provided by <code>Cloudflare Turnstile</code> service to block spam/automated logins. Validate on both frontend and backend.  Refer to <a href="app\backend\src\services\security\turnstileService.js"><code>turnstileService.js</code></a>  for implementations.</td>
+      <td>Use CAPTCHA provided by <code>Cloudflare Turnstile</code> service to block spam/automated logins. Validate on both frontend and backend.  Refer to <a href="app/backend/src/services/security/turnstileService.js"><code>turnstileService.js</code></a>  for implementations.</td>
     </tr>
     <tr>
       <td>🟢 Password recovery</td>
       <td>
-        Send OTPs to the user's email with expiration. For demo, we use <code>Ethereal</code> email. OTPs are 8 characters (mixed lower, upper case and numbers), expiry in 1 minute (testing only), generated with <code>otp-generator</code> dependency. Refer to <a href="app\backend\src\services\security\otpService.js"><code>otpService.js</code></a>, <a href="app\backend\src\services\security\userAuthService.js"><code>userAuthService.js</code></a>, <a href="app\frontend\src\context\AuthContext.jsx"><code>AuthContext.jsx</code></a>  for implementations.
+        Send OTPs to the user's email with expiration. For demo, we use <code>Ethereal</code> email. OTPs are 8 characters (mixed lower, upper case and numbers), expiry in 1 minute (testing only), generated with <code>otp-generator</code> dependency. Refer to <a href="app/backend/src/services/security/otpService.js"><code>otpService.js</code></a>, <a href="app/backend/src/services/security/userAuthService.js"><code>userAuthService.js</code></a>, <a href="app/frontend/src/context/AuthContext.jsx"><code>AuthContext.jsx</code></a>  for implementations.
       </td>
     </tr>
     <tr>
@@ -385,14 +385,14 @@ Stock-Trading-Platform/
       <li><code>HttpOnly</code></li>
       <li><code>SameSite='Strict'</code></li>
     </ul>
-    On logout or browser close, clear all cookies on the client and revoke the Refresh Token on the server. Refer to <a href="app\backend\src\utils\jwtUtil.js"><code>jwtUtil.js</code></a>, <a href="app\backend\src\utils\setCookieUtil.js"><code>setCookieUtil.js</code></a>, <a href="app\backend\src\middlewares\authenticationMiddleware.js"><code>authenticationMiddleware.js</code></a>,  <a href="app\frontend\src\context\AuthContext.jsx"><code>AuthContext.jsx</code></a>   for implementations.
+    On logout or browser close, clear all cookies on the client and revoke the Refresh Token on the server. Refer to <a href="app/backend/src/utils/jwtUtil.js"><code>jwtUtil.js</code></a>, <a href="app/backend/src/utils/setCookieUtil.js"><code>setCookieUtil.js</code></a>, <a href="app/backend/src/middlewares/authenticationMiddleware.js"><code>authenticationMiddleware.js</code></a>,  <a href="app/frontend/src/context/AuthContext.jsx"><code>AuthContext.jsx</code></a>   for implementations.
   </td>
     </tr>
     <tr>
       <td>🟢 CSRF defense</td>
       <td>
       <ul>
-        <li> Only allow requests from the frontend origin using: (in the <a href="app\backend\src\index.js"><code>index.js</code></a> )
+        <li> Only allow requests from the frontend origin using: (in the <a href="app/backend/src/index.js"><code>index.js</code></a> )
         <pre><code>app.use(cors({
   origin: process.env.FE_URL}));</code></pre>
         We do not provide public API. 
@@ -426,7 +426,7 @@ Stock-Trading-Platform/
       <li>Logged-in users: Can additionally access <em>Trade</em> and <em>Portfolio</em> pages.</li>
       <li>Admins: Can additionally access <em>Admin</em> page.</li>
     </ul>
-     Refer to <a href="app\backend\src\middlewares\roleBasedAccessControlMiddleware.js"><code>roleBasedAccessControlMiddleware.js</code></a>  for implementations.
+     Refer to <a href="app/backend/src/middlewares/roleBasedAccessControlMiddleware.js"><code>roleBasedAccessControlMiddleware.js</code></a>  for implementations.
   </td>
   </tr>
     <tr>
@@ -434,17 +434,17 @@ Stock-Trading-Platform/
       <td>🟢 Input validation and sanitization</td>
       <td>
       User input is validated and sanitized using middleware located in 
-      <a href="app\backend\src\middlewares\userValidationMiddleware.js"><code>userValidationMiddleware.js</code></a> 
+      <a href="app/backend/src/middlewares/userValidationMiddleware.js"><code>userValidationMiddleware.js</code></a> 
       (used for login, registration, and password reset forms), 
-      <a href="app\backend\src\middlewares\orderMiddleware.js"><code>orderMiddleware.js</code></a>, 
+      <a href="app/backend/src/middlewares/orderMiddleware.js"><code>orderMiddleware.js</code></a>, 
       and 
-      <a href="app\backend\src\middlewares\tradingSessionMiddleware.js"><code>tradingSessionMiddleware.js</code></a> 
+      <a href="app/backend/src/middlewares/tradingSessionMiddleware.js"><code>tradingSessionMiddleware.js</code></a> 
       (used for enforcing order constraints).
       <br><br>
       Response data is filtered using 
-      <a href="app\backend\src\middlewares\responseSanitizationMiddleware.js"><code>responseSanitizationMiddleware.js</code></a> 
+      <a href="app/backend/src/middlewares/responseSanitizationMiddleware.js"><code>responseSanitizationMiddleware.js</code></a> 
       and 
-      <a href="app\backend\src\middlewares\errorHandlerMiddleware.js"><code>errorHandlerMiddleware.js</code></a>.
+      <a href="app/backend/src/middlewares/errorHandlerMiddleware.js"><code>errorHandlerMiddleware.js</code></a>.
       <br><br>
       We use the <code>joi</code> and <code>xss</code> libraries for input and output sanitization. 
       In addition, a Content Security Policy (CSP) is configured to restrict the types of resources the browser can load.
@@ -455,7 +455,7 @@ Stock-Trading-Platform/
       <td>
         <ul>
           <li>Use parameterized queries with placeholders like <code>$1</code> for SQL to prevent injections. See in <a href="app/backend/src/services/userCRUDService.js"><code>userCRUDService.js</code></a> for an SQL query example.
-          <li> Config <code>CSP (Content Security Policy)</code> with <code>helmet</code> dependency to limit resource that browser can load, see in <a href="app\backend\src\index.js"><code>index.js</code></a>.
+          <li> Config <code>CSP (Content Security Policy)</code> with <code>helmet</code> dependency to limit resource that browser can load, see in <a href="app/backend/src/index.js"><code>index.js</code></a>.
         </ul>
       </td>
     </tr>
@@ -464,10 +464,10 @@ Stock-Trading-Platform/
       <td>
       Prevent IDOR (Insecure Direct Object Reference) by :
         <ul>
-          <li>Using <code>UUID</code> instead of auto-incrementing ID for primary key in sensitive database tables (See the <a href="app\backend\src\models\userModel.js"><code>userModel.js</code></a> and <a href="app\backend\src\models\portfolioModel.js"><code>portfolioModel.js</code></a>).
-          <li>With routes that need to query by ID, extract the userID/portfolioID from the JWT, we do not accept it from the request parameters. See in <a href="app\backend\src\controllers\portfolioController.js"><code>portfolioController.js</code></a>, <a href="app\backend\src\controllers\orderController.js"><code>orderController.js</code></a> as some examples. However this is not fully implemented for all needed routes yet.
+          <li>Using <code>UUID</code> instead of auto-incrementing ID for primary key in sensitive database tables (See the <a href="app/backend/src/models/userModel.js"><code>userModel.js</code></a> and <a href="app/backend/src/models/portfolioModel.js"><code>portfolioModel.js</code></a>).
+          <li>With routes that need to query by ID, extract the userID/portfolioID from the JWT, we do not accept it from the request parameters. See in <a href="app/backend/src/controllers/portfolioController.js"><code>portfolioController.js</code></a>, <a href="app/backend/src/controllers/orderController.js"><code>orderController.js</code></a> as some examples. However this is not fully implemented for all needed routes yet.
           <li>
-          For routes that not allow to access (require authentication or authorization) return <a href="app\frontend\src\pages\NotFound\NotFoundPage.jsx">this 404 page</a>.
+          For routes that not allow to access (require authentication or authorization) return <a href="app/frontend/src/pages/NotFound/NotFoundPage.jsx">this 404 page</a>.
           </li>
         </ul>
       </td>
@@ -479,7 +479,7 @@ Stock-Trading-Platform/
     <tr>
       <td rowspan="3">5. Sensitive Information Leakage</td>
       <td>🟡 Minimization of sensitive information leakage about servers, software, and applications</td>
-      <td>Checkout our <a href="app\frontend\nginx.conf"><code>nginx.conf</code></a> file for more details on security headers and configurations to minimize information leakage.</td>
+      <td>Checkout our <a href="app/frontend/nginx.conf"><code>nginx.conf</code></a> file for more details on security headers and configurations to minimize information leakage.</td>
     </tr>
     <tr>
       <td>🟢  Minimization of sensitive information leakage in response</td>
@@ -496,7 +496,7 @@ Stock-Trading-Platform/
     </tr>
     <tr>
       <td>🟡 Mitigation of DoS attacks</td>
-      <td>Requests pass through Cloudflare proxy when using Cloudflare Tunnel. Configure rate-limiting, geography-based IP rule, block specified user agents on Cloudflare WAF (Web Application Firewall), see <a href="docs\images\WAF_1.png">WAF_1</a> and <a href="docs\images\WAF_2.png">WAF_2</a>. However, we just enable and use prebuild rules template without any research, customization or testing these settings yet.</td>
+      <td>Requests pass through Cloudflare proxy when using Cloudflare Tunnel. Configure rate-limiting, geography-based IP rule, block specified user agents on Cloudflare WAF (Web Application Firewall), see <a href="docs/images/WAF_1.png">WAF_1</a> and <a href="docs/images/WAF_2.png">WAF_2</a>. However, we just enable and use prebuild rules template without any research, customization or testing these settings yet.</td>
     </tr>
     <tr>
       <td>🟢 Secure storage and management of sensitive values</td>
@@ -520,7 +520,7 @@ Stock-Trading-Platform/
       <td rowspan="4">8. Bonus</td>
       <td>🟢 Multi-factor authentication</td>
       <td>
-        After enter correct username/email and password, OTP is sent to user's email. OTP must be valid and unexpired. We also have "Remember device in ...  time" implemented to skip OTP next time login. Devices are idntified by using <code>fingerprintJS</code> dependency (free version). See in <a href="app\backend\src\services\security\otpService.js"><code>otp service</code></a> (for otp implementation) and <a href="app\frontend\src\components\forms\LoginForm.jsx"><code>LoginForm.jsx</code></a> (for device fingerprint indentification).
+        After enter correct username/email and password, OTP is sent to user's email. OTP must be valid and unexpired. We also have "Remember device in ...  time" implemented to skip OTP next time login. Devices are idntified by using <code>fingerprintJS</code> dependency (free version). See in <a href="app/backend/src/services/security/otpService.js"><code>otp service</code></a> (for otp implementation) and <a href="app/frontend/src/components/forms/LoginForm.jsx"><code>LoginForm.jsx</code></a> (for device fingerprint indentification).
       </td>
     </tr>
     <tr>
@@ -533,7 +533,7 @@ Stock-Trading-Platform/
     </tr>
     <tr>
       <td>🟢 Single Sign-On (SSO)</td>
-         <td>Implemented Google OAuth 2.0 using <code>passport</code> dependency, see in <a href="app\backend\src\config\passportConfig.js"><code>passportConfig.js</code></a> and <a href="app/backend/src/services/security/userAuthService.js"><code>userAuthService.js</code></a>.
+         <td>Implemented Google OAuth 2.0 using <code>passport</code> dependency, see in <a href="app/backend/src/config/passportConfig.js"><code>passportConfig.js</code></a> and <a href="app/backend/src/services/security/userAuthService.js"><code>userAuthService.js</code></a>.
          </td>
       </tr>
   </tbody>
@@ -553,7 +553,7 @@ Status Explanation:
 ## Code review with Qodana
 
 <div align='center'>
-  <img src="docs\images\QodanaResult.png" alt="Code review" style="max-width: 60%; height: auto;">
+  <img src="docs/images/QodanaResult.png" alt="Code review" style="max-width: 60%; height: auto;">
 </div>
 
 All warning at `Critical`, `High` level have been fixed. There are still some `Medium` level warnings left we can not fix yet due to time constraints. 
@@ -561,7 +561,7 @@ All warning at `Critical`, `High` level have been fixed. There are still some `M
 ## Code penetration testing with OWASP ZAP
 
 <div align='center'>
-  <img src="docs\images\ZAP_result.png" alt="Code penetration testing" style="max-width: 60%; height: auto;">
+  <img src="docs/images/ZAP_result.png" alt="Code penetration testing" style="max-width: 60%; height: auto;">
 </div>
 
 No alerts at `High` level, only alerts at `Medium`, `Low` and `Informational` level left.

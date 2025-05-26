@@ -47,7 +47,7 @@ const userSchema = Joi.object({
   password: Joi.string()
     .min(6)
     .max(72)
-    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,72}$/)
+    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*/d)(?=.*[@$!%*?&])[A-Za-z/d@$!%*?&]{6,72}$/)
     .required()
     .messages({
       'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
@@ -141,7 +141,7 @@ const userUpdateSchema = Joi.object({
   password: Joi.string()
     .min(6)
     .max(72)
-    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,72}$/)
+    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*/d)(?=.*[@$!%*?&])[A-Za-z/d@$!%*?&]{6,72}$/)
     .optional()
     .messages({
       'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'

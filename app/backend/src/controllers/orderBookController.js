@@ -21,7 +21,7 @@ export const orderBookSSE = (req, res) => {
 
   // Send heartbeat to keep connection alive
   const heartbeat = setInterval(() => {
-    res.write(`data: ${JSON.stringify({ type: 'heartbeat', timestamp: new Date().toISOString() })}\n\n`);
+    res.write(`data: ${JSON.stringify({ type: 'heartbeat', timestamp: new Date().toISOString() })}/n/n`);
   }, 30000); // Send heartbeat every 30 seconds
 
   // Send initial data
@@ -34,7 +34,7 @@ export const orderBookSSE = (req, res) => {
       const recentTransactions = orderBook.recentTransactions || {};
       
       const processedData = processOrderBookData(stocksResult, buyOrders, sellOrders, recentTransactions);
-      res.write(`data: ${JSON.stringify({ type: 'initial', data: processedData })}\n\n`);
+      res.write(`data: ${JSON.stringify({ type: 'initial', data: processedData })}/n/n`);
       console.log(`[SSE] Initial data sent to new client. ${sseClients.size+1} total clients`);
     } catch (error) {
       console.error('Error sending initial data:', error);
@@ -44,7 +44,7 @@ export const orderBookSSE = (req, res) => {
   // Function to send updates to this client
   const sendUpdate = (update) => {
     try {
-      res.write(`data: ${JSON.stringify({ type: 'update', data: update })}\n\n`);
+      res.write(`data: ${JSON.stringify({ type: 'update', data: update })}/n/n`);
     } catch (error) {
       console.error('[SSE] Error sending update to client:', error);
       // Remove client if we can't send to it

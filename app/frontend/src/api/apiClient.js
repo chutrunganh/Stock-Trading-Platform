@@ -81,7 +81,7 @@ const PUBLIC_ENDPOINTS = [
 // Request interceptor for logging token info
 apiClient.interceptors.request.use(
   (config) => {
-    console.log(`\n[Token Debug] 🚀 Request to: ${config.method.toUpperCase()} ${config.url}`);
+    console.log(`/n[Token Debug] 🚀 Request to: ${config.method.toUpperCase()} ${config.url}`);
     
     // Skip auth for public endpoints
     if (PUBLIC_ENDPOINTS.some(endpoint => config.url.includes(endpoint))) {

@@ -37,8 +37,8 @@ pip install -r requirements.txt # Install the needed library
 
 ```shell
 python -m venv venv
-.\venv\Scripts\activate.bat # If execute in CMD
-# .\venv\Scripts\activate.ps1 # If execute in PowerShell
+./venv/Scripts/activate.bat # If execute in CMD
+# ./venv/Scripts/activate.ps1 # If execute in PowerShell
 
 # Install pip tool if you haven't already
 python -m ensurepip --upgrade
@@ -82,11 +82,11 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent.parent.parent.parent
 Which will naviate to the root directory of the project compare to the current location of terminal path running the script. So in case you change to location of running the script, you will need to change the `Path` in the `stock_fetcher.py` file accordingly. Otherwise this will show error:
 
 ```plaintext
-PS C:\Users\Chu Trung Anh\Desktop\Project\Product\Stock-Trading-Platform\app\backend\src\utils> cd .\seedStockPrice  
+PS C:/Users/Chu Trung Anh/Desktop/Project/Product/Stock-Trading-Platform/app/backend/src/utils> cd ./seedStockPrice  
 node:internal/modules/cjs/loader:1228
   throw err;
   ^
-Error: Cannot find module 'C:\Users\Chu Trung Anh\Desktop\Project\Product\Stock-Trading-Platform\app\backend\src\utils\seedStockPrice\stock'
+Error: Cannot find module 'C:/Users/Chu Trung Anh/Desktop/Project/Product/Stock-Trading-Platform/app/backend/src/utils/seedStockPrice/stock'
     at Function._resolveFilename (node:internal/modules/cjs/loader:1225:15)
     at Function._load (node:internal/modules/cjs/loader:1055:27)
     at TracingChannel.traceSync (node:diagnostics_channel:322:14)
@@ -103,7 +103,7 @@ Node.js v22.14.0
 Or even when specify the location of scripts:
 
 ```plaintext
-PS C:\Users\Chu Trung Anh\Desktop\Project\Product\Stock-Trading-Platform\app\backend\src\utils> node .\seedStockPrice\stockManager.js 
+PS C:/Users/Chu Trung Anh/Desktop/Project/Product/Stock-Trading-Platform/app/backend/src/utils> node ./seedStockPrice/stockManager.js 
 [module_job] Database is running on port: undefined
 [module_job] PgAdmin is running on port: undefined
 Enter stock symbol (e.g., AAPL): 

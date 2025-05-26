@@ -47,12 +47,12 @@ const logFormat = winston.format.combine(
       let metadataStr = '';
       if (Object.keys(metadata).length > 0) {
         if (metadata.stack) {
-          metadataStr = `\n${metadata.stack}`;
+          metadataStr = `/n${metadata.stack}`;
         } else {
-          metadataStr = `\n${JSON.stringify(metadata, null, 2)}`;
+          metadataStr = `/n${JSON.stringify(metadata, null, 2)}`;
         }
       }
-      return `[${timestamp}] [${level.toUpperCase().padEnd(7)}] ${message.replace(/^\] /, '')}${metadataStr}`;
+      return `[${timestamp}] [${level.toUpperCase().padEnd(7)}] ${message.replace(/^/] /, '')}${metadataStr}`;
     }
   )
 );
@@ -108,10 +108,10 @@ function getCallerInfo(stack) {
   // Stack trace format:
   // Error
   //     at Object.<anonymous> (/path/to/file.js:line:column)
-  const stackLines = stack.split('\n');
+  const stackLines = stack.split('/n');
   // Skip the first two lines (Error and this function call)
   for (let i = 2; i < stackLines.length; i++) {
-    const match = stackLines[i].match(/\s+at\s.+\((.+):\d+:\d+\)/);
+    const match = stackLines[i].match(//s+at/s.+/((.+):/d+:/d+/)/);
     if (match && match[1]) {
       return match[1];
     }

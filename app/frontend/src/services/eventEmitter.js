@@ -1,4 +1,4 @@
-// filepath: c:\Users\Chu Trung Anh\Desktop\Project\Product\Stock-Market-Simulator\app\frontend\src\services\eventEmitter.js
+// filepath: c:/Users/Chu Trung Anh/Desktop/Project/Product/Stock-Market-Simulator/app/frontend/src/services/eventEmitter.js
 /**
  * Simple event emitter service for cross-component communication
  */
