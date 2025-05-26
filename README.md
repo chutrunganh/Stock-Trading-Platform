@@ -134,7 +134,7 @@ Our application offers some key features:
     <img src="docs/images/AdminDemo_compress.gif" alt="Admin Demo"  style="max-width: 60%; height: auto;">
   </div >
 
- 
+ <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 # 🚀 Installation & Setup
 
@@ -552,12 +552,13 @@ Status Explanation:
 
 All warning at `Critical`, `High` level have been fixed. There are still some `Medium` level warnings left we can not fix yet due to time constraints. 
 
-## Code penetration testing with ZAP
+## Code penetration testing with OWASP ZAP
 
 <div align='center'>
   <img src="docs\images\ZAP_result.png" alt="Code penetration testing" style="max-width: 60%; height: auto;">
 </div>
 
+No alerts at `High` level, only alerts at `Medium`, `Low` and `Informational` level left.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
