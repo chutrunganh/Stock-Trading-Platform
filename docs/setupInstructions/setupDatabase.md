@@ -1,11 +1,13 @@
 > [!IMPORTANT]  
-> If you already have PostgreSQL (PostgresSQL.exe) and PgAdmin (PgAdmin4.exe) installed on your local computer, you have two options:
-> - Keep using your existing installation without using our Docker containers. In this case, you might need to change the database connection settings in the `.env` file to match your existing installation if there is any error. You can skip the following steps and go to the next section. 
-> - Use our Docker containers for PostgreSQL and PgAdmin. In this case, you NEED to stop your existing PostgreSQL and PgAdmin services to avoid port conflicts. For example with PostgreSQL service, use `net stop postgresql-x64-14` for Windows or `sudo service postgresql stop` for Linux/Mac. This will prevent the exe file and Docker services from using the same 5432 port, which could lead to unexpected behaviors. 
+> If you already have PostgreSQL (`PostgresSQL.exe`) and PgAdmin (`PgAdmin4.exe`) software installed on your local computer, you have two options:
+> - **Option 1**: Keep using your existing installation (credentials like username, password) without using our Docker containers. In this case, you might **NEED** to change the database connection settings in the `.env` file to match your existing installation if there is any error. You can skip the following steps and go to the next section. 
+> - **Option 2**: Use our Docker containers for PostgreSQL and PgAdmin. In this case, you **NEED** to stop your existing `PostgreSQL.exe` and `PgAdmin.exe` services to avoid port conflicts. For example with PostgreSQL service, use `net stop postgresql-x64-14` for Windows or `sudo service postgresql stop` for Linux/Mac. This will prevent the `.exe` and Docker services from using the same 5432 port, which could lead to unexpected behaviors. 
 
 # Running PostgreSQL and PgAdmin with Docker
 
-The Postgres databse and PgAdmin (to manage the database with GUI) are run in Docker containers, so just simply run this command to bring them up:
+The Postgres databse and PgAdmin (to manage the database with GUI) are run in Docker containers. If you only need to run the database services with `docker-compose`, **REMEMBER** to comment out the  `backend` and `frontend` services in the `docker-compose.yml` file to avoid starting the backend and frontend services. 
+
+Then run this command in the root directory of the project to start the Docker containers:
 
 ```bash
 docker-compose up -d
@@ -32,6 +34,9 @@ cd app/backend
 yarn install # to install the dependencies
 yarn start # to start the server
 ```
+
+> [!WARNING] 
+> In the `development` environment, whennever the backend server starts, it will automatically **DROP ALL EXISTING TABLES** is the database and **CREATE NEW TABLES** with the initial data. This is useful for development purposes, but be careful not to run this in production as it will delete all existing data.
 
 # Managing the Database with PgAdmin
 

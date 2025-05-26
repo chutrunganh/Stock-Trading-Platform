@@ -134,7 +134,10 @@ Our application offers some key features:
     <img src="docs/images/AdminDemo_compress.gif" alt="Admin Demo"  style="max-width: 60%; height: auto;">
   </div >
 
- <p align="right">(<a href="#readme-top">back to top</a>)</p>
+> [!NOTE]
+> Some features of the website require third-party services such as Google SSO, Recaptcha with Cloudflare Turnstile, QR code banking payments via Sepay, and remote access through Cloudflare Tunnel. These services may become unavailable after the project is made public, as we plan to delete the associated accounts or projects for security and resource reasons. However, we provide [detailed instructions 1](docs\techStack\techStack_1.md), [detailed instructions 2](docs\techStack\techStack_2.md) so you can reconfigure these services using your own keys or tokens.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 # 🚀 Installation & Setup
 

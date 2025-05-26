@@ -1,5 +1,7 @@
 # NodeJS backend
 
+See more details in our report. Update later....
+
 # React (testing)
 
 Structure of the React project:

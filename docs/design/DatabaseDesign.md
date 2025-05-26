@@ -88,16 +88,31 @@ Lưu tin tức liên quan đến thị trường hoặc cổ phiếu cụ thể.
 - `published_date`: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP (Ngày đăng tin).
 - `stock_id`: INT, FOREIGN KEY to Stocks(stock_id).
 
-## Bảng 8: Leaderboard (Bảng xếp hạng)
+## Bảng 7: remembered_devices  
+Lưu thiết bị đáng tin cậy/đã ghi nhớ của người dùng, thường dùng để nhận diện thiết bị hoặc xác minh đăng nhập.
 
-Xếp hạng người dùng dựa trên hiệu suất đầu tư.
+- `id`: SERIAL, PRIMARY KEY (Khóa chính, tự tăng).
+- `user_id`: UUID, NOT NULL, FOREIGN KEY đến `Users(id)`, ON DELETE CASCADE (Khóa ngoại đến bảng Users, xóa liên tiếp khi người dùng bị xóa).
+- `visitor_id`: VARCHAR(255), NOT NULL — mã định danh duy nhất cho thiết bị/trình duyệt.
+- `confidence_score`: DECIMAL(4,3), DEFAULT 0 — độ tin cậy của thiết bị có thực sự thuộc về người dùng.
+- `created_at`: TIMESTAMP WITH TIME ZONE, DEFAULT CURRENT_TIMESTAMP (Thời gian tạo bản ghi).
+- `expires_at`: TIMESTAMP WITH TIME ZONE, NOT NULL — thời gian hết hạn của thiết bị.
+- **UNIQUE**(`user_id`, `visitor_id`) — một người dùng không thể ghi nhớ cùng một thiết bị hai lần.
 
+---
 
-- `leaderboard_id`: INT, AUTO_INCREMENT, PRIMARY KEY (Khóa chính).
-- `user_id`: INT, FOREIGN KEY to Users(user_id), UNIQUE (Khóa ngoại liên kết đến Users).
-- `rank`: INT (Xếp hạng).
-- `performance`: DECIMAL(5,2) (Hiệu suất đầu tư, ví dụ: % tăng trưởng).
-- `updated_at`: TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE - CURRENT_TIMESTAMP (Ngày cập nhật gần nhất).
+## Bảng 8: payment_transactions  
+Lưu lịch sử các giao dịch nạp tiền từ VND sang tiền ảo trong hệ thống danh mục đầu tư.
+
+- `id`: SERIAL, PRIMARY KEY (Khóa chính, tự tăng).
+- `portfolio_id`: UUID, NOT NULL, FOREIGN KEY đến `Portfolios(portfolio_id)` (Khóa ngoại đến bảng Portfolios).
+- `reference_number`: VARCHAR(255), NOT NULL, UNIQUE — mã tham chiếu thanh toán (ví dụ từ ngân hàng hoặc cổng thanh toán).
+- `vnd_amount`: DECIMAL(15,2), NOT NULL — số tiền VND được nạp.
+- `virtual_amount`: DECIMAL(15,2), NOT NULL — số tiền ảo được quy đổi trong nền tảng.
+- `status`: VARCHAR(50), DEFAULT `'completed'` — trạng thái giao dịch (`pending`, `failed`,...).
+- `created_at`: TIMESTAMP WITH TIME ZONE, DEFAULT CURRENT_TIMESTAMP (Thời gian tạo bản ghi).
+- `updated_at`: TIMESTAMP WITH TIME ZONE, DEFAULT CURRENT_TIMESTAMP (Thời gian cập nhật bản ghi).
+
 
 ## Mối quan hệ giữa các bảng
 
@@ -109,3 +124,5 @@ Xếp hạng người dùng dựa trên hiệu suất đầu tư.
 - Stocks ↔ Transactions: Một cổ phiếu có thể xuất hiện trong nhiều giao dịch (1-N).
 - Stocks ↔ News: Một cổ phiếu có thể có nhiều tin tức liên quan (1-N, nhưng stock_id trong News có thể null).
 - Users ↔ Leaderboard: Một người dùng có thể có một bản ghi trong bảng xếp hạng (1-1).
+
+Thiết kế database đã được thay đổi đáng kể so với tại liệu nay, xem DatabaseDesignDraft.drawio để rõ hơn. Sẽ cập nhật lại tài liệu này sau.
