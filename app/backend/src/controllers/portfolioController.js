@@ -15,6 +15,7 @@ const handleResponse = (res, status, message, data = null) => {
 // Get portfolio details
 export const getPortfolioDetails = async (req, res, next) => {
     try {
+        // Extract userId from JWT token instead of accept ID from request body/URL path for security (IDOR prevention)
         const userId = req.user.id; // Assuming user info is attached by auth middleware
         const portfolio = await getPortfolioByUserIdService(userId);
         handleResponse(res, 200, 'Portfolio details retrieved successfully', portfolio);

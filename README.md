@@ -279,6 +279,8 @@ Stock-Trading-Platform/
 └── docker-compose.yml  # Run the whole app with Docker
 ```
 
+*For more details about the project structure, please refer to our reports in the `docs/reports` directory.*
+
 # Deployment Architecture
 
 ```plaintext
@@ -321,6 +323,8 @@ Stock-Trading-Platform/
 ```
 
 **Format: $HOST_PORT:$CONTAINER_PORT*
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 # 🔐 Security Checklist
 
@@ -444,18 +448,21 @@ Stock-Trading-Platform/
       <td>🟢 Protection against injection attacks</td>
       <td>
         <ul>
-          <li>Use parameterized queries with placeholders like <code>$1</code> for SQL to prevent injections.
-          <li> Config <code>CSP (Content Security Policy)</code> with <code>helmet</code> dependency to limit resource that browser can load.
+          <li>Use parameterized queries with placeholders like <code>$1</code> for SQL to prevent injections. See in <a href="app/backend/src/services/userCRUDService.js"><code>userCRUDService.js</code></a> for an SQL query example.
+          <li> Config <code>CSP (Content Security Policy)</code> with <code>helmet</code> dependency to limit resource that browser can load, see in <a href="app\backend\src\index.js"><code>index.js</code></a>.
         </ul>
       </td>
     </tr>
     <tr>
-      <td>🟢 Prevention of path traversal</td>
+      <td>🟡 Prevention of path traversal</td>
       <td>
       Prevent IDOR (Insecure Direct Object Reference) by :
         <ul>
-          <li>Using `UUID` instead of auto-incrementing IDs for sensitive data fields.
-          <li>With routes that require IDs, we use middleware to check if the ID clients provide is match to the ID that is decoded from their access tokens.
+          <li>Using <code>UUID</code> instead of auto-incrementing ID for primary key in sensitive database tables (See the <a href="app\backend\src\models\userModel.js"><code>userModel.js</code></a> and <a href="app\backend\src\models\portfolioModel.js"><code>portfolioModel.js</code></a>).
+          <li>With routes that need to query by ID, extract the userID/portfolioID from the JWT, we do not accept it from the request parameters. See in <a href="app\backend\src\controllers\portfolioController.js"><code>portfolioController.js</code></a>, <a href="app\backend\src\controllers\orderController.js"><code>orderController.js</code></a> as some examples. However this is not fully implemented for all needed routes yet.
+          <li>
+          For routes that not allow to access (require authentication or authorization) return <a href="app\frontend\src\pages\NotFound\NotFoundPage.jsx">this 404 page</a>.
+          </li>
         </ul>
       </td>
     </tr>
@@ -483,7 +490,7 @@ Stock-Trading-Platform/
     </tr>
     <tr>
       <td>🟡 Mitigation of DoS attacks</td>
-      <td>Requests pass through Cloudflare proxy when using Cloudflare Tunnel. Configure rate-limiting on Cloudflare WAF.</td>
+      <td>Requests pass through Cloudflare proxy when using Cloudflare Tunnel. Configure rate-limiting, geography-based IP rule, block specified user agents on Cloudflare WAF (Web Application Firewall), see <a href="docs\images\WAF_1.png">WAF_1</a> and <a href="docs\images\WAF_2.png">WAF_2</a>. However, we just enable and use prebuild rules template without any research, customization or testing these settings yet.</td>
     </tr>
     <tr>
       <td>🟢 Secure storage and management of sensitive values</td>
@@ -507,7 +514,7 @@ Stock-Trading-Platform/
       <td rowspan="4">8. Bonus</td>
       <td>🟢 Multi-factor authentication</td>
       <td>
-        After enter correct username/email and password, OTP is sent to user's email. OTP must be valid and unexpired. We also have "Remember device in ...  time" implemented to skip OTP next time login. Devices are idntified by using <code>fingerprintJS</code> dependency (free version).
+        After enter correct username/email and password, OTP is sent to user's email. OTP must be valid and unexpired. We also have "Remember device in ...  time" implemented to skip OTP next time login. Devices are idntified by using <code>fingerprintJS</code> dependency (free version). See in <a href="app\backend\src\services\security\otpService.js"><code>otp service</code></a> (for otp implementation) and <a href="app\frontend\src\components\forms\LoginForm.jsx"><code>LoginForm.jsx</code></a> (for device fingerprint indentification).
       </td>
     </tr>
     <tr>
@@ -516,12 +523,13 @@ Stock-Trading-Platform/
     </tr>
     <tr>
       <td>🟡 Advanced HTTP flood prevention</td>
-      <td>Configure the Cloudflare WAF (Web Application Firewall) for the domain, see in the docs</td>
+      <td>Configure the Cloudflare WAF for the domain.</td>
     </tr>
     <tr>
       <td>🟢 Single Sign-On (SSO)</td>
-      <td>Implemented Google OAuth 2.0 using <code>passport</code> dependency</td>
-    </tr>
+         <td>Implemented Google OAuth 2.0 using <code>passport</code> dependency, see in <a href="app\backend\src\config\passportConfig.js"><code>passportConfig.js</code></a> and <a href="app/backend/src/services/security/userAuthService.js"><code>userAuthService.js</code></a>.
+         </td>
+      </tr>
   </tbody>
 </table>
 
@@ -534,6 +542,7 @@ Status Explanation:
 
 - 🔴 **Not Implemented**: No mitigation has been applied yet.
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Code review with Qodana
 
