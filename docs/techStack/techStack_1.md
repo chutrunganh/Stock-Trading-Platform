@@ -551,5 +551,7 @@ Some of the other rules that apply to the system of order-matching engines are:
 
 UNDER DEVELOPMENT..... DO  NOT HAVE TO FINISH THIS YET ....
 
+But the general idea is based on thig blog: https://jindalujjwal0720.medium.com/stock-market-order-book-orders-matching-engine-in-nodejs-3dff82f70080
+
 
 
