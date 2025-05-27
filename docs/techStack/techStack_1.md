@@ -835,7 +835,7 @@ Add a new order with even a higher price, for example a limit buy order at price
 ╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
 ```
 
-Also, when a new order comes in with the same price as the order is being displayed in the table, they are still count as two seperate orders, but in the console table (and also in the frontend UI table) need to aggregate the volume of the orders with the same price. For example, our current order book is like this:
+Also, when a new order comes in with the same price as the order is being displayed in the table, they are still count as two seperate orders, but in the console table (and also in the frontend UI table) need to aggregate the volume of the orders with the same price for easy looking. For example, our current order book is like this:
 
 ```plaintext
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
@@ -847,7 +847,7 @@ Also, when a new order comes in with the same price as the order is being displa
 ╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
 ```
 
-Then a new limit buy order comes in at price 150.00 for 3 stocks, then this new order will be aggregated with the previous order at price 150.00, so the volume of the order at price 150.00 will be updated to 5 stocks:
+Then a new limit buy order comes in at price 150.00 for 3 stocks, then this new order will be aggregated with the previous order at price 150.00, so the volume of the order at price 150.00 will be updated to 4 stocks:
 
 ```plaintext
 Creating order with information: {
@@ -856,11 +856,11 @@ Creating order with information: {
   userId: 'f3617107-0462-4876-8b30-9e729a090d8e',
   stockId: 6,
   volume: 3,
-  price: 160.00,
+  price: 150.00,
   type: 'Limit Buy',
   timestamp: 1748355398282
 }
-[Order] Processing Limit Buy order for stock 6, price 160.00, volume 3
+[Order] Processing Limit Buy order for stock 6, price 150.00, volume 3
 [Order] No immediate match found for buy order 1748355398282, emitting update for new order in book
 After matching, currently book:
 
@@ -870,7 +870,7 @@ After matching, currently book:
 ║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╬════════╬═══════════╦═══════╬═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
-║ 6          ║    150.00 ║     5 ║    160.00 ║     3 ║           ║        ║           ║       ║           ║       ║
+║ 6          ║    150.00 ║     4 ║    160.00 ║     3 ║           ║        ║           ║       ║           ║       ║
 ╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
 ```
 
@@ -895,7 +895,7 @@ For **Limit Buy** orders, when come to the order book, we scan all orders in the
 ║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
-║ 6          ║           ║       ║    145.00 ║     2 ║           ║        ║           ║       ║           ║       ║
+║ 6          ║           ║       ║    150.00 ║     2 ║           ║        ║           ║       ║           ║       ║
 ╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
 ```
 
@@ -904,14 +904,14 @@ If a new limit sell order comes in for the same stock id 6, but the price still 
 ```plaintext
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
 ║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
-║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╬════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
-║ 6          ║           ║       ║    145.00 ║     2 ║           ║        ║    160.00 ║     2 ║           ║       ║
+║ 6          ║           ║       ║    150.00 ║     2 ║           ║        ║    160.00 ║     2 ║           ║       ║
 ╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
 ```
 
-Take example when a new limit sell order comes but the price can meet the condition, then this order is matched with the fisrt santisfy buy limit order, which is the limit buy order at price 150.00 for 2 stocks, then the order book will be updated as follows:
+Take example when a new limit sell order comes but the price can meet the condition, for example a limit sell order at price 145.00 for 2 stocks, then this order is matched with the fisrt santisfy buy limit order, which is the limit buy order at price 150.00 for 2 stocks, then the order book will be updated as follows:
 
 ```plaintext
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
@@ -1002,10 +1002,10 @@ Creating order with information: {
 After matching, currently book:
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
 ║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
-║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╬════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
-║ 6          ║           ║       ║           ║       ║    150    ║    2   ║    160.00 ║     2 ║           ║       ║
+║ 6          ║           ║       ║    145.00 ║     2 ║    150.00 ║      2 ║           ║       ║           ║       ║
 ╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
 ```
 
@@ -1017,6 +1017,27 @@ After matching, currently book:
 For example, currenly in the market there are two limit sell oders at price 150 for 2 stocks and at price 160 for 2 stocks, then a market buy order comes in for 2 stocks, the order book will be updated as follows:
 
 ```plaintext
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║ 6          ║           ║       ║           ║       ║           ║        ║    150.00 ║     2 ║    160.00 ║     2 ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
+
+Creating order with information: {
+  id: '1748353746654',
+  portfolioId: 'cbf474f0-abf0-4095-8926-39c18e5097dc',
+  userId: '3e6dd451-7b6c-4787-b9f0-8d0e72f0630e',
+  stockId: 6,
+  volume: 2,
+  price: null,
+  type: 'Market Buy',
+  timestamp: 1748353746654
+}
+After matching, currently book:
+
+
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
 ║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
 ║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
