@@ -530,28 +530,641 @@ The passport.js library already have built in functions for these so our control
 
 # 5. Matching Engine
 
-The orders book generally supports various queues for processing buy and sell orders:
+> [!NOTE]
+> In our app. we only implement two types of orders: Limit Orders and Market Orders. Together with two actions: Buy and Sell, we have four types of orders:
+> - Limit Buy: A limit order to buy a stock at a specified price or lower.
+> - Limit Sell: A limit order to sell a stock at a specified price or higher.
+> - Market Buy: A market order to buy a stock at the best available price on the Sell side.
+> - Market Sell: A market order to sell a stock at the best available price on the Buy side.
+>
+> Some other types of orders like Stop-Loss, Stop-Limit, Trailing Stop, etc. are not implemented in this project yet.
 
-- Cancel Order
-- Market Order Buy Queue
-- Market Order Sell Queue
-- Limit Order Buy Queue
-- Limit Order Sell Queue
+This is the heart of the stock trading system, responsible for matching buy and sell orders based on the rules of the stock market. first, let talk about orders, how can they be created, see more detail in the `orderCRUDService.js` file.
+
+```javascript
+export const createOrderService = async (orderData) => {
+    const { userId, stockId, quantity, price, orderType } = orderData;
+    
+    // Get the actual portfolio ID for this userID
+    try {
+        const portfolioQuery = `
+            SELECT portfolio_id
+            FROM portfolios
+            WHERE user_id = $1`;
+            
+        // Using the imported pool to make a query to the database
+        const portfolioResult = await pool.query(portfolioQuery, [userId]);
+        
+        if (portfolioResult.rows.length === 0) {
+            throw new Error(`No portfolio found for user ID: ${userId}`);
+        }
+        
+        const portfolioId = portfolioResult.rows[0].portfolio_id;
+        
+        const order = {
+            id: Date.now().toString(), // Unique ID as string
+            portfolioId: portfolioId, // Using the correct portfolioId from the query
+            userId: userId, // Add userId to the order object
+            stockId,
+            volume: quantity,
+            price,
+            type: orderType, // "Limit Buy", "Limit Sell", "Market Buy", "Market Sell"
+            timestamp: Date.now(), // Timestamp for order arrangement incase of limit orders with same price
+        };
+
+    console.log('Creating order with information:', order);
+```
+
+For example the apyload of the request to create a new order will be like this:
+
+```json
+### Test for creating a limit buy order
+POST http://localhost:3000/api/createOrder
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "stockId": 101,
+  "quantity": 20,
+  "price": 50,
+  "orderType": "Limit Buy"
+}
+
+### Test for creating a limit sell order
+POST http://localhost:3000/api/createOrder
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "stockId": 101,
+  "quantity": 20,
+  "price": 5,
+  "orderType": "Limit Sell"
+}
+
+### Test a market order
+POST http://localhost:3000/api/createOrder
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "stockId": 101,
+  "quantity": 30,
+  "price": 0,
+  "orderType": "Market Buy"
+}
 
 
-Orders are processed in the order listed above. Cancel orders are processed first and instantly, followed by market, limit, and stop orders.
+### Test for canceling an order
+DELETE http://localhost:3000/api/cancelOrder/1744103796519
+```
+There order will be send to the orders book (or order matching engine, lightling table or what every you call it), which is responsible for matching buy and sell orders based on the rules of the stock market. In our code, we implement this using an `orderBook` instance, which is a singleton instance that handles all the order matching logic. We will talk about it later. Here is the process of adding orders to the order book:
 
-Some of the other rules that apply to the system of order-matching engines are:
+```javascript
+// Create a new order instance
+const order = new Order(order);
 
-- The orders may be partially filled or not filled in the case of limit orders. Ví dụ nếu người dùng đặt lệnh mua 100 cổ phiếu với giá 10$ và hiện chỉ có 50 cổ phiếu được bán với giá 10$, thì lệnh mua sẽ được thực hiện với 50 cổ phiếu với giá 10$ và 50 cổ phiếu còn lại sẽ được giữ lại trong hàng đợi mua cho đến khi có người bán khác đồng ý bán với giá đó.
+// Use the shared orderBook instance
+const orderBook = OrderBook.getInstance(); // Get the singleton instance of OrderBook
 
-- Market orders may be partially filled at different prices. Ví dụ nếu người dùng đặt lệnh mua 100 cổ phiếu với giá 10$ và hiện có 50 cổ phiếu được bán với giá 9$ và 50 cổ phiếu được bán với giá 11$, thì lệnh mua sẽ được thực hiện với 50 cổ phiếu với giá 9$ và 50 cổ phiếu với giá 11$.
+// DEBUGGING: Display the order book before matching
+console.log('Before matching, currently book:') 
+orderBook.displayOrderBook();
 
-- Orders with the highest bid (buy) price are kept at the top of the queue and will be executed first. Orders with the lowest sell (ask) prices will be sold first. For orders with the same ask price, the order that arrives first will be sold first.
+// Add the order to the order book
+orderBook.addOrder(order); // This will handle both adding to queue and matching
+```
 
-UNDER DEVELOPMENT..... DO  NOT HAVE TO FINISH THIS YET ....
+This is the backend console output when a new order is arrived:
 
-But the general idea is based on thig blog: https://jindalujjwal0720.medium.com/stock-market-order-book-orders-matching-engine-in-nodejs-3dff82f70080
+```plaintext
+Creating order with information: {
+  id: '1748330867908',
+  portfolioId: 'f5279494-90d0-4086-9136-b473e3de4bcf',
+  userId: '850eb6be-6033-44f6-86fb-e5bde1376d5f',
+  stockId: 6,
+  volume: 5,
+  price: 160.23,
+  type: 'Limit Sell',
+  timestamp: 1748330867908
+}
+[Order] Processing Limit Sell order for stock 6, price 160.23, volume 5
+[Order] No immediate match found for sell order 1748330867908, emitting update for new order in book
+After matching, currently book:
+
+
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║ 6          ║           ║       ║           ║       ║           ║        ║    160.23 ║     5 ║           ║       ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
+
+[SSE] Broadcasting update to 0 connected clients
+[SSE] Broadcasting update to 0 connected clients
+```
+
+Add another order:
+
+```plaintext
+Creating order with information: {
+  id: '1748331035658',
+  portfolioId: 'f5279494-90d0-4086-9136-b473e3de4bcf',
+  userId: '850eb6be-6033-44f6-86fb-e5bde1376d5f',
+  stockId: 6,
+  volume: 3,
+  price: 150.23,
+  type: 'Limit Buy',
+  timestamp: 1748331035658
+}
+[Order] Processing Limit Buy order for stock 6, price 150.23, volume 3
+[Order] No immediate match found for buy order 1748331035658, emitting update for new order in book
+After matching, currently book:
+
+
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║ 6          ║           ║       ║    150.23 ║     3 ║           ║        ║    160.23 ║     5 ║           ║       ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
+```
+
+
+The  `orderCRUDService` is also provides functions to trigger the matching process (triggered here I mean they call the matching functions in the `orderBook` instance).
+
+```javascript
+    
+    // Use the shared orderBook instance
+    // Incase it is a market order, execute it immediately
+    if (order.type === 'Market Buy' || order.type === 'Market Sell') {
+        orderBook.marketOrderMatching(order); // Perform matching for market orders
+    } else if (order.type === 'Limit Buy' || order.type === 'Limit Sell') {
+        // For limit orders, add them to the queue and perform matching
+        orderBook.limitOrderMatching(order); // This will handle both adding to queue and matching
+    }    
+
+    // DEBUGGING: Display the order book after matching
+    console.log('After matching, currently book:') 
+    orderBook.displayOrderBook();
+    return order;
+```
+
+Also have the cacel order function, but we haven 't implement in the UI:
+
+```javascript
+// Service to remove an order from the queue by ID (Cancel order)
+export const cancelOrderService = async (orderId) => {
+    // Use the shared orderBook instance
+    orderBook.removeOrderFromQuene(orderId);
+    console.log('After removing, currently book:') 
+    orderBook.displayOrderBook();
+};
+```
+
+Now come to the `orderMatchingService.js` file, which is the heart of the stock trading system, responsible for matching buy and sell orders based on the rules of the stock market. The `OrderBook` class is a singleton instance that handles all the order matching logic. 
+
+```javascript
+export class OrderBook {
+  constructor() {
+
+    // Only market order needs to use queue for matching
+    // Market orders are executed immediately and do not need to be queued
+    this.limitBuyOrderQueue = [];
+    this.limitSellOrderQueue = [];
+    
+    // Store recent transactions for display purposes
+    this.recentTransactions = {};
+  }
+
+  // Singleton pattern to ensure only one instance of OrderBook exists
+  // This instance will be shared across all order CRUD operations
+  static getInstance() {
+    if (!OrderBook.instance) {
+      OrderBook.instance = new OrderBook();
+    }
+    return OrderBook.instance;
+  }
+```
+
+This instance maintains two quenes for limit buy and limit sell orders. For more accurate, two piority queues, which are sorted by price and timestamp:
+
+```javascript
+  // Push orders into the appropriate queue with piority based on price and timestamp
+  addOrderToQuene(order) {
+    if (order.type === "Limit Buy") {
+      this.limitBuyOrderQueue.push(order);
+      this.limitBuyOrderQueue.sort((a, b) => b.price - a.price || a.timestamp - b.timestamp);
+    } else if (order.type === "Limit Sell") {
+      this.limitSellOrderQueue.push(order);
+      this.limitSellOrderQueue.sort((a, b) => a.price - b.price || a.timestamp - b.timestamp);
+    }
+  }
+```
+
+With Limit:
+
+- Limit Buy orders: Lower prices are prioritized (since your always want to buy at the lowest price possible), and if two orders have the same price, the one that arrived first (earlier timestamp) is prioritized, but no need to implement this since the default behaviour First In First Out (FIFO) of the queue data structure already have this.
+
+- Limit Sell orders: Higher prices are prioritized (since your always want to sell at the highest price possible), and if two orders have the same price, the one that arrived first (earlier timestamp) is prioritized.
+
+So how about market orders, they don't need to be queued?
+
+-> Not nessary, market orders are executed immediately and do not need to be queued. They are matched with the best available limit orders in the order book. We do not count the case that multiple market orders are placed at the same time, which may require quene and more sophisticated matching logic to avoid the race condition.
+
+The queues will maintain all the orders that are not matched yet (still hanging in the order book). But we can not display all the orders in the queues to the user, normally, the stock table will jsut display the three best prices, meaning:
+
+- Three highest prices for the `Bid`/Buy side. The highest will correspond to `Prc 1`, the second highest will correspond to `Prc 2`, and so on. 
+- Three lowest prices for the `Ask`/Sell side. The lowest will correspond to `Prc 1`, the second lowest will correspond to `Prc 2`, and so on. 
+
+The `Prc 1` will be the closest column to the `Matched` column, then lower<sup>th</sup> prices expand to to sides of it, something like this:
+
+```plaintext
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+```
+
+*For simplicity and easy looking for begginers, we only display the first two best prices, in reality, it normaly be three best prices.*
+
+Example:
+
+First place limit buy at price 145.00 for 2 stocks:
+
+```plaintext
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║ 6          ║           ║       ║    145.00 ║     2 ║           ║        ║           ║       ║           ║       ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
+```
+
+Then place a limit sell order at price 150.00 for 1 stocks. The buy price is higher than the previous order, so this new order will piority over the previous order, go to the `Prc 1` column and previous order will go to the `Prc 2` column:
+
+```plaintext
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║ 6          ║    145.00 ║     2 ║    150.00 ║     1 ║           ║        ║           ║       ║           ║       ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
+```
+
+Add a new order with even a higher price, for example a limit buy order at price 160.00 for 2 stocks, then this new order will go to the `Prc 1` column and the previous order (at price 150) will go to the `Prc 2` column, the previous of previous order (at price 145) will no longer be display in the table since we only display the first two best prices (no display to console output but still hang in the order book):
+
+```plaintext
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║ 6          ║    150.00 ║     1 ║    160.00 ║     2 ║           ║        ║           ║       ║           ║       ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
+```
+
+Also, when a new order comes in with the same price as the order is being displayed in the table, they are still count as two seperate orders, but in the console table (and also in the frontend UI table) need to aggregate the volume of the orders with the same price. For example, our current order book is like this:
+
+```plaintext
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║ 6          ║    150.23 ║     2 ║    160.34 ║     3 ║           ║        ║           ║       ║           ║       ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
+```
+
+Then a new limit buy order comes in at price 150.23 for 3 stocks, then this order will be aggregated with the previous order at price 150.23, so the volume of the order at price 150.23 will be updated to 5 stocks:
+
+```plaintext
+Creating order with information: {
+  id: '1748355398282',
+  portfolioId: '048ef582-6043-44cd-9222-3edc995c1ed6',
+  userId: 'f3617107-0462-4876-8b30-9e729a090d8e',
+  stockId: 6,
+  volume: 3,
+  price: 160.34,
+  type: 'Limit Buy',
+  timestamp: 1748355398282
+}
+[Order] Processing Limit Buy order for stock 6, price 160.34, volume 3
+[Order] No immediate match found for buy order 1748355398282, emitting update for new order in book
+After matching, currently book:
+
+
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║ 6          ║    150.23 ║     2 ║    160.34 ║     3 ║           ║        ║           ║       ║           ║       ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
+```
+
+
+After we have finsih create the order, add order to the order book, we can start matching orders. The general priciple of matching orders is as follows:
+
+- For **Limit Buy** orders, when come to the order book, we scan all orders in the **Limit Sell** queue to find if there are any any orders that have the lower or equal price than the limit buy order (Actually, no need to scan the whole limit sell orders quene, since the queue is sorted by price, we scan from the frirst till we find the order that meet the condition, then we can stop scanning). If:
+
+  - There are any, we execute the order and remove that order from the queue (Both the  order in the seller side and the buyer side)
+  
+  - There are no orders that meet the condition, we add the limit buy order to the limit buy queue. The order will be hang there untill there are any limit sell orders that meet the condition or a market sell order comes in. If untill the end of the session (admin click the "End Session" button in the UI), whole orderbook will be cleared and all pending orders will be removed from the queue.
+
+  For example, I place a  limit order to buy a stock id 6 at price 150.00 for 2 stocks:
+
+```plaintext
+  ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║ 6          ║           ║       ║    150.00 ║     2 ║           ║        ║           ║       ║           ║       ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
+```
+
+If a new limit sell order comes in for the same stock id 6, but the price still can not meet the condition, for example a limit sell order at price 160.00 for 2 stocks, two orders will be hang in the order book:
+
+```plaintext
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║ 6          ║           ║       ║    150.00 ║     2 ║           ║        ║    160.00 ║     2 ║           ║       ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
+```
+
+Take example when a new limit sell order comes but the price can meet the condition, for example a limit sell order at price 145.00 for 2 stocks, then this order is matched with the fisrt santisfy buy limit order, which is the limit buy order at price 150.00 for 2 stocks, then the order book will be updated as follows:
+
+```plaintext
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║ 6          ║           ║       ║           ║       ║    150.00 ║      2 ║    160.00 ║     2 ║           ║       ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
+```
+
+*In the frontend, the stock table always shows the latest changes in the order book. However, in the backend console, I'm not sure why **sometimes** the `Matched` column doesn't update immediately when a matching order comes in. Instead, it only updates after the next change in the order book — for example, placing a neworder, the table in drawout in the backend console one more times and now you see the previous `Matched` column update. It looks like this might be due to a display issue in the console. The `Bid` and `Ask` columns in console still update immediately, and I've tested the business logic — it works correctly. So the problem seems to be only with how the `Matched` column is displayed in the backend console. But one again, this is just about the visualization in the backend console, the business logic is still working as expected.*
+
+
+
+
+- For **Limit Sell** orders apply the same logic as Limit Buy orders, but in reverse: we scan all orders in the **Limit Buy** queue to find if there are any orders that have the higher or equal price than the limit sell order. If:
+
+  - There are any, we execute the order and remove that order from the queue (Both the order in the buyer side and the seller side)
+  
+  - There are no orders that meet the condition, we add the limit sell order to the limit sell queue. The order will be hang there untill there are any limit buy orders that meet the condition or a market buy order comes in. If untill the end of the session (admin click the "End Session" button in the UI), whole orderbook will be cleared and all pending orders will be removed from the queue.
+
+For example, I place a limit order to sell a stock id 6 at price 150.00 for 2 stocks:
+
+```plaintext
+Creating order with information: {
+  id: '1748346855246',
+  portfolioId: '544a0bc9-704d-4ce5-88e8-87c651cb1c44',
+  userId: '7511f722-bd32-479f-961d-cf5a7a87d8be',
+  stockId: 6,
+  volume: 2,
+  price: 150,
+  type: 'Limit Sell',
+  timestamp: 1748346855246
+}
+[Order] Processing Limit Sell order for stock 6, price 150, volume 2
+[Order] No immediate match found for sell order 1748346855246, emitting update for new order in book
+After matching, currently book:
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║ 6          ║           ║       ║           ║       ║           ║        ║    150.00 ║     2 ║           ║       ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
+```
+
+Then I add a limit buy order for the same stock id 6 at price 145.00 for 2 stocks, this order offer a lower price than the limit sell order, so it will not be matched, and both orders will be hang in the order book:
+
+```plaintext
+Creating order with information: {
+  id: '1748346882030',
+  portfolioId: '544a0bc9-704d-4ce5-88e8-87c651cb1c44',
+  userId: '7511f722-bd32-479f-961d-cf5a7a87d8be',
+  stockId: 6,
+  volume: 2,
+  price: 145,
+  type: 'Limit Buy',
+  timestamp: 1748346882030
+}
+[Order] Processing Limit Buy order for stock 6, price 145, volume 2
+[Order] No immediate match found for buy order 1748346882030, emitting update for new order in book
+After matching, currently book:
+
+
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║ 6          ║           ║       ║    145.00 ║     2 ║           ║        ║    150.00 ║     2 ║           ║       ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
+```
+
+Then a new market buy order comes in for the same stock id 6, this order will be matched with the lowest prices in the **Limit Sell** queue, which is the limit sell order at price 150.00 for 2 stocks, so the order book will be updated as follows:
+
+```plaintext
+Creating order with information: {
+  id: '1748346895445',
+  portfolioId: '544a0bc9-704d-4ce5-88e8-87c651cb1c44',
+  userId: '7511f722-bd32-479f-961d-cf5a7a87d8be',
+  stockId: 6,
+  volume: 2,
+  price: null,
+  type: 'Market Buy',
+  timestamp: 1748346895445
+}
+After matching, currently book:
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║ 6          ║           ║       ║    145.00 ║     2 ║    150.00 ║      2 ║           ║       ║           ║       ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
+```
+
+- For **Market Buy** orders, we take the first order in the **Limit Sell** queue (the one with the lowest price) (Some case it only need to take the first order, but in some case it may need to take multiple orders, since in this case the order can only be partially matched, we will talk about this later) then match the orders. Since the market buy order is executed at the best available price without waiting for any condition, it will be executed immediately and no hanging in the order book (we do not count the case that there is a market buy order but in the market currently there is no limit sell order, in this case the market buy order should still be hang in the order book, but this is not a common case).
+
+For example, currenly in the market there are two limit sell oders at price 150 for 2 stocks and at price 160 for 2 stocks, then a market buy order comes in for 2 stocks, the order book will be updated as follows:
+
+```plaintext
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║ 6          ║           ║       ║           ║       ║           ║        ║    150.00 ║     2 ║    160.00 ║     2 ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
+
+Creating order with information: {
+  id: '1748353746654',
+  portfolioId: 'cbf474f0-abf0-4095-8926-39c18e5097dc',
+  userId: '3e6dd451-7b6c-4787-b9f0-8d0e72f0630e',
+  stockId: 6,
+  volume: 2,
+  price: null,
+  type: 'Market Buy',
+  timestamp: 1748353746654
+}
+After matching, currently book:
+
+
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║ 6          ║           ║       ║           ║       ║    150    ║    2   ║    160.00 ║     2 ║           ║       ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
+```
+
+
+- For **Market Sell** orders, we take the first order in the **Limit Buy** queue (the one with the highest price) ... same logic as Market Buy orders but in reverse.
+
+
+That is about matching on price, above we are assuming that te orders are **Fully matched**, but there might (actually often) be cases where the orders are **Partially matched**. For example:
+
+- A sell limit hanging at $150 for 2 stock, another sell limits order that hanging at $160 for 3 stock comes in
+
+- A market buy order comes in, asking to buy 4 stock.
+
+In this case, our engine need to make sure that the buy order will by at $150 for 2 stocks and at $160 for 2 remaining stocks:
+
+```plaintext
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║ 6          ║           ║       ║           ║       ║           ║        ║    150.00 ║     2 ║    160.00 ║     3 ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
+
+```
+
+Then an buy market order comes in for 4 stocks, the order book will be updated as follows:
+
+```plaintext
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
+╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║ 6          ║           ║       ║           ║       ║    160.00 ║      2 ║    160.00 ║     1 ║           ║       ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
+```
+The engine performs the matching twice or the buy market order with quantity 4 stocks:
+
+1. Match the first 2 stocks at price $150
+2. Match the next 2 stocks at price $160, so you can see in the table, the `Matched` show the later match, the `Ask` column price $150 sell all 2 stocks it has,  price $160 sell 2 stocks it have, so only has 1 stock left in the order.
+
+In the `stockMatchingService.js` file, we implement the matching logic for each kind of orders base on what we have discussed above.
+
+```javascript
+// For market order (Market Buy and Market Sell)
+async marketOrderMatching(order) {
+    if (order.type === "Market Buy") {
+      // Some complicated logic here to handle both fully matched and partially matched orders
+    } else if (order.type === "Market Sell") {
+        // Some complicated logic here to handle both fully matched and partially matched orders    
+    }
+}
+```
+
+```javascript
+// --- Limit Order Matching ---
+
+// Handle limit order matching
+async limitOrderMatching(order) {
+  // Add the order to the appropriate queue
+  this.addOrderToQuene(order);
+
+  // Try to match the order immediately
+  if (order.type === "Limit Buy") {
+    let matchOccurred = false;
+    const relevantSellOrders = this.limitSellOrderQueue.filter(
+      so => so.stockId === order.stockId && so.volume > 0
+    ); // Filter for the same stock and positive volume
+
+    let sellOrderIndex = 0;
+    while (sellOrderIndex < relevantSellOrders.length && order.volume > 0) {
+      const sellOrder = relevantSellOrders[sellOrderIndex];
+      if (order.price >= sellOrder.price) { // Price condition for limit buy
+        const matchedQuantity = Math.min(order.volume, sellOrder.volume);
+        const matchedPrice = sellOrder.price; // Matched at the sell order's price
+
+        console.log(`[Match] Buy match found: ${matchedQuantity} @ ${matchedPrice} (Stock ${order.stockId})`);
+        matchOccurred = true;
+
+        // Update volumes
+        order.volume -= matchedQuantity;
+        sellOrder.volume -= matchedQuantity;
+
+        ....
+
+        // Remove completed sell order from global queue
+        if (sellOrder.volume === 0) {
+          this.limitSellOrderQueue = this.limitSellOrderQueue.filter(o => o.id !== sellOrder.id);
+          relevantSellOrders.splice(sellOrderIndex, 1);
+          // Do not increment index
+        } else {
+          sellOrderIndex++;
+        }
+
+        // If buy order is filled, remove it from queue
+        if (order.volume === 0) {
+          this.limitBuyOrderQueue = this.limitBuyOrderQueue.filter(o => o.id !== order.id);
+          break; 
+        }
+      } else {
+        // Sell order price is too high, no more matches possible for this buy order against sorted sell orders
+        break;
+      }
+    }
+    
+    if (!matchOccurred && order.volume > 0) { // if order still has volume and no match, it was added to queue earlier
+      console.log(`[Order] No immediate match found for buy order ${order.id}, emitting update for new order in book`);
+      await emitOrderBookUpdate();
+    } else if (matchOccurred && order.volume === 0) {
+        console.log(`[Order] Buy order ${order.id} fully matched and filled.`);
+    } else if (matchOccurred && order.volume > 0) {
+        console.log(`[Order] Buy order ${order.id} partially matched, remaining volume added to book.`);
+        // Order was already added by addOrderToQuene, its volume is now updated.
+        await emitOrderBookUpdate();
+    }
+
+  } else if (order.type === "Limit Sell") {
+    // Similar logic for limit sell orders
+  }
+}
+```
+
+Above we mentioned how the order is match and update the orderbook, but when orders are matched, we also need to handle the **settlement** of the orders. 
+
+The settlement process is responsible for:
+
+- Add the quantity of matched stocks to the buyer's portfolio, minus their cash balance 
+
+- Minus the quantity of matched stocks from the seller's portfolio, plus their cash balance
+
+See details in the `orderSettlementService.js` file:
+
+Reference: https://jindalujjwal0720.medium.com/stock-market-order-book-orders-matching-engine-in-nodejs-3dff82f70080
 
 
 

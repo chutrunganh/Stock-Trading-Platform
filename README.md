@@ -25,9 +25,9 @@
     <br />
     <a href="#-features">Features</a>
     ·
-    <a href="">Report Bug</a>
+    <a href="https://github.com/chutrunganh/Stock-Trading-Platform/issues/new">Report Bug</a>
     ·
-    <a href="">Request New Feature</a>
+    <a href="https://github.com/chutrunganh/Stock-Trading-Platform/issues/new">Request New Feature</a>
   </p>
 </div>
 
@@ -82,7 +82,7 @@ The project is built with the following technologies:
 
 <br>
 
-*For more details explanaction and implementation of the technologies used in this project, please refer to our [techStack_1](docs/techStack/techStack_1.md), [techStack_2](docs/techStack/techStack_2.md)*
+For more details explanaction and implementation of the technologies used in this project, please refer to our [Tech Stack](/docs/techStack/).
 
 # 📖 Features
 
@@ -201,7 +201,7 @@ If you're interested in exploring the code and running the project manually, fol
       
     Then run `docker-compose up` to start the database.
 
-    For detailed instructions on database setup, including configuration variables and solutions to common issues, we highly recommend taking a quick look at our [Database Setup Guide](docs/setupInstructions/setupDatabase.md).
+    For detailed instructions on database setup, including configuration variables and solutions to common issues, we highly recommend taking a quick look at our [Database Setup Guide](docs/setupInstructions/setupDatabase.md) and our [Database Schemas](docs/design/)
 
 
 4. **Start the backend**

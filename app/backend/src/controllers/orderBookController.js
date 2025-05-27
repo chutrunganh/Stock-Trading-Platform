@@ -21,7 +21,7 @@ export const orderBookSSE = (req, res) => {
 
   // Send heartbeat to keep connection alive
   const heartbeat = setInterval(() => {
-    res.write(`data: ${JSON.stringify({ type: 'heartbeat', timestamp: new Date().toISOString() })}/n/n`);
+    res.write(`data: ${JSON.stringify({ type: 'heartbeat', timestamp: new Date().toISOString() })}\n\n`);
   }, 30000); // Send heartbeat every 30 seconds
 
   // Send initial data
@@ -34,7 +34,7 @@ export const orderBookSSE = (req, res) => {
       const recentTransactions = orderBook.recentTransactions || {};
       
       const processedData = processOrderBookData(stocksResult, buyOrders, sellOrders, recentTransactions);
-      res.write(`data: ${JSON.stringify({ type: 'initial', data: processedData })}/n/n`);
+      res.write(`data: ${JSON.stringify({ type: 'initial', data: processedData })}\n\n`);
       console.log(`[SSE] Initial data sent to new client. ${sseClients.size+1} total clients`);
     } catch (error) {
       console.error('Error sending initial data:', error);
@@ -44,7 +44,7 @@ export const orderBookSSE = (req, res) => {
   // Function to send updates to this client
   const sendUpdate = (update) => {
     try {
-      res.write(`data: ${JSON.stringify({ type: 'update', data: update })}/n/n`);
+      res.write(`data: ${JSON.stringify({ type: 'update', data: update })}\n\n`);
     } catch (error) {
       console.error('[SSE] Error sending update to client:', error);
       // Remove client if we can't send to it
@@ -149,7 +149,9 @@ const processOrderBookData = (stocks, buyOrders, sellOrders, recentTransactions)
     const getTopAggregatedOrders = (orders, isBuyOrder) => {
       const aggregated = {};
       orders.forEach(order => {
-        if (!order.price) return;
+        // Skip orders with 0 or negative volume
+        if (!order.price || order.volume <= 0) return;
+        
         const price = Number(order.price);
         const volume = Number(order.volume);
         if (!aggregated[price]) {
@@ -170,12 +172,12 @@ const processOrderBookData = (stocks, buyOrders, sellOrders, recentTransactions)
       };
     };
 
-    // Filter and aggregate bid orders for this stock
-    const stockBuyOrders = buyOrders.filter(order => order.stockId === stock.stock_id);
+    // Filter and aggregate bid orders for this stock (only positive volume)
+    const stockBuyOrders = buyOrders.filter(order => order.stockId === stock.stock_id && order.volume > 0);
     const topBids = getTopAggregatedOrders(stockBuyOrders, true);
       
-    // Filter and aggregate ask orders for this stock
-    const stockSellOrders = sellOrders.filter(order => order.stockId === stock.stock_id);
+    // Filter and aggregate ask orders for this stock (only positive volume)
+    const stockSellOrders = sellOrders.filter(order => order.stockId === stock.stock_id && order.volume > 0);
     const topAsks = getTopAggregatedOrders(stockSellOrders, false);
 
     // Get recent transaction for this stock

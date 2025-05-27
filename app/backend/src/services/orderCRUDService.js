@@ -33,7 +33,7 @@ export const createOrderService = async (orderData) => {
             stockId,
             volume: quantity,
             price,
-            type: orderType, // "Order Buy", "Order Sell", "Market Buy", "Market Sell"
+            type: orderType, // "Limit Buy", "Limit Sell", "Market Buy", "Market Sell"
             timestamp: Date.now(), // Timestamp for order arrangement incase of limit orders with same price
         };
 

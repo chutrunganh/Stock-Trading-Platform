@@ -31,7 +31,7 @@ export function validatePassword(password, username) {
   if (!/[a-z]/.test(password)) {
     errors.push('Password must include at least one lowercase letter.');
   }
-  if (!//d/.test(password)) {
+  if (!/\d/.test(password)) {
     errors.push('Password must include at least one number.');
   }
   if (!/[@$!%*?&]/.test(password)) {

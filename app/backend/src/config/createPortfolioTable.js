@@ -26,10 +26,10 @@ const createPortfolioTable = async () => {
         }
         
         await pool.query(queryText);
-        //console.log('/nPortfolios table created successfully');
+        //console.log('\nPortfolios table created successfully');
     }
     catch(error){
-        log.error('/nError occurs when creating portfolios table:', error);
+        log.error('\nError occurs when creating portfolios table:', error);
         throw new Error(error.message);
     }
 };

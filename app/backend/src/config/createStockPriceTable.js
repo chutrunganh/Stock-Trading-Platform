@@ -37,7 +37,7 @@ const createStockPriceTable = async () => {
             await pool.query('DROP TABLE IF EXISTS "stockprices" CASCADE');
         }
         await pool.query(queryText);
-        //console.log('/nStock prices table created successfully');
+        //console.log('\nStock prices table created successfully');
 
         if (process.env.NODE_ENV === 'development'){
             await seedStockPriceTestData();
@@ -45,7 +45,7 @@ const createStockPriceTable = async () => {
 
     }
     catch(error){
-        console.error('/nError occurs when creating StockPrices table:', error.message);
+        console.error('\nError occurs when creating StockPrices table:', error.message);
         throw new Error(error.message);
     }
 };

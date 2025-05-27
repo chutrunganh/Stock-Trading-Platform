@@ -78,6 +78,8 @@ Search for `WAF` in the Cloudflare dashboard and click on it. There are some pre
 
 ![Cloudflare WAF](../images/WAF_1.png)
 
+*Block IP address that not come from Vietnam, block bad user agents (to prevent reconnaissance tools), rate limiting to prevent DDoS attacks, and more.*
+
 ![Cloudflare WAF 2](../images/WAF_2.png)
 
 
@@ -747,7 +749,7 @@ export const sendOtpService = async (email) => {
       from: '"Soict Stock" <no-reply@soictstock.com>',
       to: email,
       subject: 'Soict Stock - Two-Factor Authentication (OTP) Verification',
-      text: `Dear user,/n/nYour One-Time Password (OTP) for secure login to Soict Stock is: ${otp}/n/nThis OTP is valid for 1 minute./n/nIf you did not request this, please ignore this email./n/nThank you,/nSoict Stock Security Team`,
+       text: `Dear user,\n\nYour One-Time Password (OTP) for secure login to Soict Stock is: ${otp}\n\nThis OTP is valid for 1 minute.\n\nIf you did not request this, please ignore this email.\n\nThank you,\nSoict Stock Security Team`,
       html: `
         <div style="font-family: Arial, sans-serif; background: #f9f9f9; padding: 24px; border-radius: 8px; max-width: 480px; margin: auto; color: #222;">
           <div style="text-align: center; margin-bottom: 24px;">

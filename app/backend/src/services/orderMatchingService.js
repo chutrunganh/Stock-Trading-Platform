@@ -36,7 +36,7 @@ export class OrderBook {
     if (order.type === "Market Buy") {
       // Filter sell orders for the specific stock and keep them sorted by price (lowest first)
       const relevantSellOrders = this.limitSellOrderQueue.filter(
-        so => so.stockId === order.stockId
+        so => so.stockId === order.stockId && so.volume > 0
       );
       // The global queue is already sorted by price (a.price - b.price),
       // so filtering maintains this order for the specific stock.
@@ -95,7 +95,7 @@ export class OrderBook {
     } else if (order.type === "Market Sell") {
       // Filter buy orders for the specific stock and keep them sorted by price (highest first)
       const relevantBuyOrders = this.limitBuyOrderQueue.filter(
-        bo => bo.stockId === order.stockId
+        bo => bo.stockId === order.stockId && bo.volume > 0
       );
       // The global queue is sorted by price (b.price - a.price for buys),
       // filtering maintains this order for the specific stock.
@@ -167,8 +167,8 @@ export class OrderBook {
     if (order.type === "Limit Buy") {
       let matchOccurred = false;
       const relevantSellOrders = this.limitSellOrderQueue.filter(
-        so => so.stockId === order.stockId
-      ); // Filter for the same stock
+        so => so.stockId === order.stockId && so.volume > 0
+      ); // Filter for the same stock and positive volume
 
       let sellOrderIndex = 0;
       while (sellOrderIndex < relevantSellOrders.length && order.volume > 0) {
@@ -248,8 +248,8 @@ export class OrderBook {
     } else if (order.type === "Limit Sell") {
       let matchOccurred = false;
       const relevantBuyOrders = this.limitBuyOrderQueue.filter(
-        bo => bo.stockId === order.stockId
-      ); // Filter for the same stock
+        bo => bo.stockId === order.stockId && bo.volume > 0
+      ); // Filter for the same stock and positive volume
 
       let buyOrderIndex = 0;
       while (buyOrderIndex < relevantBuyOrders.length && order.volume > 0) {
@@ -395,6 +395,9 @@ export class OrderBook {
     const aggregateOrders = (orders, isBuyOrder) => {
       const aggregated = {};
       orders.forEach(order => {
+        // Skip any orders with 0 volume - they should not appear in the book anymore
+        if (order.volume <= 0) return;
+        
         const price = order.price;
         if (!aggregated[price]) {
           aggregated[price] = { price, volume: 0 };
@@ -409,6 +412,9 @@ export class OrderBook {
 
     // Process buy orders
     this.limitBuyOrderQueue.forEach(order => {
+      // Skip orders with 0 volume
+      if (order.volume <= 0) return;
+      
       if (!stockGroups[order.stockId]) {
         stockGroups[order.stockId] = {
           bids: [],
@@ -423,6 +429,9 @@ export class OrderBook {
 
     // Process sell orders
     this.limitSellOrderQueue.forEach(order => {
+      // Skip orders with 0 volume
+      if (order.volume <= 0) return;
+      
       if (!stockGroups[order.stockId]) {
         stockGroups[order.stockId] = {
           bids: [],
@@ -436,7 +445,7 @@ export class OrderBook {
     });
 
     // Display the order book for each stock
-    console.log('/n');
+    console.log('\n');
     console.log('╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗');
     console.log('║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║');
     console.log('║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣');
@@ -471,6 +480,6 @@ export class OrderBook {
       );
     });
 
-    console.log('╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝/n');
+    console.log('╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝\n');
   }
 }

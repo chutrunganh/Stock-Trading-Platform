@@ -40,7 +40,7 @@ export function getPasswordRequirements(password, username) {
     maxLength: password.length <= 72,
     hasUpper: /[A-Z]/.test(password),
     hasLower: /[a-z]/.test(password),
-    hasNumber: //d/.test(password),
+    hasNumber: /\d/.test(password),
     hasSymbol: /[@$!%*?&]/.test(password),
     noUsername: !containsUsername
   };

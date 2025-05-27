@@ -30,7 +30,7 @@ const createHoldingTable = async () => {
         await pool.query(queryText);
     }
     catch(error){
-        log.error('/nError occurs when creating holdings table:', error.message);
+        log.error('\nError occurs when creating holdings table:', error.message);
         throw new Error(error.message);
     }
 };

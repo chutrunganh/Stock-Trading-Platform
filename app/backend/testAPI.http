@@ -1,0 +1,155 @@
+# Install Rest Client extension in VSCode to run this file
+# This file contains HTTP requests to test the API endpoints
+
+### CAUTION: DO NOT REMOVE ANY NEWLINE, SPACE OR NUMBER OF # IN THIS FILE, IT WILL BREAK THE REQUESTS
+
+# Initial when server is up, it have already seeded the database with 1 admin account and 1 user account, see
+# the file config/createUserTable.js or look at the console log to see the login credentials in plain text.
+# you can use these two accounts to test the API endpoints.
+
+### 1. Public endpoints (no authentication required)
+
+### Test for user registration
+POST http://localhost:3000/api/register
+Content-Type: application/json
+
+{
+  "username": "testuser2",
+  "email": "testuser2@example.com",
+  "password": "password123"
+}
+
+### Test for user account login using seeded user account credentials
+# After send this request, you can see the JWT token inside the Cookie header in the response. Copy
+# that value (from jwt=... till you meet ;) and paste it into the global variable @user_jwt below
+POST http://localhost:3000/api/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### Replace the JWT token in the Cookie header with the one you received from the login response. This is a global variable used in the requests below that require authentication
+# In the cookie header, the token start from jwt=... till you meet ;
+@user_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJUZXN0VXNlciIsImVtYWlsIjoidGVzdEBleGFtcGxlLmNvbSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzQzMjQ1ODA2LCJleHAiOjE3NDMzMzIyMDZ9.DczNDmIUNGCDGnCgfu9EUVDkRj0Qc1NYqfBavSmyY00
+
+
+
+
+### Test for admin account login using seeded admin account credentials
+# After send this request, you can see the JWT token inside the Cookie header in the response. Copy
+# that value (from jwt=... till you meet ;) and paste it into the global variable @admin_jwt below. This
+# is a global variable used in the requests below that require authentication with admin privileges.
+POST http://localhost:3000/api/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "admin123"
+}
+
+
+### Replace the JWT token in the Cookie header with the one you received from the login response. This is a global variable used in the requests below that require authentication with admin privileges
+@admin_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJBZG1pblVzZXIiLCJlbWFpbCI6ImFkbWluQGV4YW1wbGUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzQzMjQ2NDc2LCJleHAiOjE3NDMzMzI4NzZ9.e_TGOO4ogWe4ucm0RRYrwqUEj-8pyicB7zTqVpNEW2I
+
+### Testing Google SSO authentication
+# Create a new user account using the Google SSO authentication method. This will create a new user in the database with the email address you used to sign in with Google.
+# You can use the same email address as the one you used to register with the email and password method above.
+# 
+# NOTE: Both JWT tokens from email/password login and Google SSO have the same format and work the same way!
+# The token contains the same user information (id, username, email, role) regardless of authentication method.
+# The only difference is how the user was initially verified (password check vs Google validation).
+# The authentication middleware doesn't know or care which login method was used - it only validates the token.
+#
+# To test this, open: http://localhost:3000/auth/google in your browser(NOT Postman or Rest Client)
+# This will redirect you to the Google login page.
+# After successful authentication, you'll get a JWT token in the browser response.
+# Copy the token and replace YOUR_JWT_TOKEN_HERE with it in the global variable @google_user_jwt below
+@google_user_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywidXNlcm5hbWUiOiJUcnVuZyBBbmggQ2h1IiwiZW1haWwiOiJjaHV0cnVuZzIxMEBnbWFpbC5jb20iLCJyb2xlIjoidXNlciIsImlhdCI6MTc0MzU5NTY4NCwiZXhwIjoxNzQzNjgyMDg0fQ.GbjJTKYabXr8rBPro_UXNDDtidXxZViRW3OJI7gazmQ
+
+### 2. Protected endpoints (authentication required)
+# Test for a protected endpoint that requires authentication. This endpoint returns the user information of the logged in user.
+# you can use either $user_jwt, $google_user_jwt or $admin_jwt to test this endpoint.
+GET http://localhost:3000/api/profile
+Cookie: jwt={{@{{google_user_jwt}}}} 
+
+### 3. Protected endpoints (authentication required) + admin role required
+
+### Get all users 
+GET http://localhost:3000/api/admin/users
+Cookie: jwt={{admin_jwt}}
+
+### Alternative: Test with Authorization header instead of cookie
+GET http://localhost:3000/api/admin/users
+Authorization: Bearer {{admin_jwt}}
+
+### Get user by ID
+GET http://localhost:3000/api/admin/user/1
+Cookie: jwt={{admin_jwt}}
+
+### Update user by ID
+PUT http://localhost:3000/api/admin/user/1
+Content-Type: application/json
+Cookie: jwt={{admin_jwt}}
+
+{
+  "username": "updatedname",
+  "email": "updated@example.com"
+}
+
+### Update user password
+PUT http://localhost:3000/api/admin/user/1
+Content-Type: application/json
+Cookie: jwt={{admin_jwt}}
+
+{
+  "password": "newpassword123"
+}
+
+### Delete user by ID
+DELETE http://localhost:3000/api/admin/user/1
+Cookie: jwt={{admin_jwt}}
+
+### Test for creating a new buy order
+POST http://localhost:3000/api/createOrder
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "stockId": 101,
+  "quantity": 20,
+  "price": 50,
+  "orderType": "Limit Buy"
+}
+
+### Test for creating a new sell order
+POST http://localhost:3000/api/createOrder
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "stockId": 101,
+  "quantity": 20,
+  "price": 5,
+  "orderType": "Limit Sell"
+}
+
+### Test a market order
+POST http://localhost:3000/api/createOrder
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "stockId": 101,
+  "quantity": 30,
+  "price": 0,
+  "orderType": "Market Buy"
+}
+
+
+### Test for canceling an order
+DELETE http://localhost:3000/api/cancelOrder/1744103796519
+
+
+
