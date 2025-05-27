@@ -20,7 +20,7 @@
   <p align="center">
     <b>A stock trading simulator built for beginners. Learn to trade without the risk</b>
     <br />
-    <a href=""><strong>Explore the docs »</strong></a>
+    <a href="/docs/"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="#-features">Features</a>
@@ -54,6 +54,7 @@ The project is built with the following technologies:
   <img src="docs/images/node_mailer.png" alt="NodeMailer" width="60" height="60">
   <img src="docs/images/jwt.png" alt="Json Web Token" height="55">
   <img src="docs/images/passport.png" alt="Passport" height="45">
+  <img src="docs/images/sepay_logo.png" alt="Sepay" height="45">
 </div>
 
 <strong>Frontend:</strong>

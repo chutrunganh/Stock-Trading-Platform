@@ -90,6 +90,28 @@ Free plan offers 5 custom rules. Some other option turn on default by Cloudflare
 
 ## Theory
 
+Here is a overview how Captcha/ReCaptcha works under the hood:
+
+![Captcha](../images/recaptcha_work.png)
+
+*This image is showed for Google ReCaptcha, but the same concept applies to Cloudflare Turnstile.*
+
+Refernce: https://medium.com/@hwupathum/recaptcha-how-it-works-4031eae74a8b
+
+1. User make some action that will trigger the Captcha, in our case, when user click on `Login` button on the Navbar, then the login form will be displayed, which contains the Turnstile widget, this will trigger the Turnstile widget 
+
+2. After trigger, our Login form will send a request to the Turnstile server ask for the Turnstile widget. Turnstile server will return a HTML code that contains the Turnstile widget, this widget is rendered on the Login form.
+
+3. User will interact with the Turnstile widget by explicitly solving the challenge (e.g., clicking a checkbox, selecting images, etc.) or implicitly (invisibale) solving the challenge (e.g., moving the mouse, typing, etc.). These data/actions will be sent to the Turnstile server (together with our registered `SITE_KEY`) to verify if the user is a human or a bot. 
+
+4. If the user is a human, the Turnstile server will return a token to the frontend. This token is a proof that the user has successfully solved the challenge. But how the frontend can verify that this token is valid? 
+
+5. The frontend will send this token to our backend server, which will then send a request contain this token + our registered `SECRET_KEY` to the Turnstile server to verify the token.
+
+6. The Turnstile server will verify the token and return a response to our backend server may be yes/no or confidence score (With invisible Captcha like Google Recaptcha V3 or Cloudfalre Turnstile, the response will contain a confidence score instead, which guess how many percentage that this user is a human).
+
+7. If the response is valid, our backend server will allow the user to login, otherwise, it will reject the login request.
+
 Cloudflare Turnstile is a free CAPTCHA alternative to Google reCAPTCHA. It is designed to be more user-friendly and less intrusive, while still providing effective protection against bots and spam.
 
 Search for `Turnstile` in the Cloudflare dashboard and click on it. 
