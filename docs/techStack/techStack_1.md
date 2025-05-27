@@ -1,5 +1,3 @@
-
-
 > [!NOTE]
 > This file contains the tech stack used in the project, including the theory and examples implemented in the code.
 
@@ -14,7 +12,7 @@ To store the password securely, we use bcrypt to hash the password before storin
 
 2. bcrypt uses a slow hashing algorithm, which makes it computationally expensive to brute-force the password. The cost factor (`SALT_ROUNDS`) determines how many iterations of the hashing algorithm are performed. A higher cost factor means more iterations, making it harder to crack the password. In the code, we use 10 rounds which tells bcrypt to perform 2^10 iterations of the hashing algorithm. The larger the number of rounds, the more secure the hash is, but it also requires more hardware resources to compute. As OWASP recommends, a cost factor should be at least 10.
 
-So in theory, when user register, the process would be: **hash(password_user_input + salt)**, we store this result in the database. When the user tries to log in, take in the password they entered, hash it again with the **SAME** salt, and compare the result to the stored hash. This means we need to store both the hashed password and the salt in the database corresponding to user account. However, in practicular, we do not need to create another field in the database or write any code to store the salt, bcrypt **automatically** handles that under the hood. For more detail, bcrypt auto includes the salt in the output string itself, so when you hash a password, the output will include both the salt and the hash. The output string is something like this:
+So in theory, when user register, the process would be: **hash(password_user_input + salt)**, we store this result in the database. When the user tries to log in, take in the password they entered, hash it again with the **SAME** salt, and compare the result to the stored hash. This means we need to store both the hashed password and the salt in the database corresponding to user account. However, in practical, we do not need to create another field in the database or write any code to store the salt, bcrypt **automatically** handles that under the hood. For more detail, bcrypt auto includes the salt in the output string itself, so when you hash a password, the output will include both the salt and the hash. The output string is something like this:
 
 ```plaintext
 $2a$10$abcdefghijklmnopqrstuu3guuo/XeYbYBk7Zenk4Yf9XuYoeZ4JWD
@@ -38,9 +36,9 @@ When user login -> fetch the user from the database by email -> compare the pass
 
 However, we need to be careful when implementing the login function. If we check the email first, if not exist then throw error, if exist then calculate the hash of input password and compare again the password stored in database, we can introduce a **timing attack** vulnerability. 
 
-An attacker can determine if an email exists in the database by measuring the time it takes to respond to the login request, like in case the web immediately respone, attacker can know that the email does not exist in the database, and if the web takes a long time to respond (since it  need to slow hash the provided password and compare it with the hashed password in the database), attacker can know that the email exists in the database.
+An attacker can determine if an email exists in the database by measuring the time it takes to respond to the login request, like in case the web immediately response, attacker can know that the email does not exist in the database, and if the web takes a long time to respond (since it  need to slow hash the provided password and compare it with the hashed password in the database), attacker can know that the email exists in the database.
 
-To prevent this, **always** perfrom password hashing, even if the email does not exist in the database. This way, the time it takes to respond to the login request will be the same regardless of whether the email exists or not.
+To prevent this, **always** perform password hashing, even if the email does not exist in the database. This way, the time it takes to respond to the login request will be the same regardless of whether the email exists or not.
     
 ```javascript   
 export const loginUserService = async (email, password) => {
@@ -74,11 +72,11 @@ More info, how does bcrypt.compare work under the hood?
 
 2. It hashes the user input password with the extracted salt and cost factor.
 
-3. It compares the newly hashed password with the stored hashed password. This comparison uses a constant-time algorithm instead of naive === comparison to prevent timing attacks (This timming attack is mention about gesting the password one character at a time aspect, not for the timing attack in bruce force login name we mentione earlier).
+3. It compares the newly hashed password with the stored hashed password. This comparison uses a constant-time algorithm instead of naive === comparison to prevent timing attacks (This timing attack is mentioned about guessing the password one character at a time aspect, not for the timing attack in brute force login name we mentioned earlier).
 
 *Why using === comparison is not a good idea?*
 
-String comparision is JavaScript with === termiates as soon as it finds a mismatch. This means if two strings are not the same length or have an early mismatch, === stops immediately. An attacker can measure response time and gradually guess the correct password one character at a time.
+String comparison in JavaScript with === terminates as soon as it finds a mismatch. This means if two strings are not the same length or have an early mismatch, === stops immediately. An attacker can measure response time and gradually guess the correct password one character at a time.
 
 
 # 2. JWT
@@ -689,7 +687,7 @@ After matching, currently book:
 
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
 ║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
-║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
 ║ 6          ║           ║       ║    150.23 ║     3 ║           ║        ║    160.23 ║     5 ║           ║       ║
@@ -785,7 +783,7 @@ The queues will maintain all the orders that are not matched yet (still hanging 
 - Three highest prices for the `Bid`/Buy side. The highest will correspond to `Prc 1`, the second highest will correspond to `Prc 2`, and so on. 
 - Three lowest prices for the `Ask`/Sell side. The lowest will correspond to `Prc 1`, the second lowest will correspond to `Prc 2`, and so on. 
 
-The `Prc 1` will be the closest column to the `Matched` column, then lower<sup>th</sup> prices expand to to sides of it, something like this:
+The `Prc 1` will be the closest column to the `Matched` column, then lower<sup>th</sup> prices expand to two sides of it. Each `Prc` column will have a `Vol` column on the right side of it, something like this:
 
 ```plaintext
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
@@ -793,6 +791,8 @@ The `Prc 1` will be the closest column to the `Matched` column, then lower<sup>t
 ║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
+║            ║           ║       ║           ║       ║           ║        ║           ║       ║           ║       ║
+╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
 ```
 
 *For simplicity and easy looking for begginers, we only display the first two best prices, in reality, it normaly be three best prices.*
@@ -843,11 +843,11 @@ Also, when a new order comes in with the same price as the order is being displa
 ║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
-║ 6          ║    150.23 ║     2 ║    160.34 ║     3 ║           ║        ║           ║       ║           ║       ║
+║ 6          ║    150.00 ║     1 ║    160.00 ║     2 ║           ║        ║           ║       ║           ║       ║
 ╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
 ```
 
-Then a new limit buy order comes in at price 150.23 for 3 stocks, then this order will be aggregated with the previous order at price 150.23, so the volume of the order at price 150.23 will be updated to 5 stocks:
+Then a new limit buy order comes in at price 150.00 for 3 stocks, then this new order will be aggregated with the previous order at price 150.00, so the volume of the order at price 150.00 will be updated to 5 stocks:
 
 ```plaintext
 Creating order with information: {
@@ -856,21 +856,21 @@ Creating order with information: {
   userId: 'f3617107-0462-4876-8b30-9e729a090d8e',
   stockId: 6,
   volume: 3,
-  price: 160.34,
+  price: 160.00,
   type: 'Limit Buy',
   timestamp: 1748355398282
 }
-[Order] Processing Limit Buy order for stock 6, price 160.34, volume 3
+[Order] Processing Limit Buy order for stock 6, price 160.00, volume 3
 [Order] No immediate match found for buy order 1748355398282, emitting update for new order in book
 After matching, currently book:
 
 
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
 ║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
-║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╬════════╬═══════════╦═══════╬═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
-║ 6          ║    150.23 ║     2 ║    160.34 ║     3 ║           ║        ║           ║       ║           ║       ║
+║ 6          ║    150.00 ║     5 ║    160.00 ║     3 ║           ║        ║           ║       ║           ║       ║
 ╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
 ```
 
@@ -895,23 +895,23 @@ For **Limit Buy** orders, when come to the order book, we scan all orders in the
 ║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
-║ 6          ║           ║       ║    150.00 ║     2 ║           ║        ║           ║       ║           ║       ║
+║ 6          ║           ║       ║    145.00 ║     2 ║           ║        ║           ║       ║           ║       ║
 ╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
 ```
 
-If a new limit sell order comes in for the same stock id 6, but the price still can not meet the condition, for example a limit sell order at price 160.00 for 2 stocks, two orders will be hang in the order book:
+If a new limit sell order comes in for the same stock id 6, but the price still can not meet the condition, for example a limit sell order at price 160.00 for 2 stocks, then both orders will be hang in the order book:
 
 ```plaintext
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
 ║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
-║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╬════════╬═══════════╦═══════╬═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
-║ 6          ║           ║       ║    150.00 ║     2 ║           ║        ║    160.00 ║     2 ║           ║       ║
+║ 6          ║           ║       ║    145.00 ║     2 ║           ║        ║    160.00 ║     2 ║           ║       ║
 ╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
 ```
 
-Take example when a new limit sell order comes but the price can meet the condition, for example a limit sell order at price 145.00 for 2 stocks, then this order is matched with the fisrt santisfy buy limit order, which is the limit buy order at price 150.00 for 2 stocks, then the order book will be updated as follows:
+Take example when a new limit sell order comes but the price can meet the condition, then this order is matched with the fisrt santisfy buy limit order, which is the limit buy order at price 150.00 for 2 stocks, then the order book will be updated as follows:
 
 ```plaintext
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
@@ -979,7 +979,7 @@ After matching, currently book:
 
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
 ║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
-║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╬════════╬═══════════╦═══════╬═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
 ║ 6          ║           ║       ║    145.00 ║     2 ║           ║        ║    150.00 ║     2 ║           ║       ║
@@ -1002,12 +1002,13 @@ Creating order with information: {
 After matching, currently book:
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
 ║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
-║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╬════════╬═══════════╦═══════╬═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
-║ 6          ║           ║       ║    145.00 ║     2 ║    150.00 ║      2 ║           ║       ║           ║       ║
+║ 6          ║           ║       ║           ║       ║    150    ║    2   ║    160.00 ║     2 ║           ║       ║
 ╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
 ```
+
 
 ### 3.3 Market Orders
 
@@ -1016,27 +1017,6 @@ After matching, currently book:
 For example, currenly in the market there are two limit sell oders at price 150 for 2 stocks and at price 160 for 2 stocks, then a market buy order comes in for 2 stocks, the order book will be updated as follows:
 
 ```plaintext
-╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
-║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
-║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
-║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
-╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
-║ 6          ║           ║       ║           ║       ║           ║        ║    150.00 ║     2 ║    160.00 ║     2 ║
-╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
-
-Creating order with information: {
-  id: '1748353746654',
-  portfolioId: 'cbf474f0-abf0-4095-8926-39c18e5097dc',
-  userId: '3e6dd451-7b6c-4787-b9f0-8d0e72f0630e',
-  stockId: 6,
-  volume: 2,
-  price: null,
-  type: 'Market Buy',
-  timestamp: 1748353746654
-}
-After matching, currently book:
-
-
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
 ║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
 ║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
@@ -1062,12 +1042,11 @@ In this case, our engine need to make sure that the buy order will by at $150 fo
 ```plaintext
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
 ║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
-║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╬════════╬═══════════╦═══════╬═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
 ║ 6          ║           ║       ║           ║       ║           ║        ║    150.00 ║     2 ║    160.00 ║     3 ║
 ╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
-
 ```
 
 Then an buy market order comes in for 4 stocks, the order book will be updated as follows:
@@ -1075,12 +1054,13 @@ Then an buy market order comes in for 4 stocks, the order book will be updated a
 ```plaintext
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
 ║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
-║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╬════════╬═══════════╦═══════╬═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
 ║ 6          ║           ║       ║           ║       ║    160.00 ║      2 ║    160.00 ║     1 ║           ║       ║
 ╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
 ```
+
 The engine performs the matching twice or the buy market order with quantity 4 stocks:
 
 1. Match the first 2 stocks at price $150
