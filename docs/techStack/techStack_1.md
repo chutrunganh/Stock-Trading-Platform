@@ -539,7 +539,11 @@ The passport.js library already have built in functions for these so our control
 >
 > Some other types of orders like Stop-Loss, Stop-Limit, Trailing Stop, etc. are not implemented in this project yet.
 
-This is the heart of the stock trading system, responsible for matching buy and sell orders based on the rules of the stock market. first, let talk about orders, how can they be created, see more detail in the `orderCRUDService.js` file.
+This is the heart of the stock trading system, responsible for matching buy and sell orders based on the rules of the stock market. 
+
+## 1. Order Creation
+
+First, let talk about orders, how can they be created, see more detail in the `orderCRUDService.js` file.
 
 ```javascript
 export const createOrderService = async (orderData) => {
@@ -712,7 +716,7 @@ The  `orderCRUDService` is also provides functions to trigger the matching proce
     return order;
 ```
 
-Also have the cacel order function, but we haven 't implement in the UI:
+Also have the cancel order function, but we haven't implement in the UI:
 
 ```javascript
 // Service to remove an order from the queue by ID (Cancel order)
@@ -723,6 +727,8 @@ export const cancelOrderService = async (orderId) => {
     orderBook.displayOrderBook();
 };
 ```
+
+## 2. Add orders to the Order Book, display the order book 
 
 Now come to the `orderMatchingService.js` file, which is the heart of the stock trading system, responsible for matching buy and sell orders based on the rules of the stock market. The `OrderBook` class is a singleton instance that handles all the order matching logic. 
 
@@ -868,19 +874,23 @@ After matching, currently book:
 ╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
 ```
 
+## 3. Matching Orders
+
 
 After we have finsih create the order, add order to the order book, we can start matching orders. The general priciple of matching orders is as follows:
 
-- For **Limit Buy** orders, when come to the order book, we scan all orders in the **Limit Sell** queue to find if there are any any orders that have the lower or equal price than the limit buy order (Actually, no need to scan the whole limit sell orders quene, since the queue is sorted by price, we scan from the frirst till we find the order that meet the condition, then we can stop scanning). If:
+### 3.1 Limit Buy Orders
 
-  - There are any, we execute the order and remove that order from the queue (Both the  order in the seller side and the buyer side)
+For **Limit Buy** orders, when come to the order book, we scan all orders in the **Limit Sell** queue to find if there are any any orders that have the lower or equal price than the limit buy order (Actually, no need to scan the whole limit sell orders quene, since the queue is sorted by price, we scan from the frirst till we find the order that meet the condition, then we can stop scanning). If:
+
+- There are any, we execute the order and remove that order from the queue (Both the  order in the seller side and the buyer side)
   
-  - There are no orders that meet the condition, we add the limit buy order to the limit buy queue. The order will be hang there untill there are any limit sell orders that meet the condition or a market sell order comes in. If untill the end of the session (admin click the "End Session" button in the UI), whole orderbook will be cleared and all pending orders will be removed from the queue.
+- There are no orders that meet the condition, we add the limit buy order to the limit buy queue. The order will be hang there untill there are any limit sell orders that meet the condition or a market sell order comes in. If untill the end of the session (admin click the "End Session" button in the UI), whole orderbook will be cleared and all pending orders will be removed from the queue.
 
   For example, I place a  limit order to buy a stock id 6 at price 150.00 for 2 stocks:
 
 ```plaintext
-  ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
+╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
 ║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
 ║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╬═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
@@ -916,13 +926,13 @@ Take example when a new limit sell order comes but the price can meet the condit
 *In the frontend, the stock table always shows the latest changes in the order book. However, in the backend console, I'm not sure why **sometimes** the `Matched` column doesn't update immediately when a matching order comes in. Instead, it only updates after the next change in the order book — for example, placing a neworder, the table in drawout in the backend console one more times and now you see the previous `Matched` column update. It looks like this might be due to a display issue in the console. The `Bid` and `Ask` columns in console still update immediately, and I've tested the business logic — it works correctly. So the problem seems to be only with how the `Matched` column is displayed in the backend console. But one again, this is just about the visualization in the backend console, the business logic is still working as expected.*
 
 
+### 3.2 Limit Sell Orders
 
+For **Limit Sell** orders apply the same logic as Limit Buy orders, but in reverse: we scan all orders in the **Limit Buy** queue to find if there are any orders that have the higher or equal price than the limit sell order. If:
 
-- For **Limit Sell** orders apply the same logic as Limit Buy orders, but in reverse: we scan all orders in the **Limit Buy** queue to find if there are any orders that have the higher or equal price than the limit sell order. If:
-
-  - There are any, we execute the order and remove that order from the queue (Both the order in the buyer side and the seller side)
+- There are any, we execute the order and remove that order from the queue (Both the order in the buyer side and the seller side)
   
-  - There are no orders that meet the condition, we add the limit sell order to the limit sell queue. The order will be hang there untill there are any limit buy orders that meet the condition or a market buy order comes in. If untill the end of the session (admin click the "End Session" button in the UI), whole orderbook will be cleared and all pending orders will be removed from the queue.
+- There are no orders that meet the condition, we add the limit sell order to the limit sell queue. The order will be hang there untill there are any limit buy orders that meet the condition or a market buy order comes in. If untill the end of the session (admin click the "End Session" button in the UI), whole orderbook will be cleared and all pending orders will be removed from the queue.
 
 For example, I place a limit order to sell a stock id 6 at price 150.00 for 2 stocks:
 
@@ -999,6 +1009,8 @@ After matching, currently book:
 ╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
 ```
 
+### 3.3 Market Orders
+
 - For **Market Buy** orders, we take the first order in the **Limit Sell** queue (the one with the lowest price) (Some case it only need to take the first order, but in some case it may need to take multiple orders, since in this case the order can only be partially matched, we will talk about this later) then match the orders. Since the market buy order is executed at the best available price without waiting for any condition, it will be executed immediately and no hanging in the order book (we do not count the case that there is a market buy order but in the market currently there is no limit sell order, in this case the market buy order should still be hang in the order book, but this is not a common case).
 
 For example, currenly in the market there are two limit sell oders at price 150 for 2 stocks and at price 160 for 2 stocks, then a market buy order comes in for 2 stocks, the order book will be updated as follows:
@@ -1037,6 +1049,7 @@ After matching, currently book:
 
 - For **Market Sell** orders, we take the first order in the **Limit Buy** queue (the one with the highest price) ... same logic as Market Buy orders but in reverse.
 
+### 3.4 Partially Matching Orders
 
 That is about matching on price, above we are assuming that te orders are **Fully matched**, but there might (actually often) be cases where the orders are **Partially matched**. For example:
 
@@ -1073,7 +1086,7 @@ The engine performs the matching twice or the buy market order with quantity 4 s
 1. Match the first 2 stocks at price $150
 2. Match the next 2 stocks at price $160, so you can see in the table, the `Matched` show the later match, the `Ask` column price $150 sell all 2 stocks it has,  price $160 sell 2 stocks it have, so only has 1 stock left in the order.
 
-In the `stockMatchingService.js` file, we implement the matching logic for each kind of orders base on what we have discussed above.
+In the `stockMatchingService.js` file, we implement the matching logic for each kind of orders base on what we have discussed above:
 
 ```javascript
 // For market order (Market Buy and Market Sell)
