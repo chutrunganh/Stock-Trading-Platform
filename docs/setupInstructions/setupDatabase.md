@@ -5,7 +5,7 @@
 
 # Running PostgreSQL and PgAdmin with Docker
 
-The Postgres databse and PgAdmin (to manage the database with GUI) are run in Docker containers. If you only need to run the database services with `docker-compose`, **REMEMBER** to comment out the  `backend` and `frontend` services in the `docker-compose.yml` file to avoid starting the backend and frontend services. 
+The Postgres database and PgAdmin (to manage the database with GUI) are run in Docker containers. If you only need to run the database services with `docker-compose`, **REMEMBER** to comment out the `backend` and `frontend` services in the `docker-compose.yml` file to avoid starting the backend and frontend services. 
 
 Then run this command in the root directory of the project to start the Docker containers:
 
@@ -36,33 +36,33 @@ yarn start # to start the server
 ```
 
 > [!WARNING] 
-> In the `development` environment, whennever the backend server starts, it will automatically **DROP ALL EXISTING TABLES** is the database and **CREATE NEW TABLES** with the initial data. This is useful for development purposes, but be careful not to run this in production as it will delete all existing data.
+> In the `development` environment, whenever the backend server starts, it will automatically **DROP ALL EXISTING TABLES** in the database and **CREATE NEW TABLES** with the initial data. This is useful for development purposes, but be careful not to run this in production as it will delete all existing data.
 
 # Managing the Database with PgAdmin
 
 Once everything is set up, you can log in to **PgAdmin** to manage the database by accessing the URL `http://localhost:5050`. You can use PgAdmin to create, modify, and delete tables, as well as run SQL queries against the database.
 
-To login to PgAdmin, enter credential based on field `PGADMIN_DEFAULT_EMAIL` and `PGADMIN_DEFAULT_PASSWORD` defined inside `.env`. After that, set up the server connection to the PostgreSQL database by following these steps:
+To log in to PgAdmin, enter credentials based on the fields `PGADMIN_DEFAULT_EMAIL` and `PGADMIN_DEFAULT_PASSWORD` defined inside `.env`. After that, set up the server connection to the PostgreSQL database by following these steps:
 
-1. On the left panel, right click on "Servers" and select "Register" -> "Server...".
+1. On the left panel, right-click on "Servers" and select "Register" -> "Server...".
 
 ![PgAdmin_1](../images/PgAdmin_1.png)
 
-2. Enter name of the server as you wish:
+2. Enter the name of the server as you wish:
 
 ![PgAdmin_2](../images/PgAdmin_2.png)
 
-3. Change to the "Connection" tab, enter the following information:
+3. Change to the "Connection" tab, and enter the following information:
 
 ![PgAdmin_3](../images/PgAdmin_3.png)
 
-- Host name/address: postgres (must use the same as PostgreSQL service name as defined in the `docker-compose.yml` file)
-- Port: see the `BD_PORT` field in the `.env` file
+- Host name/address: postgres (must use the same as the PostgreSQL service name as defined in the `docker-compose.yml` file)
+- Port: see the `DB_PORT` field in the `.env` file
 - Username: see the `DB_USER` field in the `.env` file
 - Password: see the `DB_PASSWORD` field in the `.env` file
 
 Click "**Save**" to save the server configuration. After that, you should see your database viewable in the left panel. Click on the database name to see the tables inside.
 
- ![PgAdmin_4](../images/PgAdmin_4.png)
+![PgAdmin_4](../images/PgAdmin_4.png)
 
-4 . To stop the database, run `docker-compose down` in the root directory of the project or `docker-compose down -v` to remove the volumes as well. The `-v` flag will remove the database and all data inside it, so be careful with this command.
+4. To stop the database, run `docker-compose down` in the root directory of the project or `docker-compose down -v` to remove the volumes as well. The `-v` flag will remove the database and all data inside it, so be careful with this command.

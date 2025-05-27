@@ -12,15 +12,15 @@ Cloudflare Tunnels is a service that allows you to securely expose your local de
 
 We run our web services locally (e.g., a website in a Docker container), and a Cloudflare Tunnel service locally (run as a Docker container, .exe, etc.). This Cloudflare Tunnel service acts as a secure bridge between the local machine and Cloudflare’s edge network. Any requests to the Cloudflare Edge server are securely forwarded to our local services through this tunnel, without exposing ports or public IPs.
 
-This approach can be benefitial for several reasons:
+This approach can be beneficial for several reasons:
 
-- **Security**: It eliminates the need to expose your local machine to the internet, reducing the risk of attacks. Also, when using the Cloudflare Edge server as reverse proxy, it provides additional security features such as DDoS protection, Web Application Firewall (WAF), and SSL/TLS encryption.
+- **Security**: It eliminates the need to expose your local machine to the internet, reducing the risk of attacks. Also, when using the Cloudflare Edge server as a reverse proxy, it provides additional security features such as DDoS protection, Web Application Firewall (WAF), and SSL/TLS encryption.
 
-- **Cost-effective**: It allows you to use your local machine as a server without needing to pay for a cloud server. Cloudfalre Tunnel have free plan which is enough for most small projects.
+- **Cost-effective**: It allows you to use your local machine as a server without needing to pay for a cloud server. Cloudflare Tunnel has a free plan which is enough for most small projects.
 
 ## Implementation
 
-Cloudfalre Tunnel can be set up either using your domain name or not using a domain name (in this case, Cloudflare Tunnles will give our a random string as the domain name to access on the Internet). In this project, I use the first method, since I already have a domain name for this project: `soictstock.io.vn`.
+Cloudflare Tunnel can be set up either using your domain name or not using a domain name (in this case, Cloudflare Tunnels will give out a random string as the domain name to access on the Internet). In this project, I use the first method, since I already have a domain name for this project: `soictstock.io.vn`.
 
 To set up Cloudflare Tunnel, follow these steps:
 
@@ -36,7 +36,7 @@ Go to the SSL/TLS section in the Cloudflare dashboard and set the SSL mode for y
 
 ![Cloudflare Tunnel 3](../images/cloudflare_tunnel_3.png)
 
-Choose the **Flexible** mode, which means that the connection between the user and Cloudflare will be encrypted, but the connection between Cloudflare and your local server will not be encrypted.The free plan of Cloudflare Tunnel only supports the Flexible SSL mode, so we have to use this mode.
+Choose the **Flexible** mode, which means that the connection between the user and Cloudflare will be encrypted, but the connection between Cloudflare and your local server will not be encrypted. The free plan of Cloudflare Tunnel only supports the Flexible SSL mode, so we have to use this mode.
 
 3. **Register Zero Trust**
 
@@ -49,7 +49,7 @@ After registering for Zero Trust, you can now see the `Tunnels` section in the Z
 
 4. **Create a new Tunnel**
 
-Click on the `Create a tunnel` button to create a new tunnel. Give it a name
+Click on the `Create a tunnel` button to create a new tunnel. Give it a name.
 
 ![Cloudflare Tunnel 5](../images/cloudflare_tunnel_5.png)
 
@@ -57,20 +57,20 @@ Then Cloudflare offers us various ways to run the tunnel, for simplicity, let's 
 
 ![Cloudflare Tunnel 6](../images/cloudflare_tunnel_6.png)
 
-Move to the Public network tab, here is the place you enter your IP address of local machine and the domain name you want to use for this tunnel. In this case, I use the domain name `soictstock.io.vn` that I registered on Cloudflare earlier.
+Move to the Public network tab, here is the place you enter your IP address of the local machine and the domain name you want to use for this tunnel. In this case, I use the domain name `soictstock.io.vn` that I registered on Cloudflare earlier.
 
 ![Cloudflare Tunnel 7](../images/cloudflare_tunnel_7.png)
 
-Note that you will need to enter your local machine IP address. Use `ipconfig` command on Windows or `ip a` command on Linux to find your local machine IP address. **DO NOT** enter `localhost` or `127.0.0.1`, this will not work.
+Note that you will need to enter your local machine IP address. Use the `ipconfig` command on Windows or the `ip a` command on Linux to find your local machine IP address. **DO NOT** enter `localhost` or `127.0.0.1`, this will not work.
 
-After that, you can run the Tunnel using the docker command provided by Cloudflare. Your webstie now can be accessed via the domain name you just entered, e.g., `https://soictstock.io.vn`.
+After that, you can run the Tunnel using the Docker command provided by Cloudflare. Your website now can be accessed via the domain name you just entered, e.g., `https://soictstock.io.vn`.
 
 # 7. Cloudflare WAF (Web Application Firewall)
 
 
 ## Theory
 
-When register domain name and use Tunnels of Cloudflare, we are actualy using Clodflare as a reverse proxy for our web application. This come with some additional security features that can be enbaled to protect our web application, one of them is the Web Application Firewall (WAF).
+When registering a domain name and using Tunnels of Cloudflare, we are actually using Cloudflare as a reverse proxy for our web application. This comes with some additional security features that can be enabled to protect our web application, one of them is the Web Application Firewall (WAF).
 
 ## Implementation
 
@@ -78,12 +78,11 @@ Search for `WAF` in the Cloudflare dashboard and click on it. There are some pre
 
 ![Cloudflare WAF](../images/WAF_1.png)
 
-*Block IP address that not come from Vietnam, block bad user agents (to prevent reconnaissance tools), rate limiting to prevent DDoS attacks, and more.*
+*Block IP addresses that do not come from Vietnam, block bad user agents (to prevent reconnaissance tools), rate limiting to prevent DDoS attacks, and more.*
 
 ![Cloudflare WAF 2](../images/WAF_2.png)
 
-
-Free plan offers 5 custom rules. Some other option turn on default by Cloudflare and can be futher customized.
+The free plan offers 5 custom rules. Some other options are turned on by default by Cloudflare and can be further customized.
 
 ![Cloudflare WAF 3](../images/WAF_3.png)
 
@@ -92,56 +91,55 @@ Free plan offers 5 custom rules. Some other option turn on default by Cloudflare
 
 ## Theory
 
-Here is a overview how Captcha/ReCaptcha works under the hood:
+Here is an overview of how Captcha/ReCaptcha works under the hood:
 
 ![Captcha](../images/recaptcha_work.png)
 
-*This image is showed for Google ReCaptcha, but the same concept applies to Cloudflare Turnstile.*
+*This image is shown for Google ReCaptcha, but the same concept applies to Cloudflare Turnstile.*
 
-Refernce: https://medium.com/@hwupathum/recaptcha-how-it-works-4031eae74a8b
+Reference: https://medium.com/@hwupathum/recaptcha-how-it-works-4031eae74a8b
 
-1. User make some action that will trigger the Captcha, in our case, when user click on `Login` button on the Navbar, then the login form will be displayed, which contains the Turnstile widget, this will trigger the Turnstile widget 
+1. The user makes some action that will trigger the Captcha, in our case, when the user clicks on the `Login` button on the Navbar, then the login form will be displayed, which contains the Turnstile widget. This will trigger the Turnstile widget.
 
-2. After trigger, our Login form will send a request to the Turnstile server ask for the Turnstile widget. Turnstile server will return a HTML code that contains the Turnstile widget, this widget is rendered on the Login form.
+2. After triggering, our Login form will send a request to the Turnstile server asking for the Turnstile widget. The Turnstile server will return an HTML code that contains the Turnstile widget, which is rendered on the Login form.
 
-3. User will interact with the Turnstile widget by explicitly solving the challenge (e.g., clicking a checkbox, selecting images, etc.) or implicitly (invisibale) solving the challenge (e.g., moving the mouse, typing, etc.). These data/actions will be sent to the Turnstile server (together with our registered `SITE_KEY`) to verify if the user is a human or a bot. 
+3. The user will interact with the Turnstile widget by explicitly solving the challenge (e.g., clicking a checkbox, selecting images, etc.) or implicitly (invisible) solving the challenge (e.g., moving the mouse, typing, etc.). These data/actions will be sent to the Turnstile server (together with our registered `SITE_KEY`) to verify if the user is a human or a bot. 
 
-4. If the user is a human, the Turnstile server will return a token to the frontend. This token is a proof that the user has successfully solved the challenge. But how the frontend can verify that this token is valid? 
+4. If the user is a human, the Turnstile server will return a token to the frontend. This token is proof that the user has successfully solved the challenge. But how can the frontend verify that this token is valid? 
 
-5. The frontend will send this token to our backend server, which will then send a request contain this token + our registered `SECRET_KEY` to the Turnstile server to verify the token.
+5. The frontend will send this token to our backend server, which will then send a request containing this token + our registered `SECRET_KEY` to the Turnstile server to verify the token.
 
-6. The Turnstile server will verify the token and return a response to our backend server may be yes/no or confidence score (With invisible Captcha like Google Recaptcha V3 or Cloudfalre Turnstile, the response will contain a confidence score instead, which guess how many percentage that this user is a human).
+6. The Turnstile server will verify the token and return a response to our backend server, which may be yes/no or a confidence score (With invisible Captcha like Google Recaptcha V3 or Cloudflare Turnstile, the response will contain a confidence score instead, which guesses how many percentages that this user is a human).
 
-7. If the response is valid, our backend server will allow the user to login, otherwise, it will reject the login request.
+7. If the response is valid, our backend server will allow the user to log in; otherwise, it will reject the login request.
 
-Cloudflare Turnstile is a free CAPTCHA alternative to Google reCAPTCHA. It is designed to be more user-friendly and less intrusive, while still providing effective protection against bots and spam.
+Cloudflare Turnstile is a free CAPTCHA alternative to Google reCAPTCHA. It is designed to be more user-friendly and less intrusive while still providing effective protection against bots and spam.
 
 Search for `Turnstile` in the Cloudflare dashboard and click on it. 
 
 ![Cloudflare Turnstile](../images/turnstile_1.png)
 
-Then create a new Turnstile, add domain name that you want to use Turnstile for. In this case, I add two domain names: `soictstock.io.vn` and `localhost`. One finish, you will receive two keys: a site key and a secret key. The site key is used to render the Turnstile widget on your website (frontend), while the secret key is used to verify the Turnstile response on your server.
+Then create a new Turnstile, add the domain name that you want to use Turnstile for. In this case, I add two domain names: `soictstock.io.vn` and `localhost`. Once finished, you will receive two keys: a site key and a secret key. The site key is used to render the Turnstile widget on your website (frontend), while the secret key is used to verify the Turnstile response on your server.
 
 ![Cloudflare Turnstile 2](../images/turnstile_2.png)
 
-Cloudflare offers many themes for Turnstile, you can choose the one that suits your website design. In this project, I use the `light` theme.
+Cloudflare offers many themes for Turnstile; you can choose the one that suits your website design. In this project, I use the `light` theme.
 
 ![Cloudflare Turnstile 3](../images/turnstile_3.png)
 
 ## Implementation
 
-Clouflare also offer sample code two integrate Turnstile into your website. Here is what is applied in our project:
+Cloudflare also offers sample code to integrate Turnstile into your website. Here is what is applied in our project:
 
 - Frontend side:
 
 ```javascript
-
 // Add this at the top, after other imports
 const SITE_KEY = import.meta.env.VITE_SITE_KEY;
 
 // Dynamically load Turnstile script and render widget
-  useEffect(() => {
-    let script;
+useEffect(() => {
+  let script;
 
     function renderTurnstile() {
       if (window.turnstile && turnstileWidgetRef.current && SITE_KEY) {
@@ -179,7 +177,7 @@ const SITE_KEY = import.meta.env.VITE_SITE_KEY;
     };
   }, []);
 
-// when submits te form, check if Turnstile token is present
+// when submitting the form, check if Turnstile token is present
 const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -201,7 +199,6 @@ const handleSubmit = async (e) => {
 - Backend side:
 
 ```javascript
-
 const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY;
 const VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
@@ -236,7 +233,7 @@ export async function verifyTurnstileToken(token, remoteip) {
     };
   }
 } 
-``` 
+```
 
 # 9. Banking Payment API
 

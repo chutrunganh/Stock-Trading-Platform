@@ -1181,4 +1181,208 @@ See details in the `orderSettlementService.js` file:
 Reference: https://jindalujjwal0720.medium.com/stock-market-order-book-orders-matching-engine-in-nodejs-3dff82f70080
 
 
+# 6. SSE (Server-Sent Events) for Real-Time Updates
 
+## Theory
+
+To provide real-time updates to the frontend when the order book changes, we use Server-Sent Events (SSE). 
+
+Server-Sent Events (SSE) is a technology that allows a server to push real-time updates to a client over a single HTTP connection. Unlike WebSockets, which provide full-duplex communication, SSE is unidirectional, meaning the server can send updates to the client, but the client cannot send messages back over the same connection. SSE is ideal for scenarios where the server needs to continuously send updates, such as live data feeds, notifications, or real-time dashboards. In our case, we use SSE since it it more simple to setup and also the data send from client to server is not that frequent (we only plan to develop for the demo purpose with few users and they do not continuously send orders to the server, so SSE is enough for our case).
+
+## Implementation
+
+The SSE need to be setup in both the frontend and backend. 
+
+### Backend
+
+In the backend, see the `orderBookController.js` file, we setup the SSE endpoint to send updates to the frontend when the order book changes:
+
+```javascript
+// Set up SSE connection
+import { EventEmitter } from 'events';
+import { OrderBook } from '../services/orderMatchingService.js';
+
+const sseClients = new Set();
+const orderBookEmitter = new EventEmitter();
+
+// Controller to handle SSE connections
+export const orderBookSSE = (req, res) => {
+  // Set headers for SSE
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+
+  // Send heartbeat to keep connection alive
+  const heartbeat = setInterval(() => {
+    res.write(`data: ${JSON.stringify({ type: 'heartbeat', timestamp: new Date().toISOString() })}\n\n`);
+  }, 30000); // Send heartbeat every 30 seconds
+
+  // Send initial data
+  const sendInitialData = async () => {
+    try {
+      const stocksResult = await getAllStocksWithLatestPricesService();
+      const orderBook = OrderBook.getInstance();
+      const buyOrders = orderBook.limitBuyOrderQueue || [];
+      const sellOrders = orderBook.limitSellOrderQueue || [];
+      const recentTransactions = orderBook.recentTransactions || {};
+      
+      const processedData = processOrderBookData(stocksResult, buyOrders, sellOrders, recentTransactions);
+      res.write(`data: ${JSON.stringify({ type: 'initial', data: processedData })}\n\n`);
+      console.log(`[SSE] Initial data sent to new client. ${sseClients.size+1} total clients`);
+    } catch (error) {
+      console.error('Error sending initial data:', error);
+    }
+  };
+
+  // Function to send updates to this client
+  const sendUpdate = (update) => {
+    try {
+      res.write(`data: ${JSON.stringify({ type: 'update', data: update })}\n\n`);
+    } catch (error) {
+      console.error('[SSE] Error sending update to client:', error);
+      // Remove client if we can't send to it
+      sseClients.delete(res);
+      orderBookEmitter.removeListener('update', sendUpdate);
+      if (heartbeat) clearInterval(heartbeat);
+    }
+  };
+
+  // Add this client to our Set of active clients
+  sseClients.add(res);
+  
+  // Send initial data
+  sendInitialData();
+
+  // Listen for updates
+  orderBookEmitter.on('update', sendUpdate);
+
+  // Handle client disconnect
+  req.on('close', () => {
+    console.log('[SSE] Client disconnected');
+    sseClients.delete(res);
+    orderBookEmitter.removeListener('update', sendUpdate);
+    clearInterval(heartbeat);
+  });
+};
+```
+
+When never there is a change in the order book, we emit an event to notify/ broadcasting to all connected clients:
+
+```javascript
+// Function to emit updates to all connected clients
+export const emitOrderBookUpdate = async (matchData = null) => {
+  try {
+    const stocksResult = await getAllStocksWithLatestPricesService();
+    const orderBook = OrderBook.getInstance();
+    const buyOrders = orderBook.limitBuyOrderQueue || [];
+    const sellOrders = orderBook.limitSellOrderQueue || [];
+    const recentTransactions = orderBook.recentTransactions || {};
+    
+    // If matchData is provided, update the recentTransactions for the matched stock
+    if (matchData) {
+      const { stockId, price, volume, buyerUserId, sellerUserId } = matchData;
+      recentTransactions[stockId] = { 
+        price, 
+        volume, 
+        timestamp: new Date(),
+        buyerUserId,
+        sellerUserId
+      };
+      
+      // Log that a match happened and we're broadcasting it
+      console.log(`[SSE] Broadcasting match event for stock ${stockId}: ${price} x ${volume}`);
+    }
+    
+    const processedData = processOrderBookData(stocksResult, buyOrders, sellOrders, recentTransactions);
+    
+    // Check the number of connected clients and log it
+    console.log(`[SSE] Broadcasting update to ${sseClients.size} connected clients`);
+    
+    // Force the broadcast as a high-priority update if there was a match
+    if (matchData) {
+      orderBookEmitter.emit('update', processedData);
+      
+      // Add a small delay and send another update to ensure all clients receive it
+      setTimeout(() => {
+        orderBookEmitter.emit('update', processedData);
+        console.log(`[SSE] Sent follow-up broadcast for match event`);
+      }, 300);
+    } else {
+      orderBookEmitter.emit('update', processedData);
+    }
+  } catch (error) {
+    console.error('Error emitting order book update:', error);
+  }
+};
+```
+
+### Frontend
+
+In the frontend, we also need to setup the SSE connection at the endpoints as well:
+
+- `apiClient.js` file:
+
+```javascript
+// Helper function to create SSE connections
+export const createSSEConnection = (path) => {
+  return new EventSource(`${getBaseUrl()}${path}`);
+};
+```
+
+- `orderBook.js` file reuses the above helper function to create the SSE connection:
+
+```javascript
+/**
+ * Creates an EventSource connection to the server for real-time updates.
+ * @returns {EventSource} The EventSource object for the SSE connection
+ */
+export const createOrderBookStream = () => {
+  return createSSEConnection('/orders/orderBook/stream');
+};
+```
+
+Then in the `Table.jsx` file where render the order book table, we can use the `createOrderBookStream` function to create the SSE connection and listen for updates:
+
+```javascript
+  // Improve SSE connection handling
+  useEffect(() => {
+    let eventSource = null;
+    let retryCount = 0;
+    let retryTimeout = null;
+    const maxRetries = 3;
+    let pollInterval = null;
+    
+    // Load initial data and set up polling
+    const loadInitialData = async () => {
+      ... // Load initial order book data
+    
+    // Set up polling for data freshness
+    const setupPolling = () => {
+      // Clear any existing poll interval
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+      
+      // Poll every 2 seconds to ensure data is fresh
+      pollInterval = setInterval(async () => {
+        try {
+          console.log('[Sync] Polling for fresh data');
+          const freshData = await getOrderBookData();
+          if (freshData && Array.isArray(freshData)) {
+            // Check if there are any differences between current and fresh data
+            const hasChanges = JSON.stringify(freshData) !== JSON.stringify(orderBookData);
+            
+            if (hasChanges) {
+              console.log('[Sync] Detected changes in polled data, updating UI');
+              setOrderBookData(freshData);
+              setLastUpdateTime(new Date());
+            } else {
+              console.log('[Sync] No changes detected in polled data');
+            }
+          }
+        }
+      }, 2000); // Poll every 2 seconds
+    };
+```
