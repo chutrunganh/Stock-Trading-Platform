@@ -1,6 +1,3 @@
-> [!IMPORTANT]
-> This repository is still under development and does not yet reflect the final project.
-
 <div style="text-align: center;">
   <img src="docs/images/banner.png" alt="Banner" style="max-width: 60%; height: auto;">
 </div>
