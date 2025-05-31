@@ -1,9 +1,9 @@
 > [!NOTE]  
-> Nếu bạn chưa có kiến thức về chứng khoán, đọc qua file này để biết các khái niệm cơ bản cũng như cách tính toán các loại giá (giá đóng mở cửa, giá tham chiếu, giá cổ phiếu) mà chúng tôi sử dụng trong dự án này.
+> Nếu bạn chưa có kiến thức về chứng khoán, đọc qua file này để biết các khái niệm cơ bản cũng như cách tính toán các loại giá (giá đóng cửa, giá mở cửa, giá tham chiếu, giá trần, giá sàn,...) mà chúng tôi sử dụng trong dự án này.
 
 # 1. Phiên giao dịch
 
-Thời gian phiên giao dịch và loại phiên giao dịch tại các sàn có thể khác nhau, ví dụ với 3 sàn HOSE, HNX và UpCOM thì thời gian giao dịch như sau:
+Thời gian phiên giao dịch và loại phiên giao dịch tại các sàn có thể khác nhau, ví dụ với 3 sàn HOSE, HNX và UPCOM thì thời gian giao dịch như sau:
 
 ![HOSE HNX UPCOM timeline](../images/HOSE_HNX_UPCOM_timeline.png)
 
@@ -14,7 +14,7 @@ Tuy nhiên ở dự án này, chúng tôi chỉ giả lập tuân theo các phi�
 
 1. **Phiên khớp lệnh định kỳ ATC và ATO**
 
-- Thời gian: Phiên giao dịch mở cửa hay ATO At The Open (9:00 - 9:15) và phiên giao dịch đóng cửa hay ATC At The Close (14:30 - 14:45), các ngày từ thứ 2 đến thứ 6 (trừ ngày nghỉ lễ).
+- Thời gian: Phiên giao dịch mở cửa hay ATO (At The Open) (9:00 - 9:15) và phiên giao dịch đóng cửa hay ATC (At The Close) (14:30 - 14:45), các ngày từ thứ 2 đến thứ 6 (trừ ngày nghỉ lễ).
 
 
 - Cách xác định giá: Các lệnh được gửi lên sàn trong khoảng thời gian này sẽ không đem so khớp giá ngay mà phải đợi hết khoảng thời gian 15 phút. Sau 15 phút, quét qua toàn bộ các lệnh này và xem tại giá nào thì **khối lượng giao dịch** là lớn nhất. Giá này chính là **giá mở cửa** (**Open Price**) với phiên ATO và **giá đóng cửa** (**Close Prices**) với phiên ATC.  *Xem thêm về cơ chế khớp lệnh trong khớp lệnh định kỳ ATC tại đây: [VN Uptrend Youtube - Khớp lệnh định kỳ ATC](https://youtu.be/8k5EiRoNWtg?si=GzVQjQsGTGURF_TQ).*
@@ -39,7 +39,7 @@ Với:
 
 - Biên độ giao động giá ở đây được quy định theo từng sàn như sau: 
 
-| Loại cổ phiếu | HOSE | HNX | UpCOM |
+| Loại cổ phiếu | HOSE | HNX | UPCOM |
 |--------------|------|------|-------|
 | Cổ phiếu trong ngày | 7% | 10% | 15% |
 | Cổ phiếu mới niêm yết trong ngày đầu tiên hoặc được giao dịch trở lại sau khi bị tạm ngừng giao dịch trên 25 ngày | 20% | 30% | 40% |
@@ -53,13 +53,13 @@ Với:
 | **Sàn HNX**  | Mức giá đóng cửa đã khớp lệnh trong ngày giao dịch liền trước. *(Trừ những trường hợp đặc biệt)* |
 | **Sàn UpCOM** | Trung bình cộng của các mức giá giao dịch lô chẵn (bình quân gia quyền), dựa trên hình thức khớp lệnh vào ngày liền trước đó. *(Trừ những trường hợp đặc biệt)* |
 
-**(trừ những trường hợp đặc biệt) như cổ phiếu mới niêm yết hoặc điều chỉnh do chia cổ tức, tách cổ phiếu, v.v.*
+**(trừ những trường hợp đặc biệt) như cổ phiếu mới niêm yết hoặc điều chỉnh do chia cổ tức, tách cổ phiếu, v.v.**
 
 Xem chi tiết trong: [Giá trần, giá sàn, giá tham chiếu trong chứng khoán là gì? Màu sắc trên bảng giá chứng khoán?](https://youtu.be/LRy7jM1mjlM?si=hmDZTfj1eRFQPnkC)
 
 -------------
 
-**⚠️⚠️⚠️ Trong giới hạn dự án, chúng tôi sẻ chỉ giả lập một  phiên khớp lệnh liên tục của sàn HOSE (tức không có ATO, ATC hay nghỉ trưa). Vì ATO và ATC là các phiên tạo ra giá mở cửa và giá đóng cửa, mà chúng tôi không mô phỏng, nên chúng tôi thay đổi cơ chế tính giá mở và đóng cửa như sau:**
+**⚠️⚠️⚠️ Trong giới hạn dự án, chúng tôi sẽ chỉ giả lập một phiên khớp lệnh liên tục của sàn HOSE (tức không có ATO, ATC hay nghỉ trưa). Vì ATO và ATC là các phiên tạo ra giá mở cửa và giá đóng cửa, mà chúng tôi không mô phỏng, nên chúng tôi thay đổi cơ chế tính giá mở và đóng cửa như sau:**
 
 - **Giá mở cửa = giá của lệnh đầu tiên được khớp trong phiên khớp lệnh liên tục. Nếu trong ngày đó không có giao dịch nào được khớp thì giá mở cửa giữ nguyên từ ngày giao dịch trước (Trên thực tế sàn HNX cũng dùng cách tính này do sàn đó cũng không có phiên ATO)**
 
@@ -99,17 +99,17 @@ Cùng là đặt giá giống lệnh giới hạn nhưng chúng khác nhau ở �
 
 Sau khi các lệnh của người dùng được gửi lên sàn, để khớp các lệnh (**Order**) của người dùng, sàn chứng khoán sử dụng một thành phần gọi là **Matching Engine**. Khi một người dùng đặt lệnh mua hoặc bán, thông tin lệnh sẽ được gửi đến Matching Engine. Thành phần này sẽ tìm kiếm các lệnh đối ứng trong hệ thống và thực hiện việc khớp lệnh dựa trên các tiêu chí định trước. Khi một lệnh mua và một lệnh bán được khớp bởi matching engine, giao dịch (**Transaction**) sẽ được thực hiện và thông tin về giao dịch đó sẽ được ghi lại trong cơ sở dữ liệu. Về các tiêu chí mà Matching Engine sử dụng để khớp lệnh gồm 2 cách tiếp cận chính là: **price-time priority system** and **pro-rata system**. Đọc kỹ hơn trong bài viết này: [Order matching system: Explained](https://tiomarkets.com/article/order-matching-system-guide). **Trong dự án này, chúng tôi sử dụng tiêu chí giá- thời gian.**
 
-Theo đó, ta sẽ duy trì một sổ lệnh (**Book Order**) cho mỗi mã cổ phiếu. Thường thì Booker Order sẽ hiển thị 3 giá bán và 3 giá mua tốt nhất (cao nhất cho bids, thấp nhất cho asks) từ các lệnh của người dùng gửi lên (Hiển thị giá và số lượng). *Chỉ hiển thị 3 giá để tiết kiệm không gian còn thực tế Book Order vẫn phải xử lý với tất cả các lệnh trong hàng đợi.*
+Theo đó, ta sẽ duy trì một sổ lệnh (**Order Book**) cho mỗi mã cổ phiếu. Thường thì Order Book sẽ hiển thị 3 giá bán và 3 giá mua tốt nhất (cao nhất cho bids, thấp nhất cho asks) từ các lệnh của người dùng gửi lên (Hiển thị giá và số lượng). *Chỉ hiển thị 3 giá để tiết kiệm không gian còn thực tế Order Book vẫn phải xử lý với tất cả các lệnh trong hàng đợi.*
 
 Khi người dùng gửi lệnh mua/bán cổ phiếu mới lên sàn bao gồm giá + số lượng lên sàn:
 
-- Nếu đó là lệnh thị trường (**Market Order**), quét qua các lệnh trong Book Order và khớp với các lệnh có giá tốt nhất (tức là giá thấp nhất cho lệnh mua và giá cao nhất cho lệnh bán), nếu có hai người bán/mua đưa ra cùng một mức giá thì khớp với người có thời gian đặt lệnh sớm hơn. Sau khi khớp xong thì cập nhật Book Order ở trường "Khớp lệnh" với giá và số lượng của lệnh vừa được khớp.
+- Nếu đó là lệnh thị trường (**Market Order**), quét qua các lệnh trong Order Book và khớp với các lệnh có giá tốt nhất (tức là giá thấp nhất cho lệnh mua và giá cao nhất cho lệnh bán), nếu có hai người bán/mua đưa ra cùng một mức giá thì khớp với người có thời gian đặt lệnh sớm hơn. Sau khi khớp xong thì cập nhật Order Book ở trường "Khớp lệnh" với giá và số lượng của lệnh vừa được khớp.
 
-- Nếu đó là lệnh giới hạn (**Limit Order**), quét qua các lệnh trong Book Order xem có lệnh nào thỏa mãn điều kiện giá không:
+- Nếu đó là lệnh giới hạn (**Limit Order**), quét qua các lệnh trong Order Book xem có lệnh nào thỏa mãn điều kiện giá không:
 
-    - Nếu có thì thực hiện khớp lệnh (ưu tiên giá xong đến thời gian) và cập nhật Book Order.
+    - Nếu có thì thực hiện khớp lệnh (ưu tiên giá xong đến thời gian) và cập nhật Order Book.
 
-    - Nếu không thì lệnh đó được đưa vào hàng đợi của Book Order, chờ cho tới khi:
+    - Nếu không thì lệnh đó được đưa vào hàng đợi của Order Book, chờ cho tới khi:
         - có lệnh đối ứng thì khớp và loại khỏi hàng đợi 
         - nếu không có lệnh đối ứng cho tới cuối phiên giao dịch thì lệnh đó sẽ bị giải tỏa.
 
@@ -144,7 +144,10 @@ Theo cơ chế trên, giá chứng khoán được quyết định bởi cung - 
 
 Chi tiết hơn xem trong video này: [VN Uptrend Youtube - Thời gian giao dịch và nguyên tắc khớp lệnh chứng khoán](https://youtu.be/3SJRObB-SUk?si=IJGkCBmZT9izFHvR)
 
+Code implementation thực tế mà chúng tôi đã sử dụng trong dự án này, xem giải thích tại file [Tech Stack 1](../techStack/techStack_1.md)
+
 Code implementation của Book Order matching tham khảo: [Medium-Stock Market Orders Matching Engine in NodeJS](https://jindalujjwal0720.medium.com/stock-market-order-book-orders-matching-engine-in-nodejs-3dff82f70080)
+
 
 
 # 5. Bảng giá
@@ -161,9 +164,9 @@ Bảng gồm các phần chính:
 
 Tham khảo các đọc bảng giá này tại đây: [Hướng dẫn cách đọc Bảng giá chứng khoán cơ sở tại VNDIRECT](https://support.vndirect.com.vn/hc/vi/articles/900001015386-H%C6%B0%E1%BB%9Bng-d%E1%BA%ABn-c%C3%A1ch-%C4%91%E1%BB%8Dc-B%E1%BA%A3ng-gi%C3%A1-ch%E1%BB%A9ng-kho%C3%A1n-c%C6%A1-s%E1%BB%9F-t%E1%BA%A1i-VNDIRECT) hoặc xem vid này: [CÁCH ĐỌC BẢNG GIÁ CHỨNG KHOÁN - HỌC CHỨNG KHOÁN CƠ BẢN CÙNG TRUE INVEST](https://youtu.be/Rhe-aVEekwU?si=XQCdHYrAI0xFEjL6). 
 
-Các màu xanh , đỏ, tím,... trên bảng giá là dựa theo quy tắc này: [MÀU SẮC - NGUYÊN TẮC KHỚP LỆNH](https://youtu.be/1_xz-nJrK5o?si=jlULS4zPuuZJneGh)
+Các màu xanh, đỏ, tím,... trên bảng giá là dựa theo quy tắc này: [MÀU SẮC - NGUYÊN TẮC KHỚP LỆNH](https://youtu.be/1_xz-nJrK5o?si=jlULS4zPuuZJneGh)
 
-**⚠️⚠️⚠️ Trong app của chúng tôi sẽ chỉ hiện thị 2 giá mua và 2 giá bán tốt nhất thay vì 3 giá như trên bảng giá thực tế, và chúng tôi sẽ không làm các cột như Dư, Đầu tư nước ngoài (DTNN)**
+**⚠️⚠️⚠️ Trong app của chúng tôi sẽ chỉ hiển thị 2 giá mua và 2 giá bán tốt nhất thay vì 3 giá như trên bảng giá thực tế, và chúng tôi sẽ không làm các cột như Dư, Đầu tư nước ngoài (DTNN).**
 
 
 

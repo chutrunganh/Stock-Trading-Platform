@@ -251,7 +251,7 @@ Briefly, how Sepay works:
 
 ![Sepay 4](../images/sepay_4.png)
 
-In simple term, Sepay act as the middleman between the user and the bank. User transfer money to a virtual account (VA) provided by Sepay, these money will be transfer to the real user bank account. Bank account notify the Sepay system that the money has been transfered. Sepay now that te money have been transfered, then how our app know that. There is two ways to do this:
+In simple terms, Sepay acts as the middleman between the user and the bank. Users transfer money to a virtual account (VA) provided by Sepay, this money will be transferred to the real user bank account. The bank account notifies the Sepay system that the money has been transferred. Now that Sepay knows that the money has been transferred, how does our app know about it? There are two ways to do this:
 
 - Using sepay webhook: This is when Sepay automatically sends a notification to our website when a transaction occurs. Each time a payment is made, Sepay triggers a webhook, allowing our system to instantly detect that the customer has paid and update the order status accordingly.
 
@@ -306,7 +306,7 @@ The structure of the APIs is documented here: https://docs.sepay.vn/api-giao-dic
 GET https://my.sepay.vn/userapi/transactions/list?reference_number={reference_number}
 ```
 
-After finish setting on the Sepay website, we need to implement the payment feature in our web application. 
+After finishing setup on the Sepay website, we need to implement the payment feature in our web application. 
 
 At the frontend, insert the QR image that we got from the Sepay website
 
@@ -423,7 +423,7 @@ export const verifyPayment = async (referenceNumber, portfolioId) => {
             'SELECT cash_balance FROM portfolios WHERE portfolio_id = $1',
             [portfolioId]
         );
-
+        
 
         // Verify with Sepay API
         const sepayResponse = await axios.get(`${SEPAY_API_URL}/transactions/list`, {

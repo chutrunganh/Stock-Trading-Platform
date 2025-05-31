@@ -1,7 +1,7 @@
 > [!IMPORTANT]  
 > If you already have PostgreSQL (`PostgresSQL.exe`) and PgAdmin (`PgAdmin4.exe`) software installed on your local computer, you have two options:
 > - **Option 1**: Keep using your existing installation (credentials like username, password) without using our Docker containers. In this case, you might **NEED** to change the database connection settings in the `.env` file to match your existing installation if there is any error. You can skip the following steps and go to the next section. 
-> - **Option 2**: Use our Docker containers for PostgreSQL and PgAdmin. In this case, you **NEED** to stop your existing `PostgreSQL.exe` and `PgAdmin.exe` services to avoid port conflicts. For example with PostgreSQL service, use `net stop postgresql-x64-14` for Windows or `sudo service postgresql stop` for Linux/Mac. This will prevent the `.exe` and Docker services from using the same 5432 port, which could lead to unexpected behaviors. 
+> - **Option 2**: Use our Docker containers for PostgreSQL and PgAdmin. In this case, you **NEED** to stop your existing `PostgreSQL.exe` and `PgAdmin.exe` services to avoid port conflicts. For example, with the PostgreSQL service, use `net stop postgresql-x64-14` for Windows or `sudo service postgresql stop` for Linux/Mac. This will prevent the `.exe` and Docker services from using the same 5432 port, which could lead to unexpected behaviors.
 
 # Running PostgreSQL and PgAdmin with Docker
 

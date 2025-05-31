@@ -15,7 +15,7 @@
 <div>
 
   <p align="center">
-    <b>A stock trading simulator built for beginners. Learn to trade without the risk</b>
+    <b>A stock trading simulator built for beginners. Learn to trade without the risk.</b>
     <br />
     <a href="/docs/"><strong>Explore the docs »</strong></a>
     <br />
@@ -28,15 +28,13 @@
   </p>
 </div>
 
-
-
 <a id="readme-top"></a>
 
-# 📝Overview 
+# 📝 Overview 
 
-Soict Stock Trading Platform is a full-stack web application that simulates a real-world stock trading environment. Designed for beginners and educational purposes, it allows users to practice trading stocks, manage portfolios, and learn about market dynamics in a safe, risk-free setting. 
+**Soict Stock Trading Platform** is a full-stack web application that simulates a real-world stock trading environment. Designed for beginners and educational purposes, it allows users to practice trading stocks, manage portfolios, and learn about market dynamics in a safe, risk-free setting. Due to the limitations of the project scope, certain real-world trading rules and mechanisms have been simplified, see [Stock Fundamental Theory](./docs/stockFundamentalTheory/stockFundamentalTheory.md) section.
 
-For the security concern, we have implemented some measures by our best knowledge to mitigate common vulnerabilities and attacks. For more details, refer to the [Security Checklist](#-security-checklist) section.
+For security concerns, we have implemented some measures to mitigate common vulnerabilities and attacks. For more details, refer to the [Security Checklist](#-security-checklist) section.
 
 ## 🛠️ Technology Stack
 
@@ -49,7 +47,7 @@ The project is built with the following technologies:
   <img src="docs/images/Yarn-Light.svg" alt="Yarn" width="60" height="60">
   <img src="docs/images/PostgreSQL-Light.svg" alt="PostgreSQL" width="60" height="60">
   <img src="docs/images/node_mailer.png" alt="NodeMailer" width="60" height="60">
-  <img src="docs/images/jwt.png" alt="Json Web Token" height="55">
+  <img src="docs/images/jwt.png" alt="JSON Web Token" height="55">
   <img src="docs/images/passport.png" alt="Passport" height="45">
   <img src="docs/images/sepay_logo.png" alt="Sepay" height="45">
 </div>
@@ -59,7 +57,7 @@ The project is built with the following technologies:
   <img src="docs/images/React-Light.svg" alt="React" width="60" height="60">
   <img src="docs/images/Vite-Light.svg" alt="Vite" width="60" height="60">
   <img src="docs/images/mui.png" alt="Material UI" width="60" height="60">
-  <img src="docs/images/apex_chart.png" alt="Apex ChartChart" width="60" height="60">
+  <img src="docs/images/apex_chart.png" alt="Apex Charts" width="60" height="60">
 </div>
 
 <strong>Deployment:</strong>
@@ -72,68 +70,63 @@ The project is built with the following technologies:
 <strong>Security Testing:</strong>
 <div style="display: flex; gap: 20px; align-items: center;">
   <img src="docs/images/Qodana.png" alt="Qodana" height="60">
-  <img src="docs/images/zap.png" alt="OWASP ZAP"  height="60">
+  <img src="docs/images/zap.png" alt="OWASP ZAP" height="60">
 </div>
-
-
 
 <br>
 
-For more details explanaction and implementation of the technologies used in this project, please refer to our [Tech Stack](/docs/techStack/).
+For more detailed explanations and implementations of the technologies used in this project, please refer to our [Tech Stack](/docs/techStack/).
 
 # 📖 Features
 
 > [!NOTE]  
-> Be patient! It may take a while (~2 minutes) to load all the demo `gif` images of this Feature section.
+> Be patient! It may take a while (~2 minutes) to load all the demo `gif` images in this Features section.
 
-⚡Quick look ⚡:
+⚡ Quick look ⚡:
 
 <div align="center">
-   <img src="docs/images/Demo_compress.gif" alt="Demo"  style="max-width: 80%; height: auto;">
-</div >
+   <img src="docs/images/Demo_compress.gif" alt="Demo" style="max-width: 80%; height: auto;">
+</div>
 
 Our application offers some key features:
 
-- **User Authentication**:  Register or log in using email/username and password or using your Google account. Two-factor authentication (2FA) via OTP sent to your email is required on login. Optionally, you can select "Remember this device" to skip OTP next time. Includes "Forgot password" feature with OTP-based password reset.
-
-
-  <div align="center">
-    <img src="docs/images/LoginDemo_compress.gif" alt="Login Demo"  style="max-width: 60%; height: auto;">
-  </div >
-
-  *Captcha (Cloudflare Turnstile) is disabled by default during the development stage. To enable it, set the environment variable in `.env` to `product`*
-
-
-
-- **View Stock board**: Browse a real-time stock list with live price updates. Click on any stock to view detailed info, including price history shown in candlestick and line charts.
+- **User Authentication**: Register or log in using email/username and password or using your Google account. Two-factor authentication (2FA) via OTP sent to your email is required on login. Optionally, you can select "Remember this device" to skip OTP next time. Includes "Forgot password" feature with OTP-based password reset.
 
   <div align="center">
-    <img src="docs/images/ChartDemo_compress.gif" alt="Chart Demo"  style="max-width: 60%; height: auto;">
-  </div >
+    <img src="docs/images/LoginDemo_compress.gif" alt="Login Demo" style="max-width: 60%; height: auto;">
+  </div>
+
+  *Captcha (Cloudflare Turnstile) is disabled by default during the development stage. To enable it, set the environment variable in `.env` to `production`*
+
+- **View Stock Board**: Browse a real-time stock list with live price updates. Click on any stock to view detailed info, including price history shown in candlestick and line charts.
+
+  <div align="center">
+    <img src="docs/images/ChartDemo_compress.gif" alt="Chart Demo" style="max-width: 60%; height: auto;">
+  </div>
 
 - **Tutorial**: Step-by-step guide to help new users navigate the app and understand basic stock trading concepts.
 
   <div align="center">
-    <img src="docs/images/TutorialDemo.gif" alt="Tutorial Demo"  style="max-width: 60%; height: auto;">
-  </div >
+    <img src="docs/images/TutorialDemo.gif" alt="Tutorial Demo" style="max-width: 60%; height: auto;">
+  </div>
 
-- **Trading**:  Place buy/sell orders with support for both **market** and **limit** order types. You will get a notification at the home page when your order iss matched.
+- **Trading**: Place buy/sell orders with support for both **market** and **limit** order types. You will get a notification on the home page when your order is matched.
 
   <div align="center">
-    <img src="docs/images/TradeDemo_compress.gif" alt="Trade Demo"  style="max-width: 60%; height: auto;">
-  </div >
+    <img src="docs/images/TradeDemo_compress.gif" alt="Trade Demo" style="max-width: 60%; height: auto;">
+  </div>
 
-- **Portfolio**: Track your portfolio including available balance, estimated total value, the stocks you own, view transaction history and add funds to your account.
+- **Portfolio**: Track your portfolio including available balance, estimated total value, the stocks you own, view transaction history, and add funds to your account.
 
    <div align="center">
-    <img src="docs/images/PortfolioDemo_compress.gif" alt="Portfolio Demo"  style="max-width: 60%; height: auto;">
-  </div >
+    <img src="docs/images/PortfolioDemo_compress.gif" alt="Portfolio Demo" style="max-width: 60%; height: auto;">
+  </div>
 
-- **Admin page** (for admin account only): Start or end a trading session.
+- **Admin Page** (for admin accounts only): Start or end a trading session.
 
   <div align="center">
-    <img src="docs/images/AdminDemo_compress.gif" alt="Admin Demo"  style="max-width: 60%; height: auto;">
-  </div >
+    <img src="docs/images/AdminDemo_compress.gif" alt="Admin Demo" style="max-width: 60%; height: auto;">
+  </div>
 
 > [!NOTE]
 > Some features of the website require third-party services such as Google SSO, Recaptcha with Cloudflare Turnstile, QR code banking payments via Sepay, and remote access through Cloudflare Tunnel. These services may become unavailable after the project is made public, as we plan to delete the associated accounts or projects for security and resource reasons. However, we provide [detailed instructions 1](docs/techStack/techStack_1.md), [detailed instructions 2](docs/techStack/techStack_2.md) so you can reconfigure these services using your own keys or tokens.
@@ -168,7 +161,7 @@ The web will be available at:
 ## Option 2: Building from Source
 
 > [!NOTE]
-> Prerequisites: We assume that you have **Node.js**, **Yarn** installed on your system.
+> Prerequisites: We assume that you have **Node.js** (version >= 22.14) and **Yarn** installed on your system.
 
 If you're interested in exploring the code and running the project manually, follow these steps:
 
@@ -180,7 +173,7 @@ If you're interested in exploring the code and running the project manually, fol
 
 2. **Set up environment variables**
 
-    Create a .env file in the project root by copying the template from .env.example, then fill in the required values by your own credentials. 
+    Create a `.env` file in the project root by copying the template from `.env.example`, then fill in the required values by your own credentials.
 
 3. **Set up the database**
 
@@ -224,7 +217,7 @@ If you're interested in exploring the code and running the project manually, fol
 
 If you want to package the whole application with your source code changes to Docker images, update the `docker-compose.yml` file:
 
-1. Uncommen the backend and frontend service, then under the `build` section, comment out the `image` lines (which pull from Docker Hub).
+1. Uncomment the backend and frontend service, then under the `build` section, comment out the `image` lines (which pull from Docker Hub).
 
 2. Then, uncomment the `context` and `dockerfile` lines.
 
@@ -248,9 +241,9 @@ This will build the Docker images directly from the source code in the `./app/ba
 - Postgres SQL
 - Pgadmin
 
-Access te webpage at: `http://localhost:5173`.
+Access the webpage at: `http://localhost:5173`.
 
-You can take an additional step to securely expose your Docker services to the internet using Cloudflare Tunnel (formerly Argo Tunnel). To do this, register a tunnel and link it to the domain name you specify in the `BE_URL` and `FE_URL` variables in your `.env` file. Then, follow the official instructions on the Cloudflare website to run the tunnel and make your services publicly accessible. The webpage now can be access via `https://soictstock.io.vn`.
+You can take an additional step to securely expose your Docker services to the internet using Cloudflare Tunnel (formerly Argo Tunnel). To do this, register a tunnel and link it to the domain name you specify in the `BE_URL` and `FE_URL` variables in your `.env` file. Then, follow the official instructions on the Cloudflare website to run the tunnel and make your services publicly accessible. The webpage now can be accessed via `https://soictstock.io.vn`. See instructions setup [here](./docs/techStack/techStack_2.md/#6-cloudflare-tunnel).
 
 # 🏗️ Project Structure
 
@@ -272,11 +265,11 @@ Stock-Trading-Platform/
 │       └── Dockerfile        # Dockerfile for frontend
 │
 ├── docs/
-│   ├── design/                 # Detail system design documents
+│   ├── design/                 # Detailed system design documents
 │   ├── reports/                # Project reports
 │   ├── setupInstructions/      # Setup instructions for the project
-│   ├── techStack/              # All the technologies used, details guide configuring them.
-│   └── stockFundementalThoery/ # Some financial terminology, mechanism of order matching, etc.
+│   ├── techStack/              # All the technologies used, detailed guide for configuring them
+│   └── stockFundamentalTheory/ # Some financial terminology, mechanism of order matching, etc.
 │
 ├── .env                # Environment variables (not committed to GitHub)
 ├── .env.example        # Example environment variables file (serve as a template)
@@ -326,7 +319,7 @@ Stock-Trading-Platform/
                └──────────────────────────────────────────────────┘
 ```
 
-**Format: $HOST_PORT:$CONTAINER_PORT*
+**Format: $HOST_PORT:$CONTAINER_PORT**
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -477,7 +470,7 @@ Stock-Trading-Platform/
     <tr>
       <td rowspan="3">5. Sensitive Information Leakage</td>
       <td>🟡 Minimization of sensitive information leakage about servers, software, and applications</td>
-      <td>Checkout our <a href="app/frontend/nginx.conf"><code>nginx.conf</code></a> file for more details on security headers and configurations to minimize information leakage.</td>
+      <td>Check out our <a href="app/frontend/nginx.conf"><code>nginx.conf</code></a> file for more details on security headers and configurations to minimize information leakage.</td>
     </tr>
     <tr>
       <td>🟢  Minimization of sensitive information leakage in response</td>
@@ -485,7 +478,7 @@ Stock-Trading-Platform/
     </tr>
     <tr> 
     <td>🟢 Mitigate Clickjacking</td>
-    <td>Set <code>X-Frame-Options: DENY</code> in HTTP response header through using <code>helmet</code> dependency to prevent website to be embeded into other sites using <code>iframe</code> tag </td>
+    <td>Set <code>X-Frame-Options: DENY</code> in HTTP response header through using <code>helmet</code> dependency to prevent website to be embedded into other sites using <code>iframe</code> tag </td>
     </tr>
     <tr>
       <td rowspan="3">6. Compliance with Standards</td>
@@ -508,7 +501,7 @@ Stock-Trading-Platform/
     <tr>
       <td rowspan="2">7. Security Testing</td>
       <td>🟢 Code review with automated tools</td>
-      <td>Scan with <code>Qodana</code> from Jetbrains. All <code>Critical</code>, <code>High</code> level warning have been fixed, still some <code>Moderate</code> warnings left.</td>
+      <td>Scan with <code>Qodana</code> from Jetbrains. All <code>Critical</code>, <code>High</code> level warnings have been fixed, still some <code>Moderate</code> warnings left.</td>
     </tr>
     <tr>
       <td>🟢 Penetration testing with tools</td>
@@ -518,7 +511,7 @@ Stock-Trading-Platform/
       <td rowspan="4">8. Bonus</td>
       <td>🟢 Multi-factor authentication</td>
       <td>
-        After enter correct username/email and password, OTP is sent to user's email. OTP must be valid and unexpired. We also have "Remember device in ...  time" implemented to skip OTP next time login. Devices are idntified by using <code>fingerprintJS</code> dependency (free version). See in <a href="app/backend/src/services/security/otpService.js"><code>otp service</code></a> (for otp implementation) and <a href="app/frontend/src/components/forms/LoginForm.jsx"><code>LoginForm.jsx</code></a> (for device fingerprint indentification).
+        After entering correct username/email and password, OTP is sent to user's email. OTP must be valid and unexpired. We also have "Remember device in ...  time" implemented to skip OTP next time login. Devices are identified by using <code>fingerprintJS</code> dependency (free version). See in <a href="app/backend/src/services/security/otpService.js"><code>otp service</code></a> (for otp implementation) and <a href="app/frontend/src/components/forms/LoginForm.jsx"><code>LoginForm.jsx</code></a> (for device fingerprint identification).
       </td>
     </tr>
     <tr>
@@ -542,7 +535,7 @@ Status Explanation:
 
 - 🟢 **Done**: Mitigation measures have been implemented to the best of our knowledge. (Note: This does not guarantee complete immunity from the attack.)
 
-- 🟡 **Partially Done / Not Applicable**: The measure is either just propose ideas, partially implemented  and have not been fully tested or validated yet.
+- 🟡 **Partially Done / Not Applicable**: The measures are either just proposed ideas, partially implemented, and have not been fully tested or validated yet.
 
 - 🔴 **Not Implemented**: No mitigation has been applied yet.
 
@@ -554,7 +547,7 @@ Status Explanation:
   <img src="docs/images/QodanaResult.png" alt="Code review" style="max-width: 60%; height: auto;">
 </div>
 
-All warning at `Critical`, `High` level have been fixed. There are still some `Medium` level warnings left we can not fix yet due to time constraints. 
+All warnings at `Critical`, `High` level have been fixed. There are still some `Medium` level warnings left we cannot fix yet due to time constraints. 
 
 ## Code penetration testing with OWASP ZAP
 
@@ -607,6 +600,6 @@ Distributed under the Apache-2.0 License License. See `LICENSE` for more informa
 
 This project is maintained by: Chu Trung Anh - [Email](mailto:chutrunganh04@gmail.com).
 
-Feel free to contact me if you have any question or suggestion.
+Feel free to contact me if you have any questions or suggestions.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

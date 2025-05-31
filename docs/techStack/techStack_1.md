@@ -1,22 +1,22 @@
 > [!NOTE]
 > This file contains the tech stack used in the project, including the theory and examples implemented in the code.
 
-
 # 1. bcrypt
 
 ## Theory
 
 To store the password securely, we use bcrypt to hash the password before storing it in the database. How does bcrypt work?
 
-1. It auto generates a random salt, concatenates it with the password, and then hashes the result. This will prevent attackers from using precomputed hash tables (rainbow tables) to crack the password. 
+1. It auto-generates a random salt, concatenates it with the password, and then hashes the result. This will prevent attackers from using precomputed hash tables (rainbow tables) to crack the password.
 
-2. bcrypt uses a slow hashing algorithm, which makes it computationally expensive to brute-force the password. The cost factor (`SALT_ROUNDS`) determines how many iterations of the hashing algorithm are performed. A higher cost factor means more iterations, making it harder to crack the password. In the code, we use 10 rounds which tells bcrypt to perform 2^10 iterations of the hashing algorithm. The larger the number of rounds, the more secure the hash is, but it also requires more hardware resources to compute. As OWASP recommends, a cost factor should be at least 10.
+2. bcrypt uses a slow hashing algorithm, which makes it computationally expensive to brute-force the password. The cost factor (`SALT_ROUNDS`) determines how many iterations of the hashing algorithm are performed. A higher cost factor means more iterations, making it harder to crack the password. In the code, we use 10 rounds, which tells bcrypt to perform 2^10 iterations of the hashing algorithm. The larger the number of rounds, the more secure the hash is, but it also requires more hardware resources to compute. As OWASP recommends, a cost factor should be at least 10.
 
-So in theory, when user register, the process would be: **hash(password_user_input + salt)**, we store this result in the database. When the user tries to log in, take in the password they entered, hash it again with the **SAME** salt, and compare the result to the stored hash. This means we need to store both the hashed password and the salt in the database corresponding to user account. However, in practical, we do not need to create another field in the database or write any code to store the salt, bcrypt **automatically** handles that under the hood. For more detail, bcrypt auto includes the salt in the output string itself, so when you hash a password, the output will include both the salt and the hash. The output string is something like this:
+So in theory, when a user registers, the process would be: **hash(password_user_input + salt)**, we store this result in the database. When the user tries to log in, take the password they entered, hash it again with the **SAME** salt, and compare the result to the stored hash. This means we need to store both the hashed password and the salt in the database corresponding to the user account. However, in practice, we do not need to create another field in the database or write any code to store the salt, as bcrypt **automatically** handles that under the hood. For more detail, bcrypt auto-includes the salt in the output string itself, so when you hash a password, the output will include both the salt and the hash. The output string is something like this:
 
 ```plaintext
 $2a$10$abcdefghijklmnopqrstuu3guuo/XeYbYBk7Zenk4Yf9XuYoeZ4JWD
 ```
+
 With:
 - `$2a$`: The bcrypt version identifier.
 - `$10$`: The cost factor (SALT_ROUNDS).
@@ -25,7 +25,7 @@ With:
 
 ## Implementation
 
-When user register a new account -> create hash using `bycrypt.hash` function. This function take two parameters: the password to hash and the cost factor (SALT_ROUNDS) -> Store this output hash in the database.
+When a user registers a new account -> create a hash using the `bcrypt.hash` function. This function takes two parameters: the password to hash and the cost factor (SALT_ROUNDS) -> Store this output hash in the database.
 
 
 ```javascript
@@ -34,9 +34,9 @@ const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 ```
 When user login -> fetch the user from the database by email -> compare the password user input with the hashed password in the database using `bcrypt.compare` function. This function takes two parameters: the password to compare and the hashed password from the database. It returns true if they match, false otherwise.
 
-However, we need to be careful when implementing the login function. If we check the email first, if not exist then throw error, if exist then calculate the hash of input password and compare again the password stored in database, we can introduce a **timing attack** vulnerability. 
+However, we need to be careful when implementing the login function. If we check the email first, if it does not exist, then throw an error; if it exists, then calculate the hash of the input password and compare it against the password stored in the database, we can introduce a **timing attack** vulnerability.
 
-An attacker can determine if an email exists in the database by measuring the time it takes to respond to the login request, like in case the web immediately response, attacker can know that the email does not exist in the database, and if the web takes a long time to respond (since it  need to slow hash the provided password and compare it with the hashed password in the database), attacker can know that the email exists in the database.
+An attacker can determine if an email exists in the database by measuring the time it takes to respond to the login request. For example, if the web immediately responds, the attacker can know that the email does not exist in the database. If the web takes a long time to respond (since it needs to slow hash the provided password and compare it with the hashed password in the database), the attacker can know that the email exists in the database.
 
 To prevent this, **always** perform password hashing, even if the email does not exist in the database. This way, the time it takes to respond to the login request will be the same regardless of whether the email exists or not.
     
@@ -113,13 +113,13 @@ After user login successfully, we generate a JWT token (inside the `userService.
 
 As mentioned, we return tokens to clients in cookies. The cookie is set with:
 
-- `httpOnly` flag, which prevents JavaScript from accessing the cookie (XSS protection)
+- `httpOnly` flag, which prevents JavaScript from accessing the cookie (XSS protection).
 
-- `secure` flag, which ensures that the cookie is only sent over HTTPS in production. 
+- `secure` flag, which ensures that the cookie is only sent over HTTPS in production.
 
 - `sameSite` option prevents the cookie from being sent in cross-site requests.
 
-- `expires` option sets the cookie expiration time. In this project, i set `expires` to false, which means the cookie will be expires. Instead, when user logout or close the browser, the cookies will be deleted.
+- `expires` option sets the cookie expiration time. In this project, I set `expires` to false, which means the cookie will expire. Instead, when the user logs out or closes the browser, the cookies will be deleted.
 
 
 The process will be as follows:
@@ -179,7 +179,7 @@ req.user = {
 
 ## Theory
 
-Cros stand for Cross-Origin Resource Sharing, it is a security feature implemented by web browsers to prevent malicious websites from making requests to a different domain than the one that served the original web page. CORS allows servers to specify which origins are allowed to access their resources. This is done by including specific HTTP headers in the server's response. See more about cros in this link: https://youtu.be/FggsjTsJ7Hk?si=Cwp0EzYCwREDtG7R , https://youtu.be/E6jgEtj-UjI?si=lmJzdVFbUFbnRXsZ, https://200lab.io/blog/cors-la-gi
+CORS stands for Cross-Origin Resource Sharing. It is a security feature implemented by web browsers to prevent malicious websites from making requests to a different domain than the one that served the original web page. CORS allows servers to specify which origins are allowed to access their resources. This is done by including specific HTTP headers in the server's response. See more about CORS in this link: https://youtu.be/FggsjTsJ7Hk?si=Cwp0EzYCwREDtG7R, https://youtu.be/E6jgEtj-UjI?si=lmJzdVFbUFbnRXsZ, https://200lab.io/blog/cors-la-gi.
 
 ## Implementation
 
@@ -529,13 +529,13 @@ The passport.js library already have built in functions for these so our control
 # 5. Matching Engine
 
 > [!NOTE]
-> In our app. we only implement two types of orders: Limit Orders and Market Orders. Together with two actions: Buy and Sell, we have four types of orders:
+> In our app, we only implement two types of orders: Limit Orders and Market Orders. Together with two actions: Buy and Sell, we have four types of orders:
 > - Limit Buy: A limit order to buy a stock at a specified price or lower.
 > - Limit Sell: A limit order to sell a stock at a specified price or higher.
 > - Market Buy: A market order to buy a stock at the best available price on the Sell side.
 > - Market Sell: A market order to sell a stock at the best available price on the Buy side.
 >
-> Some other types of orders like Stop-Loss, Stop-Limit, Trailing Stop, etc. are not implemented in this project yet.
+> Some other types of orders like Stop-Loss, Stop-Limit, Trailing Stop, etc., are not implemented in this project yet.
 
 This is the heart of the stock trading system, responsible for matching buy and sell orders based on the rules of the stock market. 
 
@@ -867,10 +867,10 @@ After matching, currently book:
 
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
 ║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
-║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╬════════╬═══════════╦═══════╦═══════════╦═══════╣
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╦═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
-║ 6          ║    150.00 ║     4 ║    160.00 ║     3 ║           ║        ║           ║       ║           ║       ║
+║ 6          ║    150.00 ║     4 ║    160.00 ║     2 ║           ║        ║           ║       ║           ║       ║
 ╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
 ```
 
@@ -979,7 +979,7 @@ After matching, currently book:
 
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
 ║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
-║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╬════════╬═══════════╦═══════╦═══════════╦═══════╣
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╦═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
 ║ 6          ║           ║       ║    145.00 ║     2 ║           ║        ║    150.00 ║     2 ║           ║       ║
@@ -1043,7 +1043,7 @@ After matching, currently book:
 ║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╦═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
-║ 6          ║           ║       ║           ║       ║    150    ║    2   ║    160.00 ║     2 ║           ║       ║
+║ 6          ║           ║       ║           ║       ║    150.00 ║      2 ║    160.00 ║     2 ║           ║       ║
 ╚════════════╩═══════════╩═══════╩═══════════╩═══════╩═══════════╩════════╩═══════════╩═══════╩═══════════╩═══════╝
 ```
 
@@ -1052,7 +1052,7 @@ After matching, currently book:
 
 ### 3.4 Partially Matching Orders
 
-That is about matching on price, above we are assuming that te orders are **Fully matched**, but there might (actually often) be cases where the orders are **Partially matched**. For example:
+That is about matching on price. Above, we are assuming that the orders are **fully matched**, but there might (actually often) be cases where the orders are **partially matched**. For example:
 
 - A sell limit hanging at $150 for 2 stock, another sell limits order that hanging at $160 for 3 stock comes in
 
@@ -1063,7 +1063,7 @@ In this case, our engine need to make sure that the buy order will by at $150 fo
 ```plaintext
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
 ║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
-║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╬════════╬═══════════╦═══════╦═══════════╦═══════╣
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╦═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
 ║ 6          ║           ║       ║           ║       ║           ║        ║    150.00 ║     2 ║    160.00 ║     3 ║
@@ -1075,7 +1075,7 @@ Then an buy market order comes in for 4 stocks, the order book will be updated a
 ```plaintext
 ╔════════════╦═══════════════════════════════════════╦════════════════════╦═══════════════════════════════════════╗
 ║ Stock ID   ║                   Bid                 ║       Matched      ║               Ask                     ║
-║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╬════════╬═══════════╦═══════╦═══════════╦═══════╣
+║            ╠═══════════╦═══════╦═══════════╦═══════╬═══════════╦════════╬═══════════╦═══════╦═══════════╦═══════╣
 ║            ║   Prc 2   ║ Vol 2 ║   Prc 1   ║ Vol 1 ║    Prc    ║  Vol   ║   Prc 1   ║ Vol 1 ║   Prc 2   ║ Vol 2 ║
 ╠════════════╬═══════════╬═══════╬═══════════╬═══════╬═══════════╬════════╬═══════════╬═══════╬═══════════╬═══════╣
 ║ 6          ║           ║       ║           ║       ║    160.00 ║      2 ║    160.00 ║     1 ║           ║       ║
