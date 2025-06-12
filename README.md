@@ -30,7 +30,22 @@
 
 <a id="readme-top"></a>
 
-# 📝 Overview 
+
+<details>
+<summary>Table of Contents</summary>
+  <ol>
+    <li><a href="#-overview">Overview</a></li>
+    <li><a href="#-features">Features</a></li>
+    <li><a href="#-installation--setup">Installation & Setup</a></li>
+    <li><a href="#️-project-structure">Project Structure</a></li>
+    <li><a href="#-security-checklist">Security Checklist</a></li>
+  
+  </ol>
+</details>
+
+<br>
+
+# 📝 Overview
 
 **Soict Stock Trading Platform** is a full-stack web application that simulates a real-world stock trading environment. Designed for beginners and educational purposes, it allows users to practice trading stocks, manage portfolios, and learn about market dynamics in a safe, risk-free setting. Due to the limitations of the project scope, certain real-world trading rules and mechanisms have been simplified, see [Stock Fundamental Theory](./docs/stockFundamentalTheory/stockFundamentalTheory.md) section.
 
@@ -179,9 +194,9 @@ If you're interested in exploring the code and running the project manually, fol
 
     You have two options:
 
-    - **Option 1**: Install PostgreSQL manually via the their official website.
+    - **Option 1**: Install PostgreSQL manually via their official website.
 
-    - **Option 2**: Use our Docker setup to run only the database. In this case, you need to command out our backend and frontend services inside the docker-compose file to run the database only. 
+    - **Option 2**: Use our Docker setup to run only the database. In this case, you need to comment out our backend and frontend services inside the docker-compose file to run the database only. 
     
     
     In both case, please recheck variables in the `.env` to make sure that:

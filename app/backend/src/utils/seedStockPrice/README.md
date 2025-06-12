@@ -1,18 +1,41 @@
 **This file will guide you through the process of seeding stock prices into the database with our scripts**
 
+Depending on your setup, you’ll run it either directly on your host machine terminal or inside a Docker container terminal.
 
-We use **`Alpha Vantage`** api to fetch the stock price data with the input is stock symbol, such as `AAPL` (Apple Inc). This function will access to the database and insert directly to the `stockPrices` table.
+# What is this script?
+
+We use **`Alpha Vantage`** API to fetch the stock price data with the input is stock symbol, such as `AAPL` (Apple Inc). This function will access to the database and insert directly to the `stockPrices` table.
 
 For more details, look up to [Apha Vantage](https://www.alphavantage.co/documentation/)
 
 
-Before coming to production (get the database online somewhere) we will use this function to add some real stock prices value, in order to plot/draw some historical stock prices chart.
+Before coming to production, we will use this function to add some real stock prices value, in order to plot/draw some historical stock prices chart initially.
 
-The `stock_fetcher.py` script is designed to fetch stock prices and update the database with the latest information. The `StockManager.js` file is the interface to use `stock_fetcher.py` script in the backend, allowing you to choose stocks sympol, time duration to fetch.
+The `stock_fetcher.py` script is designed to fetch stock prices and update the database with the latest information. The `StockManager.js` file is the interface wrapper to the `stock_fetcher.py` script, allowing you to choose stocks symbol, time duration to fetch.
 
-To run the script, you need to have Python installed on your machine along with the required Python libraries for the `stock_fetcher.py` to work.
+# 🐳 If You're Running Everything in Docker
 
-Change to the directly where the `stock_fetcher.py` file is located, which is `app/backend/src/utils/seedStockPrice/`.
+If your backend and frontend services are containerized (i.e., not running directly on bare localhost terminal but inside Docker on localhost), follow these steps:
+
+Access the Docker container:
+
+```bash
+docker exec -it <CONTAINER_NAME> /bin/sh
+```
+*Replace `<CONTAINER_NAME>` with the actual name or ID of your backend container. You can find this by running `docker ps` to list all running containers.*
+
+This will give you a shell inside the container with path `/app #`. Run the script inside the container:
+
+```bash
+node src/utils/seedStockPrice/stockManager.js
+```
+# 💻 If You're Running on Bare Localhost
+
+If you're running the backend directly on your host machine (not inside Docker), follow these steps:
+
+## 1. Install Required Libraries
+
+To run the script, you need to have Python installed on your machine along with the required Python libraries for the `stock_fetcher.py` to work. Change to the directly where the `stock_fetcher.py` file is located, which is `app/backend/src/utils/seedStockPrice/`.
 
 ```bash
 cd app/backend/src/utils/seedStockPrice/
@@ -27,8 +50,8 @@ python3 -m venv venv
 source venv/bin/activate
 
 # Install pip tool if you haven't already
-sudo pacman -Syu base-devel python-pip # With Arch-based
-# sudo apt update && sudo apt upgrade -y && sudo apt install build-essential python3-pip  # With Debian-based, use this command instead
+# sudo pacman -Syu base-devel python-pip # With Arch-based
+sudo apt update && sudo apt upgrade -y && sudo apt install build-essential python3-pip  # With Debian-based, use this command instead
 pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt # Install the needed library
 ```
@@ -46,10 +69,10 @@ pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt # Install the needed library
 ```
 
-After successfully installing the dependencies without any errors (in case of errors, mostly it will be Python version incompatible with the libraries, you can try to install each library manually without using `requirements.txt`), you can choose to run the Python script directly or use the `stockManager.js` interface for a more user-friendly experience.
+After successfully installing the dependencies without any errors (in case of errors, mostly it will be Python version incompatible with the libraries, you can try to install each library manually without using `requirements.txt`), you can choose to run the Python script `stock_fetcher.py` directly or use the `stockManager.js` wrapper interface for a more user-friendly experience:
 
 
-Incase you want to run the script directly, there will be some parameters you can specify when running the script as follows:
+- Incase you want to run the script `stock_fetcher.py` directly, there will be some parameters you can specify when running the script as follows:
 
 ```bash
 #Fetch data for Apple for the past 30 days (default range)
@@ -62,13 +85,13 @@ python stock_fetcher.py GOOGL --start 2023-01-01 --end 2023-12-31
 python stock_fetcher.py AAPL --update-info
 ```
 
-In case you want to use the `stockManager.js` interface, you need to run the script in the `app/backend/` directory, so that it can access to the `.env` file and the `node_modules` folder.
+- In case you want to use the `stockManager.js` interface (wrapper interface for `stock_fetcher.py`), you need to run the script in the `app/backend/` directory, so that it can access to the `.env` file and the `node_modules` folder.
 
 ```bash
 cd app/backend/
 ```
 > [!IMPORTANT]
-> You will need to move to EXACTLY to this location to run the script, since:
+> You will need to move to **EXACTLY** to this location to run the script, since:
 
 - The `stockManager.js` needs to be run in a place where it can see the `node_modules` folder, which is located in the `app/backend/` directory.
 
