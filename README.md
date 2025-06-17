@@ -17,14 +17,14 @@
   <p align="center">
     <b>A stock trading simulator built for beginners. Learn to trade without the risk.</b>
     <br />
-    <a href="/docs/"><strong>Explore the docs »</strong></a>
+    <a href ="https://youtu.be/gIeMp4aAaLQ?si=C0mMh8dQQeUio8uw"><strong>Watch the demo video »</strong></a>
     <br />
     <br />
     <a href="#-features">Features</a>
     ·
-    <a href="https://github.com/chutrunganh/Stock-Trading-Platform/issues/new">Report Bug</a>
+    <a href="/docs/">Explore Docs</a>
     ·
-    <a href="https://github.com/chutrunganh/Stock-Trading-Platform/issues/new">Request New Feature</a>
+    <a href="https://github.com/chutrunganh/Stock-Trading-Platform/issues/new">Request Bugs</a>
   </p>
 </div>
 
@@ -142,6 +142,9 @@ Our application offers some key features:
   <div align="center">
     <img src="docs/images/AdminDemo_compress.gif" alt="Admin Demo" style="max-width: 60%; height: auto;">
   </div>
+
+
+For a live demo, you can watch our [Demo Video](https://youtu.be/gIeMp4aAaLQ?si=C0mMh8dQQeUio8uw).
 
 > [!NOTE]
 > Some features of the website require third-party services such as Google SSO, Recaptcha with Cloudflare Turnstile, QR code banking payments via Sepay, and remote access through Cloudflare Tunnel. These services may become unavailable after the project is made public, as we plan to delete the associated accounts or projects for security and resource reasons. However, we provide [detailed instructions 1](docs/techStack/techStack_1.md), [detailed instructions 2](docs/techStack/techStack_2.md) so you can reconfigure these services using your own keys or tokens.
