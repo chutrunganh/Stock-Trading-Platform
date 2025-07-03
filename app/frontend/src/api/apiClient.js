@@ -5,19 +5,16 @@
 import axios from 'axios';
 
 // Get the base URL for all API calls
-const getBaseUrl = () => {
-  const isDevEnvironment = import.meta.env.DEV;
-  return isDevEnvironment ? '/api' : `${window.location.origin}/api`;
-};
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 // Helper function to create SSE connections
 export const createSSEConnection = (path) => {
-  return new EventSource(`${getBaseUrl()}${path}`);
+  return new EventSource(`${API_BASE_URL}${path}`);
 };
 
 // Create base axios instance with common configuration
 const apiClient = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },

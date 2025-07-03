@@ -254,60 +254,79 @@ export const resetPasswordService = async (email, otp, newPassword) => {
 };
 
 export const verifyLoginOtpService = async (identifier, otp, password, visitorId = null, rememberDevice = false, fingerprintConfidence = 0) => {
-  // First, check password
-  const loginResult = await loginUserService(identifier, password, visitorId, fingerprintConfidence); 
-  // If login result has accessToken, it means device was remembered and 2FA was skipped
-  if (loginResult.accessToken) {
-    return loginResult;
-  }
-  // Always resolve identifier to email
-  let email = identifier;
-  if (!identifier.includes('@')) {
-    // Look up by username
-    const userResult = await pool.query('SELECT email FROM users WHERE username = $1', [identifier]);
-    const user = userResult.rows[0];
-    if (!user || !user.email) {
-      throw new Error('User not found');
-    }
-    email = user.email;
-  }
-  // Then, check OTP
-  const isValidOtp = await verifyOtpService(email, otp);
-  if (!isValidOtp) {
-    throw new Error('Invalid OTP');
-  }
   try {
-    // Fetch the user by email
-    const userResult = await pool.query(
-      'SELECT id, username, email, role FROM users WHERE email = $1',
-      [email]
-    );
-    const user = userResult.rows[0];
-    if (!user) {
-      throw new Error('User not found');
+    // First, check password
+    const loginResult = await loginUserService(identifier, password, visitorId, fingerprintConfidence); 
+    
+    // If login result has accessToken, it means device was remembered and 2FA was skipped
+    if (loginResult.accessToken) {
+      return loginResult;
     }
-    // If rememberDevice is true and visitorId is provided, remember this device
-    let deviceWarning = null;
-    if (rememberDevice && visitorId) {
-      const rememberResult = await rememberDeviceService(user.id, visitorId, fingerprintConfidence);
-      if (rememberResult.warning) {
-        deviceWarning = rememberResult.message;
+
+    // Always resolve identifier to email for OTP verification
+    let email = identifier;
+    if (!identifier.includes('@')) {
+      // Look up by username
+      const userResult = await pool.query('SELECT email FROM users WHERE username = $1', [identifier]);
+      const user = userResult.rows[0];
+      if (!user || !user.email) {
+        throw new Error('User not found');
       }
+      email = user.email;
     }
-    // Generate JWT tokens
-    const { accessToken, refreshToken } = generateTokens({
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-    });
-    // Delete the OTP after successful verification
-    await OTP.deleteByEmail(email);
-    const result = { user: User.getSafeUser(user), accessToken, refreshToken };
-    if (deviceWarning) {
-      result.warning = deviceWarning;
+
+    // Verify OTP
+    const isValidOtp = await verifyOtpService(email, otp);
+    if (!isValidOtp) {
+      throw new Error('Invalid OTP');
     }
-    return result;
+
+    try {
+      // Fetch the user by email, including portfolio_id
+      const userResult = await pool.query(
+        'SELECT u.id, u.username, u.email, u.role, p.portfolio_id FROM users u LEFT JOIN portfolios p ON u.id = p.user_id WHERE u.email = $1',
+        [email]
+      );
+      const user = userResult.rows[0];
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      // If rememberDevice is true and visitorId is provided, remember this device
+      let deviceWarning = null;
+      if (rememberDevice && visitorId) {
+        const rememberResult = await rememberDeviceService(user.id, visitorId, fingerprintConfidence);
+        if (rememberResult.warning) {
+          deviceWarning = rememberResult.message;
+        }
+      }
+
+      // Generate JWT tokens
+      const tokens = generateTokens({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        portfolio_id: user.portfolio_id
+      });
+
+      // Delete the OTP after successful verification
+      await OTP.deleteByEmail(email);
+
+      const result = { 
+        user: User.getSafeUser(user), 
+        ...tokens
+      };
+
+      if (deviceWarning) {
+        result.warning = deviceWarning;
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error in verifyLoginOtpService:', error);
+      throw new Error('Failed to complete login after OTP verification');
+    }
   } catch (error) {
     console.error('Error in verifyLoginOtpService:', error.message);
     throw error;

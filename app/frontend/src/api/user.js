@@ -26,7 +26,11 @@ export const loginUser = async ({ identifier, password, turnstileToken, otp, vis
     };
 
     console.log('Login request payload:', payload);
-    const response = await apiClient.post('/login', payload);
+    
+    // Use different endpoints for initial login and OTP verification
+    const endpoint = otp ? '/verify-login-otp' : '/login';
+    const response = await apiClient.post(endpoint, payload);
+    
     console.log('Login response:', response.data);
     return response.data;
   } catch (error) {

@@ -14,6 +14,7 @@ const router = express.Router();
 router.post("/register", validateUser, registerUser);
 router.post("/login", validateLogin, loginUser);
 router.post("/send-login-otp", sendLoginOtpController);
+router.post("/verify-login-otp", loginUser);
 router.post("/forgot-password", forgotPasswordController);
 router.post("/reset-password", resetPasswordController);
 router.get("/auth/google", googleAuth);

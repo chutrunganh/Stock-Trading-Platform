@@ -264,14 +264,14 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
   };
 
   // Handler for OTP form submission
-  const handleOtpSubmit = async ({ identifier, otp }) => {
+  const handleOtpSubmit = async ({ identifier, otp, rememberDevice }) => {
     setError('');
     setIsLoading(true);
     try {
       const result = await loginUser({ 
         identifier, 
-        password, 
-        turnstileToken, 
+        password,  // Include the password from the previous step
+        turnstileToken,  // Include the turnstile token
         otp,
         visitorId,
         rememberDevice,
@@ -280,7 +280,6 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
       
       // If there's a warning, show it to the user
       if (result.data && result.data.warning) {
-        // Show warning but still proceed with login
         console.warn('Device fingerprint warning:', result.data.warning);
         setWarning(result.data.warning);
       }
@@ -303,7 +302,11 @@ function LoginForm({ onLogin, onRegisterClick, onForgotPasswordClick }) {
       }
     } catch (err) {
       console.error('OTP verification error:', err);
-      setError(err.response?.data?.message || err.message || 'Invalid OTP. Please try again.');
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError('Invalid OTP or verification failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }

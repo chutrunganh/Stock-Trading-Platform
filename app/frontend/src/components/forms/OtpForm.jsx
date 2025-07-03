@@ -37,7 +37,11 @@ function OtpForm({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (otp.trim() && !expired) {
-      onSubmit({ identifier, otp });
+      onSubmit({
+        identifier,
+        otp: otp.trim(),
+        rememberDevice: rememberDevice || false
+      });
     }
   };
 
