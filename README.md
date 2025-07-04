@@ -111,7 +111,7 @@ Our application offers some key features:
     <img src="docs/images/LoginDemo_compress.gif" alt="Login Demo" style="max-width: 60%; height: auto;">
   </div>
 
-  *Captcha (Cloudflare Turnstile) is disabled by default during the development stage. To enable it, set the environment variable in `.env` to `production`*
+  *Testing accounts: `user1@stockmarket.com`/ `user1` with password `Test@123` (for normal account) and `admin@stockmarket.com`/`admin` with password `Test@123` (for admin account).*
 
 - **View Stock Board**: Browse a real-time stock list with live price updates. Click on any stock to view detailed info, including price history shown in candlestick and line charts.
 
@@ -147,7 +147,7 @@ Our application offers some key features:
 For a live demo, you can watch our [Demo Video](https://youtu.be/gIeMp4aAaLQ?si=C0mMh8dQQeUio8uw).
 
 > [!NOTE]
-> Some features of the website require third-party services such as Google SSO, Recaptcha with Cloudflare Turnstile, QR code banking payments via Sepay, and remote access through Cloudflare Tunnel. These services may become unavailable after the project is made public, as we plan to delete the associated accounts or projects for security and resource reasons. However, we provide [detailed instructions 1](docs/techStack/techStack_1.md), [detailed instructions 2](docs/techStack/techStack_2.md) so you can reconfigure these services using your own keys or tokens.
+> Some features of the website require third-party services such as Google SSO, Recaptcha with Cloudflare Turnstile, QR code banking payments via Sepay, and remote access through Cloudflare Tunnel. These services may become unavailable after the project is made public, as we plan to delete the associated accounts or projects for security and resource reasons. However, we provide [detailed instructions 1](docs/techStack/techStack_1.md) and [detailed instructions 2](docs/techStack/techStack_2.md) so you can reconfigure these services using your own keys or tokens.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -155,17 +155,17 @@ For a live demo, you can watch our [Demo Video](https://youtu.be/gIeMp4aAaLQ?si=
 
 ## Option 1: Using Docker
 
-If you just want to **quickly try out the app** without diving into the code, we’ve got you covered with a `docker-compose` setup. Follow these steps:
+If you just want to **quickly try out the app** without diving into the code, we've got you covered with a `docker-compose` setup. Follow these steps:
 
-1. Download the [`docker-compose.yml`](docker-compose.yml) file.
-2. Create a `.env` file in the same directory as the docker-compose file, following the template in [`env.example`](env.example), replace the values with your own credentials.
+1. Download the [`docker-compose.prod.yml`](./docker-compose.prod.yml) file only (no need to clone the project)
+2. Create a `.env` file in the **same directory** as the docker-compose production file, following the template in [`env.example`](env.example), replace the values with your own credentials.
 3. Start Docker on your machine.
-4. Run the following command in the directory containing `docker-compose.yml`:
+4. Run the following command in the directory containing `docker-compose.prod.yml`:
 
 ```bash
-docker-compose up
+docker-compose -f docker-compose.prod.yml up
 ```
-This will pull the latest images for the backend, frontend, and database from Dockerhub then build and run them in containers.
+This will pull the latest images for the backend, frontend, and database from [Dockerhub](https://hub.docker.com/repository/docker/chutrunganh/stockmarketsimulator/general) then build and run them in containers.
 
 
 The web will be available at:
@@ -197,7 +197,7 @@ If you're interested in exploring the code and running the project manually, fol
 
     You have two options:
 
-    - **Option 1**: Install PostgreSQL manually via their official website.
+    - **Option 1**: Install PostgreSQL application manually via their official website.
 
     - **Option 2**: Use our Docker setup to run only the database. In this case, you need to comment out our backend and frontend services inside the docker-compose file to run the database only. 
     
@@ -233,13 +233,7 @@ If you're interested in exploring the code and running the project manually, fol
 
 ## Optional: Package the web with Docker 🐳
 
-If you want to package the whole application with your source code changes to Docker images, update the `docker-compose.yml` file:
-
-1. Uncomment the backend and frontend service, then under the `build` section, comment out the `image` lines (which pull from Docker Hub).
-
-2. Then, uncomment the `context` and `dockerfile` lines.
-
-3. Check again the `.env` file, pay attention to these variables:
+If you want to package the whole application (not just the database as above mentioned) with your source code changes to Docker images, use the `docker-compose.yml` file. First, check again the `.env` file, pay attention to these variables:
 
 | Variable  | Description                                                                                                                      | Example Value                                         |
 | --------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |

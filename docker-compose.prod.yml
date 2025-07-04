@@ -1,0 +1,77 @@
+services:
+  postgres:
+    image: postgres:${POSTGRES_VERSION}
+    container_name: postgres_db
+    restart: always
+    env_file: 
+      - .env
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - NODE_ENV=${NODE_ENV}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - my_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:${PGADMIN_VERSION}
+    container_name: pgadmin
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "${PGADMIN_PORT}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+
+  backend:
+    image: chutrunganh/stockmarketsimulator:backend-v2
+    container_name: backend_app
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "${BE_PORT}:3000"
+    volumes:
+      - ./app/backend/logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - my_network
+
+  frontend:
+    image: chutrunganh/stockmarketsimulator:frontend-v2
+    container_name: frontend_app
+    restart: always
+    ports:
+      - "${FE_PORT}:80"
+    depends_on:
+      - backend
+    networks:
+      - my_network
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+
+networks:
+  my_network:
+    driver: bridge 
