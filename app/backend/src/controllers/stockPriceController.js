@@ -1,3 +1,6 @@
+/**
+ * @description This file contains controller to work with stock price CRUD operations.
+ */
 import {createStockPriceService,
     getAllStockPricesService,
     getStockPricesByStockIdService,
@@ -10,7 +13,7 @@ const handleResponse = (res, status, message, data = null) => {
         data,
     });
 }
-//create
+// Create a new stock price for a stock
 export const createStockPrice = async (req, res, next) => {
     const {stock_id, date, open_price, high_price, low_price, close_price, volume} = req.body;
     try{
@@ -23,8 +26,7 @@ export const createStockPrice = async (req, res, next) => {
 }
 
 
-//read
-
+// Read all stock prices
 export const getAllStockPrice = async (req, res, next) => {
     console.log('All the stock prices: ');
     try{
@@ -36,6 +38,7 @@ export const getAllStockPrice = async (req, res, next) => {
     }
 }
 
+// Read a stock price by stock id
 export const getStockPriceById = async (req, res, next) => {
     try{
         const id = parseInt(req.params.id, 10); // Convert to integer

@@ -1,3 +1,8 @@
+/**
+ * @file initUserUtil.js
+ * @description This file contains the utility functions to initialize the admin and normal users with default portfolio and holdings.
+ * It is used to initialize the database with default users for testing and development purposes.
+ */
 import bcrypt from 'bcrypt';
 import { createPortfolioForUserService } from '../services/portfolioCRUDService.js';
 import { createDefaultHoldingsForPortfolioService } from '../services/holdingCRUDService.js';

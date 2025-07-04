@@ -1,3 +1,8 @@
+/**
+ * @description This file contains the controller to get 
+ * details information (balance, total assets value), holdings and transactions to display on the Portfolio page.
+ */
+
 import { 
     getPortfolioByUserIdService,
     getPortfolioHoldingsService,

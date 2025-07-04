@@ -1,3 +1,9 @@
+/**
+ * @file paymentService.js
+ * @description This file contains the service to verify the payment when making bank transfer via Seapay payment gateway.
+ * It will be called by the payment controller to verify the payment and update the portfolio balance.
+ */
+
 import pool from '../config/dbConnect.js';
 import axios from 'axios';
 import log from '../utils/loggerUtil.js';
@@ -37,6 +43,7 @@ export const verifyPayment = async (referenceNumber, portfolioId) => {
         });
 
         // Verify with Sepay API
+        // For more detail about the Seapay API usage, see the docs/techStack or read their official documentation.
         const sepayResponse = await axios.get(`${SEPAY_API_URL}/transactions/list`, {
             params: { reference_number: referenceNumber },
             headers: {

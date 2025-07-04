@@ -1,3 +1,5 @@
+# NOTE: This file is deprecate, some API endpoints are not updated to the new structure. Not all endpoints will work. Update this later when I have time.
+
 # Install Rest Client extension in VSCode to run this file
 # This file contains HTTP requests to test the API endpoints
 

@@ -1,9 +1,8 @@
 /**
- * @file createHoldingTable.js
  * @description This file contains the function to create the holdings table in the database. 
  * This table will be initialized with empty data. Only when a new user is created in user table -> trigger a corresponding portfolio created
- * in the portfolio table -> trigger create stock holdings with a default quantity of every stock in the stock table for that portfolio. See 
- * implementation in userCRUDService.js for more details.
+ * in the portfolio table -> trigger create stock holdings with a default quantity of every stock in the stock table for that portfolio. 
+ * See implementation in userCRUDService.js for more details.
  */
 
 import pool from './dbConnect.js'
@@ -24,7 +23,7 @@ const createHoldingTable = async () => {
 
     try{
         if(process.env.NODE_ENV === 'development'){
-            //drop the table to recreate
+            // Drop the table to recreate
             await pool.query('DROP TABLE IF EXISTS "holdings" CASCADE');
         }
         await pool.query(queryText);

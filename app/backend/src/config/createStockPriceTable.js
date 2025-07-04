@@ -2,7 +2,10 @@
  * @file createStockPriceTable.js
  * @description This file contains the function to create the stockPrice table in the database.
  * This table will be seeded as the initial price data for all stocks in the stock table.
- * This table contains all the fields needed to draw a candlestick chart for each stock.
+ * This table contains all the fields needed to draw a candlestick chart for each stock (open price, high price, low price, close price, volume)
+ * 
+ * To seed the table with more data to draw the history candlestick chart more realistic, see the function seedStockPrice folder
+ * in the utils folder.
  */
 import pool from './dbConnect.js';
 import log from '../utils/loggerUtil.js';
@@ -23,14 +26,14 @@ const createStockPriceTable = async () => {
 
     /**
      * The open price in our simulate is the price of the first transaction of the day.
-     * The high price is the highest price of the day.
-     * The low price is the lowest price of the day.
-     * The close price is the price of the last transaction of the day.
+     * The high price is the highest price in that trading session.
+     * The low price is the lowest price in that trading session.
+     * The close price is the price of the last transaction of the trading session.
      * -> These prices together with the data are used to draw the candlestick chart.
      * The volume is the number of shares traded during the day.
      */
 
-    //Delete on cascade means if the stock is deleted, the price history will be deleted as well.
+    // Delete on cascade means if the stock is deleted, the price history will be deleted as well.
     try{
         if (process.env.NODE_ENV === 'development'){
             //drop the table to recreate
@@ -50,6 +53,7 @@ const createStockPriceTable = async () => {
     }
 };
 
+// Seed 15 stocks and their price history for the first day of the trading session
 const seedStockPriceTestData = async () => {
     try{
         const queryText = `

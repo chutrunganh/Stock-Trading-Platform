@@ -1,3 +1,8 @@
+/**
+ * @description This file contains the function to create the remembered devices table in the database.
+ * This table will be used to store the devices fingerprint extracted from the user's browser (by using the library called "fingerprintJS")
+ * to detect if the user is logging in from the same device or not.
+ */
 import pool from './dbConnect.js';
 import log from '../utils/loggerUtil.js';
 

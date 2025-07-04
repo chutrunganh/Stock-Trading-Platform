@@ -1,5 +1,8 @@
-import {createTransactionService, getAllTransactionsService, getTransactionByStockIdService, 
-    getTransactionByPortfolioIdService} from '../services/transactionCRUDService.js';
+/**
+ * @description This file contains controller to work with transaction CRUD operations.
+ */
+
+import {createTransactionService} from '../services/transactionCRUDService.js';
 
 const handleResponse = (res, status, message, data = null) => {
     return res.status(status).json({
@@ -8,7 +11,8 @@ const handleResponse = (res, status, message, data = null) => {
         data,
     });
 }
-//create
+
+// Create a new transaction
 export const createTransaction = async (req, res, next) => {
     const {portfolio_id, stock_id, transaction_type, quantity, price} = req.body;
     console.log(req.body);
@@ -20,45 +24,3 @@ export const createTransaction = async (req, res, next) => {
         next(error);
     }
 }
-
-//read
-export const getAllTransactions = async (_req, res, next) => {
-    try{
-        const transactions = await getAllTransactionsService();
-        handleResponse(res, 200, 'Transactions list', transactions);
-    }
-    catch(error){
-        next(error);
-    }
-}
-
-export const getTransactionsByPortfolioId = async (req, res, next) =>{
-    const {portfolio_id} = req.params;
-    try{
-        const transaction = await getTransactionByPortfolioIdService(portfolio_id);
-        if (!transaction){
-            return handleResponse(res, 404, 'Transaction not found');
-        }
-        handleResponse(res,200, 'Transactions of portfolio id:', transaction);
-    }
-    catch(error){
-        next(error);
-    }
-}
-
-export const getTransactionsByStockId = async (req,res, next) => {
-    const {stock_id} = req.params;
-    try{
-        const transaction = await getTransactionByStockIdService(stock_id);
-        if (!transaction){
-            return handleResponse(res, 404, 'Transaction of stock id not found');
-        }
-        handleResponse(res,200, 'Transactions of stock id:', transaction);
-    }
-    catch(error){
-        next(error);
-    }
-}
-
-//look up to transactionCRUDService.js to see why we don't implement update service
-

@@ -1,7 +1,6 @@
 /**
  * This service is responsible for operations related to the transactions table, which include:
- * - creating a new transaction (when order is matcheed, create transactions for both seller and buyer)
- * - retrieving transactions by portfolio ID (so that a user can view their transaction history)
+ * - creating a new transaction (when order is matched, create transactions for both seller and buyer)
  */
 import pool from '../config/dbConnect.js';
 import Transaction from '../models/transactionModel.js';
@@ -23,19 +22,6 @@ export const createTransactionService = async (transactionData) => {
         return Transaction.getTransaction(result.rows[0]);
     }
     catch(error) {
-        console.error('Error:', error.message);
-        throw new Error(error.message);
-    }
-};
-
-
-// Retrieve transactions by portfolio ID
-export const getTransactionsByPortfolioIdService = async (portfolioId) => {
-    try{
-        const result = await pool.query('SELECT * FROM transactions WHERE portfolio_id = $1', [portfolioId]);
-        return result.rows.map(Transaction.getTransaction);
-    }
-    catch(error){
         console.error('Error:', error.message);
         throw new Error(error.message);
     }

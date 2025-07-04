@@ -1,4 +1,8 @@
-// Password validation utility for registration and reset
+/**
+ * @file passwordUtil.js
+ * @description This file contains the utility functions to validate the password for registration and reset to ensure 
+ * the password is ahead to our password policy.
+ */
 
 /**
  * Validates a password against the following policy:

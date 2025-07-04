@@ -59,34 +59,6 @@ export const createOrderService = async (orderData) => {
     }
 };
 
-//this function is used to create an "artificial order" (giao dịch ảo)
-//for admin only
-export const createArtificialOrderService = async (orderData) => {
-    const { stockId, quantity, price, orderType } = orderData;
-    const order = {
-        id: `admin-${Date.now()}`, //unique ID prefixed with "admin" - for easier identification
-        portfolioId: null, //admin does not have portfolioId
-        stockId,
-        volume: quantity,
-        price,
-        type: orderType, // "Limit Buy", "Limit Sell", "Market Buy", "Market Sell"
-        timestamp: Date.now(),
-    };
-
-    //console.log('Admin creating artificial order:', order);
-
-    // Add the order to the order book
-    if (order.type === 'Market Buy' || order.type === 'Market Sell') {
-        orderBook.marketOrderMatching(order);
-    } else if (order.type === 'Limit Buy' || order.type === 'Limit Sell') {
-        //orderBook.addOrderToQuene(order);
-        orderBook.limitOrderMatching(order);
-    }
-
-    // Return the created order
-    return order;
-};
-
 // Service to get an order by ID
 export const getOrderByIdService = async (orderId) => {
     // Use the shared orderBook instance

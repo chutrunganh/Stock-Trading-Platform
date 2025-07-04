@@ -1,3 +1,8 @@
+/**
+ * @file portfolioCRUDService.js
+ * @description This file contains the service to create a new portfolio for a user, get a portfolio by user_id, update a portfolio,
+ * get portfolio holdings with current stock prices and get portfolio transactions.
+ */
 import pool from '../config/dbConnect.js';
 import Portfolio from '../models/portfolioModel.js';
 import { INITIAL_CASH_BALANCE } from '../config/constants.js';
@@ -18,7 +23,7 @@ export const createPortfolioForUserService = async (userId, client = pool) => {
     }
 };
 
-//get portfolio by user_id - specific user (for transaction buy/sell)
+// Get portfolio by user_id - specific user (for transaction buy/sell)
 export const getPortfolioByUserIdService = async (user_id) => {
     try {
         // First get the portfolio
@@ -61,7 +66,7 @@ export const getPortfolioByUserIdService = async (user_id) => {
     }
 };
 
-//update portfolio - cash balance and last updated time
+// Update portfolio - cash balance and last updated time
 export const updatePortfolioService = async (portfolio_id, portfolioData) => {
     const { cash_balance } = portfolioData;
     try {

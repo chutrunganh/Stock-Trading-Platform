@@ -1,214 +1,207 @@
-# NodeJS backend
+# Project Architecture Design
 
-See more details in our report. Update later....
+This document outlines the folder structure and architecture of our Stock Trading Platform project, covering both backend and frontend components.
 
-# React (testing)
+# Backend (Node.js/Express)
 
-Structure of the React project:
+The backend follows a modular architecture with clear separation of concerns:
 
 ```plaintext
-src/
-├── components/
-│   ├── Button/
-│   │   ├── Button.js
-│   │   ├── Button.module.css
-│   │   └── Button.test.js
-│   ├── Header/
-│   │   ├── Header.js
-│   │   ├── Header.module.css
-│   │   └── Header.test.js
-│   └── ... (other reusable components)
-├── pages/
-│   ├── Home/
-│   │   ├── Home.js
-│   │   ├── Home.module.css
-│   │   └── Home.test.js
-│   ├── About/
-│   │   ├── About.js
-│   │   ├── About.module.css
-│   │   └── About.test.js
-│   └── ... (other pages)
-├── assets/
-│   ├── images/
-│   │   └── logo.png
-│   └── fonts/
-├── utils/
-│   └── helpers.js
-├── hooks/
-│   └── useCustomHook.js
-├── context/
-│   └── AppContext.js
-├── services/
-│   └── api.js
-├── App.js
-├── index.js
-└── global.css
+backend/
+├── src/
+│   ├── config/
+│   │   ├── constants.js
+│   │   ├── dbConnect.js
+│   │   ├── passportConfig.js
+│   │   └── create[Table]Table.js files
+│   ├── controllers/
+│   │   ├── orderBookController.js
+│   │   ├── orderController.js
+│   │   ├── paymentControllers.js
+│   │   ├── portfolioController.js
+│   │   ├── stockPriceController.js
+│   │   ├── tradingSessionController.js
+│   │   ├── transactionController.js
+│   │   └── userControllers.js
+│   ├── middlewares/
+│   │   ├── authenticationMiddleware.js
+│   │   ├── errorHandlerMiddleware.js
+│   │   ├── orderMiddleware.js
+│   │   ├── responseSanitizationMiddleware.js
+│   │   ├── roleBasedAccessControlMiddleware.js
+│   │   ├── tradingSessionMiddleware.js
+│   │   └── userValidationMiddleware.js
+│   ├── models/
+│   │   ├── holdingModel.js
+│   │   ├── orderModel.js
+│   │   ├── otpModel.js
+│   │   ├── portfolioModel.js
+│   │   ├── stockModel.js
+│   │   ├── stockPriceModel.js
+│   │   ├── transactionModel.js
+│   │   └── userModel.js
+│   ├── routes/
+│   │   ├── orderRoutes.js
+│   │   ├── paymentRoutes.js
+│   │   ├── portfolioRoutes.js
+│   │   ├── stockPriceRoutes.js
+│   │   ├── stockRoutes.js
+│   │   ├── tradingSessionRoutes.js
+│   │   └── userRoutes.js
+│   ├── services/
+│   │   ├── holdingCRUDService.js
+│   │   ├── orderCRUDService.js
+│   │   ├── orderMatchingService.js
+│   │   ├── orderSettlementService.js
+│   │   ├── paymentService.js
+│   │   ├── portfolioCRUDService.js
+│   │   ├── security/
+│   │   │   ├── otpService.js
+│   │   │   ├── rememberedDeviceService.js
+│   │   │   ├── turnstileService.js
+│   │   │   └── userAuthService.js
+│   │   ├── stockCRUDService.js
+│   │   ├── stockPriceCRUDService.js
+│   │   ├── tradingSessionService.js
+│   │   ├── transactionCRUDService.js
+│   │   └── userCRUDService.js
+│   ├── utils/
+│   │   ├── initUserUtil.js
+│   │   ├── jwtUtil.js
+│   │   ├── loggerUtil.js
+│   │   ├── passwordUtil.js
+│   │   ├── setCookieUtil.js
+│   │   └── seedStockPrice/
+│   │       ├── stock_fetcher.py
+│   │       └── stockManager.js
+│   └── index.js
+├── Dockerfile
+├── package.json
+└── testAPI.http
 ```
 
-**Explanation of Each Part**
+## Backend Components Explanation
 
-## 1. components/
+The typical workflow of an NodeJS backend will be as follow:
 
-**Purpose:** Stores reusable UI building blocks (e.g., buttons, headers, footers).
+> index.js → routes → (middlewares) → controllers → services → models → services → controllers → (middlewares) → response to client.
 
-**Structure:** Each component gets its own folder containing:
-- `[ComponentName].js`: The React component file.
-- `[ComponentName].module.css`: Styles specific to that component (using CSS Modules for scoping).
-- `[ComponentName].test.js`: Test file for the component (optional but recommended).
+More specific:
 
-**Why:** Keeping everything related to a component together makes it easy to find and update.
+`index.js` listens for incoming requests and directs them to the appropriate route  &rarr; The route handler is called, which is defined in the `routes` directory. The route handler specifies the endpoint and the HTTP method (GET, POST, PUT, DELETE) &rarr; The route then calls the corresponding controller function  &rarr; The request might go through some middleware functions (e.g., validation, logging) in the `middlewares` folder before reaching the controller  &rarr; The controller function  (see `controllers` folder) takes in the request, then passes parameters to service functions, which perform the actual business logic  &rarr; The service functions, see `services` folder, may interact with the database model (see `models` folder)  &rarr; The controller receives the data from the service functions and processes it as needed  &rarr; Finally, the response (usually in **JSON format**) is sent back to the client.  
 
-**Example:**
+
+# Frontend (React/Vite)
+
+The frontend follows a modern React application structure:
+
 ```plaintext
-components/Button/
-├── Button.js
-├── Button.module.css
-└── Button.test.js
+frontend/
+├── src/
+│   ├── api/
+│   │   ├── apiClient.js
+│   │   ├── orderBook.js
+│   │   ├── payment.js
+│   │   ├── portfolio.js
+│   │   ├── sessionTrading.js
+│   │   ├── stockPrice.js
+│   │   ├── trade.js
+│   │   └── user.js
+│   ├── assets/
+│   │   └── images/
+│   ├── components/
+│   │   ├── footer/
+│   │   ├── forms/
+│   │   │   ├── ForgotPasswordForm.jsx
+│   │   │   ├── LoginForm.jsx
+│   │   │   ├── OtpForm.jsx
+│   │   │   └── RegisterForm.jsx
+│   │   ├── header/
+│   │   │   ├── AnnouncementBanner.jsx
+│   │   │   └── Header.jsx
+│   │   ├── Modal.jsx
+│   │   └── RoleProtectedRoute.jsx
+│   ├── context/
+│   │   ├── AuthContext.jsx
+│   │   └── TradingSessionContext.jsx
+│   ├── pages/
+│   │   ├── Admin/
+│   │   ├── Home/
+│   │   │   └── HomeComponents/
+│   │   ├── Portfolio/
+│   │   │   └── PortfolioComponents/
+│   │   ├── Trade/
+│   │   ├── Tutorial/
+│   │   └── NotFound/
+│   ├── services/
+│   │   └── eventEmitter.js
+│   ├── styles/
+│   ├── utils/
+│   ├── App.jsx
+│   └── main.jsx
+├── Dockerfile
+├── index.html
+├── nginx.conf
+├── package.json
+└── vite.config.js
 ```
 
-## 2. pages/
-**Purpose:** Contains top-level components that represent different routes or views (e.g., if using React Router).
+## Frontend Components Explanation
 
-**Structure:** Similar to `components/`, each page has its own folder with its JS file, styles, and tests.
+### 1. api/
+**Purpose:** API integration layer.
+- Centralizes all API calls to backend
+- Organizes endpoints by feature
+- Handles API response formatting
 
-**Why:** Separates page-specific logic from reusable components, making navigation intuitive.
+### 2. assets/
+**Purpose:** Static assets storage.
+- Images
+- Icons
+- Other media files
 
-**Example:**
-```plaintext
-pages/Home/
-├── Home.js
-├── Home.module.css
-└── Home.test.js
-```
+### 3. components/
+**Purpose:** Reusable UI components.
+- Forms (Login, Register, OTP)
+- Layout components (Header, Footer)
+- Common UI elements (Modal, which is a blurred background to display pop-up content abouve it)
+- Forms for user interactions: 
+  - `ForgotPasswordForm.jsx`
+  - `LoginForm.jsx`
+  - `OtpForm.jsx`
+  - `RegisterForm.jsx`
+### 4. context/
+**Purpose:** React Context providers, acts as a global state management that can be used across the application.
 
-## 3. assets/
-**Purpose:** Holds static files like images, fonts, or icons.
+- Authentication state management
+- Trading session state management
 
-**Structure:** Subfolders like `images/` or `fonts/` for organization.
+### 5. pages/
+**Purpose:** Page-level components.
+- Feature-specific pages (Admin, Home, Trade) 
+- Each page can have its own sub-components for better organization
 
-**Why:** Keeps assets centralized and easy to access.
 
-**Example:**
-```plaintext
-assets/
-├── images/
-│   └── logo.png
-└── fonts/
-```
+### 6. services/
+**Purpose:** Frontend services.
+- Event emitter for real-time updates with SSE (Server-Sent Events), this method will need to be setup in both backend and frontend.
 
-## 4. utils/
-**Purpose:** Stores utility functions used across the app (e.g., formatting dates, helper logic).
+### 7. styles/
+**Purpose:** Global styles and themes.
 
-**Why:** Centralizes reusable code that isn’t tied to a specific component.
 
-**Example:**
-```plaintext
-utils/
-└── helpers.js
-```
-
-## 5. hooks/
-**Purpose:** Contains custom React hooks (e.g., `useCustomHook.js`).
-
-**Why:** Keeps hooks organized and reusable across components.
-
-**Example:**
-```plaintext
-hooks/
-└── useCustomHook.js
-```
-
-## 6. context/
-**Purpose:** Holds Context API files for state management (if needed).
-
-**Why:** Separates state logic from components for clarity.
-
-**Example:**
-```plaintext
-context/
-└── AppContext.js
-```
-
-## 7. services/
-**Purpose:** Contains files for API calls or external service interactions (e.g., fetching data from your Node.js backend).
-
-**Why:** Isolates backend communication logic for easier maintenance.
-
-**Example:**
-```plaintext
-services/
-└── api.js
-```
-
-## 8. App.js
-**Purpose:** The root component of your app, often where routing (e.g., React Router) or global providers (e.g., Context) are set up.
-
-**Why:** Acts as the main entry point for your component tree.
-
-## 9. index.js
-**Purpose:** The entry point for the React app, where `App.js` is rendered into the DOM.
-
-**Why:** Keeps the bootstrapping logic separate from the app structure.
-
-## 10. global.css
-**Purpose:** Defines global styles (e.g., resets, typography) that apply across the app.
-
-**Why:** Provides a single place for app-wide styling, while component-specific styles stay co-located.
+### 8. utils/
+**Purpose:** Helper functions.
+- Password validation
+- Data formatting
+- Common utilities
 
 ---
 
-## Why This Structure Works
-- **Organization:** Files are grouped logically—components with components, pages with pages, etc.
-- **Maintainability:** Co-locating related files (e.g., JS, CSS, tests) makes updates simple.
-- **Simplicity:** It’s not overly complex, so a new user can quickly understand where to find or add files.
-- **Scalability:** You can expand it later (e.g., add a `layouts/` folder or feature-based folders) as the app grows.
+## Development Tools
 
----
-
-## How to Use It
-### Start with `index.js`: Render your `App.js` here.
-```javascript
-import React from 'react';
-import ReactDOM from 'react-dom';
-import App from './App';
-import './global.css';
-
-ReactDOM.render(<App />, document.getElementById('root'));
-```
-
-### Set Up `App.js`: Define routes and wrap pages with providers if needed.
-```javascript
-import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import Home from './pages/Home/Home';
-import About from './pages/About/About';
-
-function App() {
-  return (
-    <Router>
-      <Switch>
-        <Route exact path="/" component={Home} />
-        <Route path="/about" component={About} />
-      </Switch>
-    </Router>
-  );
-}
-
-export default App;
-```
-
-### Create Components and Pages:
-- Add reusable components in `components/`.
-- Add route-specific pages in `pages/`.
-
-### Style Components:
-- Use `[ComponentName].module.css` for scoped styles, imported directly in the JS file.
-
----
-
-## Optional Additions
-- **Testing:** Add `.test.js` files as shown if you plan to write tests.
-- **Layouts:** If you need different layouts (e.g., a main layout with a header/footer), add a `layouts/` folder later.
-- **Feature-Based Structure:** For larger apps, group files by feature (e.g., `features/auth/`), but this might be overkill for now.
-
-This structure should integrate smoothly with your Node.js backend, especially if you use the `services/` folder for API calls. It’s a solid starting point that keeps things simple for new users while allowing room to grow!
+- `Dockerfile`: Container configuration for each service
+- `nginx.conf`: Nginx configuration as a reverse proxy connecting frontend and backend
+- `vite.config.js`: Vite bundler configuration
+- `package.json`: Dependencies versioning
+- `testAPI.http`: API testing file (Deprecated, no longer update to match new API endpoints, some endpoints may not work as expected)

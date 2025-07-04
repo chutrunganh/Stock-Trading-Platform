@@ -45,7 +45,7 @@ export const getUserByIdService = async (id) => {
 
 /**
  * This function updates a user's information in the database. It allows updating username, email, 
- * password, and role (can not update to 'admin' role through API).
+ * password ( role can not be updated to 'admin' through API).
  * 
  * @param {*} id - the id of the user to be updated
  * @param {*} userData - the user object containing the updated data
@@ -131,6 +131,7 @@ export const getUserByEmailService = async (email) => {
   }
 };
 
+// Get a user by username 
 export const getUserByUsernameService = async (username) => {
   try {
     const result = await pool.query(

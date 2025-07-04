@@ -12,10 +12,9 @@ import pool from '../config/dbConnect.js';
 
 let isTradingSessionActive = true; // By default when the server starts, the trading session is active
 
+// Activate the trading session
 export const activateTradingSession = async () => {
     try {
- 
-        
         isTradingSessionActive = true;
         log.info('Trading session started with fresh orderbook.');
         
@@ -32,7 +31,8 @@ export const deactivateTradingSession = async () => {
     try {
         await client.query('BEGIN');
 
-        // Record session prices
+        // Record session prices, the last matching price of the day will be recorded as the closing price for that 
+        // session and will be use as the open price for the next session
         await recordSessionPricesService(client);
 
         // Clear the orderbook when starting a new session

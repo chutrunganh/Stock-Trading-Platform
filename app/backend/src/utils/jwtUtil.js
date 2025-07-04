@@ -1,3 +1,15 @@
+/**
+ * @file jwtUtil.js
+ * @description This file contains the utility functions to generate and verify JWT tokens for user authentication.
+ * We use access and refresh tokens mechanism to handle user authentication.
+ * When user login, he/she will get 2 tokens: access token and refresh token.
+ * - Every protected route will check the access token, if it is expired, the frontend will automatically send refresh token
+ * to the backend to generate a new access token.
+ * - If the refresh token is still valid, backend will generate a new access token and return to the frontend. Otherwise, the user will be redirected to the login page.
+ * 
+ * The access token will be store in the client's browser only (most recommended is to sotre in Cookie) while the refresh token will be 
+ * store in both client' browser (most recommended is to store in localStorage) and the server's memory/database so that it can be revoked when needed.
+ */
 import jwt from 'jsonwebtoken';
 import log from './loggerUtil.js';
 import dotenv from 'dotenv';
@@ -95,7 +107,7 @@ export function verifyRefreshToken(token) {
 }
 
 /**
- * Invalidate a user's refresh token (used during logout)
+ * Invalidate a user's refresh token (used when user choose "Logout" in the frontend or close the browser)
  * @param {string} userId - The user ID whose token should be invalidated
  * @returns {boolean} - Whether a token was removed
  */

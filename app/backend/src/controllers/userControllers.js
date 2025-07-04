@@ -6,7 +6,7 @@
  * - Get a user by ID
  * - Update a user by ID
  * - Delete a user by ID
- * - Login a user (via email/password or Google SSO), also set the JWT token in a cookie to return to the client
+ * - Login a user (via email/username and password or Google SSO), also set the JWT token in a cookie to return to the client
  */
 import dotenv from 'dotenv';
 dotenv.config({ path: '../../../../.env' }); // Adjust based on relative depth
@@ -31,6 +31,7 @@ const handleResponse = (res, status, message, data = null) => {
 }
 
 // Add 'next' parameter to all controller functions to pass to error handler middleware
+// Register a new user
 export const registerUser = async (req, res, next) => {
     const { username, email, password } = req.body;
     console.log(req.body);
@@ -43,16 +44,7 @@ export const registerUser = async (req, res, next) => {
     }
 }
 
-export const getAllUsers = async (req, res, next) => {
-    try {
-        const users = await getAllUsersService();
-        handleResponse(res, 200, 'List of users', users);
-    }
-    catch (error) {
-        next(error); // Pass error to the error handler middleware
-    }
-}
-
+// Get a user by ID
 export const getUserById = async (req, res, next) => {
     const { id } = req.params;
     try {
@@ -67,6 +59,7 @@ export const getUserById = async (req, res, next) => {
     }
 }
 
+// Update a user by ID
 export const updateUser = async (req, res, next) => {
     const { id } = req.params;
     const { username, email, password } = req.body;
@@ -82,19 +75,6 @@ export const updateUser = async (req, res, next) => {
     }
 }
 
-export const deleteUser = async (req, res, next) => {
-    const { id } = req.params;
-    try {
-        const deletedUser = await deleteUserService(id);  // Call to service function in userCRUDService.js
-        if (!deletedUser) {
-            return handleResponse(res, 404, 'User not found');
-        }
-        handleResponse(res, 200, 'User deleted successfully', deletedUser);
-    }
-    catch (error) {
-        next(error); // Pass error to the error handler middleware
-    }
-}
 
 // Helper to resolve email from identifier (email or username)
 async function resolveEmailFromIdentifier(identifier) {

@@ -1,3 +1,7 @@
+"""
+This script is used to fetch stock data from Alpha Vantage and insert to the database.. Can run this file as a CLI script with flags or using
+a CLI interface via stockManager.js
+"""
 import requests
 import psycopg2
 from psycopg2.extras import RealDictCursor

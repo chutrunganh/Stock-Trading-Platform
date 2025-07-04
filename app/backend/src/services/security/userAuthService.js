@@ -1,3 +1,7 @@
+/**
+ * @file userAuthService.js
+ * @description This file contains the service to handle user login, register, reset password, logout, generate token, return JWT in cookies.
+ */
 import bcrypt from 'bcrypt';
 const SALT_ROUNDS = 10; // Cost factor for bcrypt
 import pool from '../../config/dbConnect.js';
@@ -253,6 +257,8 @@ export const resetPasswordService = async (email, otp, newPassword) => {
   }
 };
 
+
+// Verify the OTP when user login
 export const verifyLoginOtpService = async (identifier, otp, password, visitorId = null, rememberDevice = false, fingerprintConfidence = 0) => {
   try {
     // First, check password
@@ -333,6 +339,7 @@ export const verifyLoginOtpService = async (identifier, otp, password, visitorId
   }
 };
 
+// Logout user
 export const logoutUserService = async (userId) => {
   if (userId) {
     // Invalidate the refresh token for this user

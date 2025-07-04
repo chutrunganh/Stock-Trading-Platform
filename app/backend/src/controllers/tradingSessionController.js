@@ -1,12 +1,13 @@
 /**
  * @file tradingSessionController.js
  * @description This file contains the function for frontend to interact with the trading session service, which includes:
- * - Starting a trading session
- * - Stopping a trading session
- * - Getting the status of the trading session
+ * - Starting a trading session (only for admin)
+ * - Stopping a trading session (only for admin)
+ * - Getting the status of the trading session 
  * 
  * This trading session will be used as a context in the trading system (both frontend and backend). 
- * The order can only be placed when the trading session is active to simulate the real world trading system. For example, the HOSE (Ho Chi Minh Stock Exchange) is only open from 9:00 AM to 3:00 PM on weekdays.
+ * The order can only be placed when the trading session is active to simulate the real world trading system. 
+ * For example, the HOSE (Ho Chi Minh Stock Exchange) is only open from 9:00 AM to 3:00 PM on weekdays.
  */
 import { activateTradingSession, deactivateTradingSession, isTradingSessionActiveStatus } from '../services/tradingSessionService.js';
 

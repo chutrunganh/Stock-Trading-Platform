@@ -10,6 +10,9 @@
  *    - httpOnly: true (prevents JavaScript access)
  *    - secure: true in production (requires HTTPS)
  *    - sameSite: 'strict' (prevents CSRF)
+ * 
+ * 
+ * We return the access token and refresh token in cookies to the client. (Although it is more recommended to store the refresh token in localStorage)
  */
 
 
@@ -78,17 +81,3 @@ export function setAuthCookies(res, accessToken, refreshToken) {
     });
   }
 }
-
-
-
-/**
- *
- * Let me explain the relationship between JWT token expiration and cookie expiration times:
- * 1. Cookie Time > JWT Time (e.g., Cookie: 15min, JWT: 1min):
- *  - The cookie will still exist in the browser but contains an expired JWT
- *  - This is actually OK and common because:
- *  - When the JWT expires (after 1min), the refresh mechanism kicks in
- *  - The refresh token cookie (which is still valid) is used to get a new access token
- *  -> The system continues working smoothly
- * 
- */

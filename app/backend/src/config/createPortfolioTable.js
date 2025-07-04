@@ -1,8 +1,8 @@
 /**
- * @file createPortfolioTable.js
  * @description This file contains the function to create the portfolio table in the database.
  * This table will be initialized with empty data. Only when a new user is created in user table -> trigger a corresponding portfolio created
- * in the portfolio table, see implementation in userCRUDService.js for more details.
+ * in the portfolio table.
+ * See implementation in userCRUDService.js for more details.
  */
 import pool from './dbConnect.js';
 import log from '../utils/loggerUtil.js';

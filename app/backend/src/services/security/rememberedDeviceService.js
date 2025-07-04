@@ -1,3 +1,7 @@
+/**
+ * @file rememberedDeviceService.js
+ * @description This file contains functions to remember the user's device and check if the device is remembered.
+ */
 import pool from '../../config/dbConnect.js';
 
 /**
@@ -18,6 +22,7 @@ import pool from '../../config/dbConnect.js';
 const REMEMBER_DEVICE_MINUTES = 15; // Changed from days to minutes for testing
 const MIN_CONFIDENCE_SCORE = 0.01; // Minimum confidence score to trust the fingerprint - lowered to allow most devices
 
+// When user choose "Remember this device" in the login page, this function will be called to remember the device
 export const rememberDeviceService = async (userId, visitorId, confidenceScore = 0) => {
   try {
     // Only store devices with sufficient confidence
@@ -54,6 +59,7 @@ export const rememberDeviceService = async (userId, visitorId, confidenceScore =
   }
 };
 
+// When user login, this function will be called to check if the device is remembered, if yes then the user can login without 2FA
 export const isDeviceRememberedService = async (userId, visitorId, currentConfidenceScore = 0) => {
   try {
     // Don't trust devices if current confidence is too low

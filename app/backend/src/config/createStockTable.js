@@ -44,6 +44,7 @@ const createStockTable = async () => {
     }
 };
 
+// Seed 15 stocks symbols
 const seedStockTestData = async () => {
     try{
         const queryText = `

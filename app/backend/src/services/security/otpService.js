@@ -1,3 +1,8 @@
+/**
+ * @file otpService.js
+ * @description This file contains the service to generate and send OTP to the user's email via ethereal email service and
+ * save the OTP to the database for verification.
+ */
 import nodemailer from 'nodemailer';
 import OTP from '../../models/otpModel.js';
 import otpGenerator from 'otp-generator';
@@ -22,7 +27,6 @@ async function getEtherealTransporter() {
  * Generate and send OTP to the user's email.
  * @param {string} email - The user's email address.
  */
-
 export const sendOtpService = async (email) => {
   try {
     if (!email) {
@@ -82,6 +86,7 @@ export const sendOtpService = async (email) => {
   }
 };
 
+// Verify the OTP
 export const verifyOtpService = async (email, otp) => {
   const normalizedEmail = email.trim().toLowerCase();
   try {

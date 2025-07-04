@@ -1,3 +1,8 @@
+/**
+ * @description This file contains the function to create the payment transactions table in the database when fund the 
+ * portfolio balance with REAL money via Seapay payment gateway.
+ */
+
 import pool from './dbConnect.js';
 import log from '../utils/loggerUtil.js';
 

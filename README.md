@@ -268,33 +268,34 @@ You can take an additional step to securely expose your Docker services to the i
 ## Overall Structure
 
 ```plaintext
-Stock-Trading-Platform/
-├── app/
-│   ├── backend/        
-│   │   ├── src/              # Source code for the backend
-│   │   │── package.json      # Backend dependencies
-│   │   └── Dockerfile        # Dockerfile for backend
+📦 Stock-Trading-Platform/
+├── 📂 app/
+│   ├── 📂 backend/        
+│   │   ├── 📂 src/                     # Source code for the backend
+│   │   ├── 📄 package.json             # Backend dependencies
+│   │   └── 📄 Dockerfile               # Dockerfile for backend
 │   │
-│   └── frontend/             # Source code for the frontend
-│       ├── src/              # Source code for the frontend
-│       │── package.json      # Frontend dependencies
-│       ├── vite.config.js    # Vite configuration file
-│       ├── nginx.conf        # Nginx configuration file
-│       └── Dockerfile        # Dockerfile for frontend
+│   └── 📂 frontend/                   # Source code for the frontend
+│       ├── 📂 src/                    # Source code for the frontend
+│       ├── 📄 package.json            # Frontend dependencies
+│       ├── 📄 vite.config.js          # Vite configuration file
+│       ├── 📄 nginx.conf              # Nginx configuration file
+│       └── 📄 Dockerfile              # Dockerfile for frontend
 │
-├── docs/
-│   ├── design/                 # Detailed system design documents
-│   ├── reports/                # Project reports
-│   ├── setupInstructions/      # Setup instructions for the project
-│   ├── techStack/              # All the technologies used, detailed guide for configuring them
-│   └── stockFundamentalTheory/ # Some financial terminology, mechanism of order matching, etc.
+├── 📂 docs/
+│   ├── 📂 design/                     # Detailed system design documents
+│   ├── 📂 reports/                    # Project reports
+│   ├── 📂 setupInstructions/          # Setup instructions for the project
+│   ├── 📂 techStack/                  # Technologies used, configuration guides
+│   └── 📂 stockFundamentalTheory/     # Financial terminology, order matching, etc.
 │
-├── .env                # Environment variables (not committed to GitHub)
-├── .env.example        # Example environment variables file (serve as a template)
-└── docker-compose.yml  # Run the whole app with Docker
+├── 📄 .env                            # Environment variables (not committed to GitHub)
+├── 📄 .env.example                    # Example environment variables file (template)
+└── 📄 docker-compose.yml              # Run the whole app with Docker
+
 ```
 
-*For more details about the project structure, please refer to our reports in the `docs/reports` directory.*
+*For more details about the project structure, please refer to [Project Architecture](./docs/design/CodeFolderArchitectureDesign.md)*
 
 # Deployment Architecture
 

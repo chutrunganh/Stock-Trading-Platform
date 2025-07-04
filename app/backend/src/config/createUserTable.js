@@ -16,43 +16,6 @@
 import pool from './dbConnect.js';
 import log from '../utils/loggerUtil.js';
 
-// // Create seed admin user function
-// const createSeedAdminUser = async () => {
-//   const adminUser = {
-//     username: 'admin',
-//     email: 'admin@stocksim.test',
-//     password: 'admin123', // This is just for testing
-//     role: 'admin'
-//   };
-
-//   try {
-//     // Check if admin already exists
-//     const existingAdmin = await pool.query(
-//       'SELECT * FROM users WHERE username = $1 OR email = $2',
-//       [adminUser.username, adminUser.email]
-//     );
-
-//     if (existingAdmin.rows.length > 0) {
-//       console.log('Admin user already exists');
-//       return;
-//     }
-
-//     // Hash the password
-//     const salt = await bcrypt.genSalt(10);
-//     const hashedPassword = await bcrypt.hash(adminUser.password, salt);
-
-//     // Insert admin user
-//     const result = await pool.query(
-//       'INSERT INTO users (username, email, password, role) VALUES ($1, $2, $3, $4) RETURNING *',
-//       [adminUser.username, adminUser.email, hashedPassword, adminUser.role]
-//     );
-
-//     console.log('Seed admin user created successfully');
-//     console.log('Admin credentials - username: admin, password: admin123');
-//   } catch (error) {
-//     console.error('Error creating seed admin user:', error);
-//   }
-// };
 
 const createUserTable = async () => {
   const queryText = ` 
@@ -88,10 +51,6 @@ const createUserTable = async () => {
     }
     
     await pool.query(queryText);
-    
-    // Create seed admin user after table is created
-    //await createSeedAdminUser();
-    
   } 
   catch (error) {
     log.error('Error creating user table:', error);

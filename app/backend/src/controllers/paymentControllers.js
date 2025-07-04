@@ -1,3 +1,9 @@
+/**
+ * @description This file contains the controller to verify the payment and update the user's portfolio balance.
+ * This is a controller to handle the payment verification via Seapay payment gateway and update the user's balance.
+ * 
+ */
+
 import { verifyPayment} from '../services/paymentService.js';
 import log from '../utils/loggerUtil.js';
 import pool from '../config/dbConnect.js';
@@ -8,11 +14,11 @@ export const verifyPaymentController = async (req, res, _next) => {
     const portfolioId = req.user.portfolio_id;
 
     // Debug logging
-    log.info('Payment verification request:', {
-        user: req.user,
-        referenceNumber,
-        portfolioId
-    });
+    // log.info('Payment verification request:', {
+    //     user: req.user,
+    //     referenceNumber,
+    //     portfolioId
+    // });
 
     // Check if user has a portfolio in the database
     try {
@@ -20,12 +26,6 @@ export const verifyPaymentController = async (req, res, _next) => {
             'SELECT portfolio_id FROM portfolios WHERE user_id = $1',
             [req.user.id]
         );
-        
-        // log.info('Database portfolio check:', {
-        //     userId: req.user.id,
-        //     foundPortfolio: portfolioResult.rows[0],
-        //     userPortfolioId: portfolioId
-        // });
 
         if (!portfolioResult.rows[0]) {
             return res.status(400).json({
@@ -35,7 +35,7 @@ export const verifyPaymentController = async (req, res, _next) => {
             });
         }
 
-        // If portfolio exists in DB but not in user object, use the one from DB
+        // If portfolio exists in database but not in user object, use the one from database
         const actualPortfolioId = portfolioId || portfolioResult.rows[0].portfolio_id;
 
         const result = await verifyPayment(referenceNumber, actualPortfolioId);

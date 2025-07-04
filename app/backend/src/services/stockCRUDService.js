@@ -1,3 +1,7 @@
+/**
+ * @file stockCRUDService.js
+ * @description This file contains the service to create a new stock, get a stock by symbol.
+ */
 import pool from "../config/dbConnect.js";
 import Stocks from "../models/stockModel.js";
 
@@ -45,35 +49,3 @@ export const getStockBySymbolService = async (symbol) => {
         throw error;
     }
 };
-
-export const getAllStockService = async () => {
-    try {
-        const result = await pool.query(
-            'SELECT * FROM stocks'
-        );
-        if (!result.rows[0]) { //no stock found
-            throw new Error('No stocks found');
-        }
-        return result.rows.map(row => Stocks.getStocks(row));
-    }
-    catch (error) {
-        throw error;
-    }
-};
-
-// //get stock by industry - for filtering feature
-// export const getStocksByIndustryService = async (industry) => {
-//     try {
-//         const result = await pool.query(
-//             'SELECT * FROM stocks WHERE industry = $1',
-//             [industry]
-//         );
-//         if (!result.rows[0]) { //no stock found
-//             throw new Error('This industry does not exist');
-//         }
-//         return result.rows;
-//     }
-//     catch (error) {
-//         throw error;
-//     }
-// };

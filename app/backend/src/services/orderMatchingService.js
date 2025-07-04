@@ -1,8 +1,13 @@
+/**
+ * @file orderMatchingService.js
+ * @description This is the heart of the trading system. It is responsible for matching buy and sell orders based on price and 
+ * time priority and update the order book.
+ */
 import { settleMatchedOrder } from './orderSettlementService.js';
 import { emitOrderBookUpdate } from '../controllers/orderBookController.js';
 
-// Order Matching Service
-// This service is responsible for matching buy and sell orders based on price and time priority.
+// Maintain a global order book that contains hanging orders for each stock
+// This is a singleton class to ensure only one instance of OrderBook exists, the instance will be shared across all order CRUD operations
 export class OrderBook {
   constructor() {
 

@@ -230,9 +230,10 @@ const initializeDatabase = async () => {  try {
 
 // --- User Initialization Utilities ---
 
-// Start server after database initialization
+// Start server after database initialization an some others initializations
 const startServer = async () => {
     await initializeDatabase();
+    
     // Init some testing accounts
     // Note that you should choose the password following the password policy manuly, since this
     // functions run SQL commands directly, not by using our registration functions so it not affected by the password policy

@@ -1,3 +1,8 @@
+/**
+ * @file stockPriceCRUDService.js
+ * @description This file contains the service to get all stock prices, get stock prices by stock ID, add a new stock price,
+ * get latest stock price for a specific stock, get all stocks with their latest prices and record session prices when market closes.
+ */
 import pool from '../config/dbConnect.js';
 import StockPrices from '../models/stockPriceModel.js';
 
@@ -41,6 +46,7 @@ export const getStockPricesByStockIdService = async (stockId) => {
 };
 
 // Add a new stock price to the stockprices table
+// The seedStockPrice folder will use this function to seed the stock price table
 export const createStockPriceService = async (stockpriceData) => {
     const {stock_id, date, open_price, high_price, low_price, close_price, volume} = stockpriceData;
     try{
@@ -97,6 +103,8 @@ export const getAllStocksWithLatestPricesService = async () => {
 };
 
 // Record session prices when market closes
+// When the market closes, the last matching price of the day will be recorded as the closing price for that 
+// session and will be use as the open price for the next session
 export const recordSessionPricesService = async (client = pool) => {
     try {
         // Start a transaction
@@ -174,7 +182,6 @@ export const recordSessionPricesService = async (client = pool) => {
     }
 };
 
-//no delete needed
-//because the stock price has foreign constraints to stocks table
-//so if the stock is deleted, its stock price history will be deleted as well
+// No delete needed, because the stock price has foreign constraints to stocks table, so 
+// if the stock is deleted, its stock price history will be deleted as well
 

@@ -34,7 +34,7 @@ const configurePassport = () => {
         scope: ['profile', 'email']
               // NO NOT REMOVE accessToken and refreshToken as they are required by GoogleStrategy, although
               // the editor may warn that:'refreshToken' is declared but its value is never read. Add an 
-              // underscore to the parameter name to suppress the warning, DO NOT REMOVE IT.
+              // underscore to the parameter name to suppress the warning, DO NOT REMOVE IT in below lines.
       },      async (_accessToken, _refreshToken, profile, done) => {
         try {
           // Extract user information from Google profile

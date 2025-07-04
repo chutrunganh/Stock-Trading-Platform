@@ -1,14 +1,16 @@
 /**
  * @file orderBookController.js
- * @description This file contains functions to help frontend display and efficiently update order book data.
+ * @description This file contains functions to help frontend display and efficiently update order book data using Server-Sent Events (SSE).
+ * This is a technique to send data from server to client in real-time without the need to poll the server for updates, ensuring 
+ * the data is always up to date on multiple clients without resource-intensive polling.
  */
 
 import { EventEmitter } from 'events';
 import { getAllStocksWithLatestPricesService } from '../services/stockPriceCRUDService.js';
 import { OrderBook } from '../services/orderMatchingService.js';
 
-const sseClients = new Set();
-const orderBookEmitter = new EventEmitter();
+const sseClients = new Set(); // Set to store all connected clients
+const orderBookEmitter = new EventEmitter(); // Event emitter to emit updates to all connected clients
 
 // Controller to handle SSE connections
 export const orderBookSSE = (req, res) => {

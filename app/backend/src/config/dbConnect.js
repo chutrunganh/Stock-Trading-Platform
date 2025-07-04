@@ -2,6 +2,8 @@
  * @file dbConnect.js
  * @description This file reads the credentials and setting information from the .env file and creates a connection pool to the database.
  * Other operations like creating a database must import this file to use the connection pool.
+ * 
+ * See the file docs/setupInstructions/setupDatabase.md for how to install and bring the database up.
  */
 import pkg from 'pg';
 const { Pool } = pkg;

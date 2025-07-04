@@ -1,3 +1,8 @@
+/**
+ * @file turnstileService.js
+ * @description This file contains the service to verify the Turnstile token (CAPTCHA) from Cloudflare Turnstile.
+ * See the Cloudflare Turnstile documentation for more details: https://developers.cloudflare.com/turnstile/
+ */
 import axios from 'axios';
 import dotenv from 'dotenv';
 dotenv.config({ path: '../../../../.env' })

@@ -1,3 +1,7 @@
+/**
+ * @description This file contains the service for holding CRUD operations.
+ */
+
 import pool from '../config/dbConnect.js';
 import Holdings from '../models/holdingModel.js';
 import { DEFAULT_HOLDING_QUANTITY, DEFAULT_HOLDING_COST } from '../config/constants.js';

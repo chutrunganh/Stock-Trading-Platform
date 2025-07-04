@@ -1,14 +1,16 @@
+/**
+ * @file orderSettlementService.js
+ * @description This file contains the service to settle a matched order, including:
+ * 1. Updating holdings for both parties (buyer and seller)
+ * 2. Updating portfolio balances (buyer and seller)
+ * 3. Recording transactions to the transaction table (buyer and seller)
+ */
 import pool from '../config/dbConnect.js';
 import { updateHoldingService } from './holdingCRUDService.js';
 import { updatePortfolioService } from './portfolioCRUDService.js';
 import { createTransactionService } from './transactionCRUDService.js';
 
-/**
- * Handles the complete settlement of a matched order, including:
- * 1. Updating holdings for both parties
- * 2. Updating portfolio balances
- * 3. Recording transactions
- */
+// Settle a matched order
 export const settleMatchedOrder = async (matchedOrder) => {
     const {
         buyerPortfolioId,
@@ -19,7 +21,7 @@ export const settleMatchedOrder = async (matchedOrder) => {
     } = matchedOrder;
 
     const client = await pool.connect();
-    //define the balance of both side first
+    // Define the balance of both side first
     let buyerNewBalance = 'N/A (Artificial)'; 
     let sellerNewBalance = 'N/A (Artificial)';
     try {

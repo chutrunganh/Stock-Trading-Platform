@@ -1,4 +1,10 @@
-// src/utils/stockManager.js
+/**
+ * @file stockManager.js
+ * @description This file contains the function to manage the stock data, including:
+ * - Fetching stock data from Alpha Vantage and inserting to the database.
+ * - Updating stock data in the database.
+ * - Deleting/ Overwriting stock data from the database if duplicate.
+ */
 import { exec } from 'child_process';
 import readline from 'readline';
 import path from 'path';

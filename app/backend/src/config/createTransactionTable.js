@@ -1,7 +1,8 @@
 /**
  * @file createTransactionTable.js
  * @description This file contains the function to create the transaction table in the database.
- * When an order is successfully matching, a transaction will be written into this table.
+ * When an order is successfully matching e.g. buy order is matched with a sell order, a transaction will be written into this table.
+ * 
  */
 import pool from './dbConnect.js';
 import log from '../utils/loggerUtil.js';
@@ -20,8 +21,7 @@ const createTransactionTable = async () => {
       FOREIGN KEY (portfolio_id) REFERENCES portfolios(portfolio_id) ON DELETE CASCADE
     )`;
 
-    //delete on cascade means if the stock is deleted
-    //transaction history of that stock will be deleted as well
+    // Delete on cascade means if the stock is deleted, the transaction history of that stock will be deleted as well
     try{
         //development mode
         if (process.env.NODE_ENV === 'development'){
